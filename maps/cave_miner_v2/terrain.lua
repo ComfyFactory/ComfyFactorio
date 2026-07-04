@@ -173,7 +173,7 @@ function biomes.worm_desert(surface, seed, position, square_distance, noise)
 
     if math_random(1, 64) == 1 then
         local e = Functions.place_worm(surface, position, 1)
-        e.active = false
+        e.disabled_by_script = true
         return
     end
 
@@ -251,12 +251,12 @@ function biomes.cave(surface, seed, position, square_distance, noise)
     end
     if math_random(1, 64) == 1 then
         local e = surface.create_entity({ name = 'biter-spawner', position = position, force = 'enemy' })
-        e.active = false
+        e.disabled_by_script = true
         return
     end
     if math_random(1, 64) == 1 then
         local e = Functions.place_worm(surface, position, 1)
-        e.active = false
+        e.disabled_by_script = true
         return
     end
 end

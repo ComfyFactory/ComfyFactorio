@@ -617,18 +617,13 @@ local function on_player_driving_changed_state(event)
         return
     end
 
-    local trusted = Session.get_trusted_table()
-    if #trusted == 0 then
-        return
-    end
-
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         return
     end
 
     if entity.unit_number == locomotive.unit_number then
-        if not trusted[player.name] then
+        if not Session.get_trusted_player(player) then
             if player.character and player.character.valid and player.character.driving then
                 player.character.driving = false
             end

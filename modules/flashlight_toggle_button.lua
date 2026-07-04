@@ -68,17 +68,44 @@ local function on_player_joined_game(event)
     local player = game.players[event.player_index]
 
     storage.flashlight_enabled[player.name] = true
-    if player.gui.top['flashlight_toggle'] then
+    local existing
+    if Gui.get_mod_gui_top_frame() then
+        existing = Gui.get_button_flow(player)['flashlight_toggle']
+    else
+        existing = player.gui.top['flashlight_toggle']
+    end
+    if existing then
         return
     end
-    local b = player.gui.top.add({ type = 'sprite-button', name = 'flashlight_toggle', sprite = 'item/small-lamp', tooltip = 'Toggle flashlight', style = Gui.button_style })
-    b.style.minimal_height = 38
-    b.style.maximal_height = 38
-    b.style.minimal_width = 38
-    b.style.top_padding = 2
-    b.style.left_padding = 4
-    b.style.right_padding = 4
-    b.style.bottom_padding = 2
+    local b
+    if Gui.get_mod_gui_top_frame() then
+        b =
+            Gui.add_mod_button(
+                player,
+                {
+                    type = 'sprite-button',
+                    name = 'flashlight_toggle',
+                    sprite = 'item/small-lamp',
+                    tooltip = 'Toggle flashlight',
+                    style = Gui.button_style
+                }
+            )
+        if b then
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.minimal_width = 40
+            b.style.padding = -2
+        end
+    else
+        b = player.gui.top.add({ type = 'sprite-button', name = 'flashlight_toggle', sprite = 'item/small-lamp', tooltip = 'Toggle flashlight', style = Gui.button_style })
+        b.style.minimal_height = 38
+        b.style.maximal_height = 38
+        b.style.minimal_width = 38
+        b.style.top_padding = 2
+        b.style.left_padding = 4
+        b.style.right_padding = 4
+        b.style.bottom_padding = 2
+    end
 end
 
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)

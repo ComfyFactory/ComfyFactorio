@@ -1,51 +1,56 @@
 local Event = require 'utils.event'
 local Scrap = require 'maps.scrap_towny_ffa.scrap'
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
 local insert = table.insert
 local random = math.random
+local math_ceil = math.ceil
+local math_max = math.max
+local math_abs = math.abs
 
-local entity_loot_chance = {
-    { name = 'advanced-circuit',       chance = 150 },
-    { name = 'battery',                chance = 150 },
-    { name = 'cannon-shell',           chance = 50 },
-    { name = 'copper-cable',           chance = 5000 },
-    { name = 'copper-plate',           chance = 2500 },
-    { name = 'crude-oil-barrel',       chance = 500 },
-    { name = 'defender-capsule',       chance = 100 },
-    { name = 'destroyer-capsule',      chance = 20 },
-    { name = 'distractor-capsule',     chance = 40 },
-    { name = 'electric-engine-unit',   chance = 20 },
-    { name = 'electronic-circuit',     chance = 1500 },
-    { name = 'barrel',                 chance = 100 },
-    { name = 'engine-unit',            chance = 50 },
+local entity_loot_chance =
+{
+    { name = 'advanced-circuit', chance = 150 },
+    { name = 'battery', chance = 150 },
+    { name = 'cannon-shell', chance = 50 },
+    { name = 'copper-cable', chance = 5000 },
+    { name = 'copper-plate', chance = 2500 },
+    { name = 'crude-oil-barrel', chance = 500 },
+    { name = 'defender-capsule', chance = 100 },
+    { name = 'destroyer-capsule', chance = 20 },
+    { name = 'distractor-capsule', chance = 40 },
+    { name = 'electric-engine-unit', chance = 20 },
+    { name = 'electronic-circuit', chance = 1500 },
+    { name = 'barrel', chance = 100 },
+    { name = 'engine-unit', chance = 50 },
     { name = 'explosive-cannon-shell', chance = 50 },
-    { name = 'explosives',             chance = 50 },
-    { name = 'grenade',                chance = 100 },
-    { name = 'heavy-oil-barrel',       chance = 200 },
-    { name = 'iron-gear-wheel',        chance = 5000 },
-    { name = 'iron-plate',             chance = 5000 },
-    { name = 'iron-stick',             chance = 500 },
-    { name = 'land-mine',              chance = 30 },
-    { name = 'light-oil-barrel',       chance = 200 },
-    { name = 'lubricant-barrel',       chance = 200 },
-    { name = 'nuclear-fuel',           chance = 20 },
-    { name = 'petroleum-gas-barrel',   chance = 300 },
-    { name = 'pipe',                   chance = 1000 },
-    { name = 'pipe-to-ground',         chance = 100 },
-    { name = 'plastic-bar',            chance = 50 },
-    { name = 'processing-unit',        chance = 20 },
-    { name = 'rocket-fuel',            chance = 50 },
-    { name = 'solid-fuel',             chance = 1000 },
-    { name = 'steel-plate',            chance = 1500 },
-    { name = 'sulfuric-acid-barrel',   chance = 150 },
-    { name = 'uranium-fuel-cell',      chance = 10 },
-    { name = 'water-barrel',           chance = 100 },
-    { name = 'tank',                   chance = 1 },
-    { name = 'car',                    chance = 5 }
+    { name = 'explosives', chance = 50 },
+    { name = 'grenade', chance = 100 },
+    { name = 'heavy-oil-barrel', chance = 200 },
+    { name = 'iron-gear-wheel', chance = 5000 },
+    { name = 'iron-plate', chance = 5000 },
+    { name = 'iron-stick', chance = 500 },
+    { name = 'land-mine', chance = 30 },
+    { name = 'light-oil-barrel', chance = 200 },
+    { name = 'lubricant-barrel', chance = 200 },
+    { name = 'nuclear-fuel', chance = 20 },
+    { name = 'petroleum-gas-barrel', chance = 300 },
+    { name = 'pipe', chance = 1000 },
+    { name = 'pipe-to-ground', chance = 100 },
+    { name = 'plastic-bar', chance = 50 },
+    { name = 'processing-unit', chance = 20 },
+    { name = 'rocket-fuel', chance = 50 },
+    { name = 'solid-fuel', chance = 1000 },
+    { name = 'steel-plate', chance = 1500 },
+    { name = 'sulfuric-acid-barrel', chance = 150 },
+    { name = 'uranium-fuel-cell', chance = 10 },
+    { name = 'water-barrel', chance = 100 },
+    { name = 'tank', chance = 1 },
+    { name = 'car', chance = 5 }
 }
 
--- positive numbers can scale, 0 is disabled, and negative numbers are fixed absolute values
-local entity_loot_amounts = {
+local entity_loot_amounts =
+{
     ['advanced-circuit'] = 6,
     ['battery'] = 2,
     ['cannon-shell'] = 2,
@@ -116,39 +121,41 @@ local function on_player_mined_entity(event)
 
     local enemy = game.forces.enemy
 
-    -- scrap entities drop loot
     buffer.clear()
 
     local scrap = scrap_raffle[random(1, size_of_scrap_raffle)]
 
-    local scrap_amount_modifier = 3
+    local scrap_amount_modifier = ScenarioTable.wreckage('scrap_amount_modifier')
+    local amount_scale = ScenarioTable.wreckage('amount_scale')
     local evo = enemy.get_evolution_factor(entity.surface)
     local amount_bonus = scrap_amount_modifier * (evo * 2) + (player.force.mining_drill_productivity_bonus * 2)
     local amount
     if entity_loot_amounts[scrap] <= 0 then
-        amount = math.abs(entity_loot_amounts[scrap])
+        amount = math_abs(entity_loot_amounts[scrap])
     else
         local m1 = 0.3 + (amount_bonus * 0.3)
         local m2 = 1.7 + (amount_bonus * 1.7)
-        local r1 = math.ceil(entity_loot_amounts[scrap] * m1)
-        local r2 = math.ceil(entity_loot_amounts[scrap] * m2)
+        local r1 = math_ceil(entity_loot_amounts[scrap] * m1)
+        local r2 = math_ceil(entity_loot_amounts[scrap] * m2)
         amount = random(r1, r2)
     end
+    amount = math_max(1, math_ceil(amount * amount_scale))
 
     local inserted_count = player.insert({ name = scrap, count = amount })
 
     if inserted_count ~= amount then
         local amount_to_spill = amount - inserted_count
-        entity.surface.spill_item_stack(position, { name = scrap, count = amount_to_spill }, true)
+        entity.surface.spill_item_stack({ position = position, stack = { name = scrap, count = amount_to_spill }, enable_looted = true })
     end
 
     for _, p in pairs(game.connected_players) do
         if p.surface == entity.surface then
-            p.create_local_flying_text({
-                position = position,
-                text = '+' .. amount .. ' [img=item/' .. scrap .. ']',
-                color = { r = 0.98, g = 0.66, b = 0.22 }
-            })
+            p.create_local_flying_text(
+                {
+                    position = position,
+                    text = '+' .. amount .. ' [img=item/' .. scrap .. ']',
+                    color = { r = 0.98, g = 0.66, b = 0.22 }
+                })
         end
     end
 end

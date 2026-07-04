@@ -666,7 +666,7 @@ local function init()
         alignment = 'center'
     }
 
-    storage.surface_choppy_chest.minable = false
+    storage.surface_choppy_chest.minable_flag = false
     storage.surface_choppy_chest.destructible = false
 end
 

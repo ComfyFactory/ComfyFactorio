@@ -226,7 +226,7 @@ local function construct_wagon_doors(icw, wagon)
             )
         e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 1 })
         e.destructible = false
-        e.minable = false
+        e.minable_flag = false
         e.operable = false
         icw.doors[e.unit_number] = wagon.entity.unit_number
         table_insert(wagon.doors, e)
@@ -384,7 +384,7 @@ function Public.create_wagon_room(icw, wagon)
                 }
             )
         e.destructible = false
-        e.minable = false
+        e.minable_flag = false
         wagon.transfer_entities = { e }
         return
     end
@@ -404,7 +404,7 @@ function Public.create_wagon_room(icw, wagon)
                 }
             )
         e.destructible = false
-        e.minable = false
+        e.minable_flag = false
 
         e2 =
             surface.create_entity(
@@ -416,7 +416,7 @@ function Public.create_wagon_room(icw, wagon)
                 }
             )
         e2.destructible = false
-        e2.minable = false
+        e2.minable_flag = false
 
         wagon.transfer_entities = { e, e2 }
         return
@@ -459,7 +459,7 @@ function Public.add_wagon_entity_count(icw, added_entity)
         return
     end
     wagon.entity_count = wagon.entity_count + 1
-    wagon.entity.minable = false
+    wagon.entity.minable_flag = false
 end
 
 function Public.subtract_wagon_entity_count(icw, removed_entity)
@@ -471,7 +471,7 @@ function Public.subtract_wagon_entity_count(icw, removed_entity)
     if wagon.entity_count > 0 then
         return
     end
-    wagon.entity.minable = true
+    wagon.entity.minable_flag = true
 end
 
 function Public.use_cargo_wagon_door(icw, player, door)

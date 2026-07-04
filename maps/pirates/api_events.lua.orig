@@ -1004,7 +1004,7 @@ local function player_mined_tree(event)
 				force = memory.ancient_friendly_force_name,
 			})
 			if e and e.valid then
-				e.minable = false
+				e.minable_flag = false
 				e.rotatable = false
 				e.destructible = false
 
@@ -2193,7 +2193,7 @@ function Public.event_on_chunk_generated(event)
 					force = memory.ancient_friendly_force_name,
 				})
 				if e and e.valid then
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					e.destructible = false
 
@@ -2223,7 +2223,7 @@ function Public.event_on_chunk_generated(event)
 					force = memory.ancient_friendly_force_name,
 				})
 				if e and e.valid then
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					e.destructible = false
 
@@ -2241,7 +2241,7 @@ function Public.event_on_chunk_generated(event)
 					force = memory.ancient_friendly_force_name,
 				})
 				if e and e.valid then
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					e.destructible = false
 

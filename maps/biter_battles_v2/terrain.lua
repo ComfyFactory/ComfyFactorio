@@ -276,12 +276,12 @@ local function generate_starting_area(pos, distance_to_center, surface)
             if noise_2 > -0.40 then
                 if distance_from_spawn_wall > -1.75 and distance_from_spawn_wall < 0 then
                     local e = surface.create_entity({ name = 'stone-wall', position = pos, force = 'neutral' })
-                    e.active = false
+                    e.disabled_by_script = false
                 end
             else
                 if distance_from_spawn_wall > -1.95 and distance_from_spawn_wall < 0 then
                     local e = surface.create_entity({ name = 'stone-wall', position = pos, force = 'neutral' })
-                    e.active = false
+                    e.disabled_by_script = false
                 elseif distance_from_spawn_wall > 0 and distance_from_spawn_wall < 4.5 then
                     local name = 'wooden-chest'
                     local r_max = math_floor(math.abs(distance_from_spawn_wall)) + 2
@@ -290,14 +290,14 @@ local function generate_starting_area(pos, distance_to_center, surface)
                     end
                     if math_random(1, r_max) == 1 then
                         local e = surface.create_entity({ name = name, position = pos, force = 'neutral' })
-                        e.active = false
+                        e.disabled_by_script = false
                     end
                 elseif distance_from_spawn_wall > -6 and distance_from_spawn_wall < -3 then
                     if math_random(1, 16) == 1 then
                         if surface.can_place_entity({ name = 'gun-turret', position = pos }) then
                             local e = surface.create_entity({ name = 'gun-turret', position = pos, force = 'neutral' })
                             e.insert({ name = 'firearm-magazine', count = math_random(6, 12) })
-                            e.active = false
+                            e.disabled_by_script = false
                         end
                     else
                         if math_random(1, 24) == 1 and not is_horizontal_border_river(pos) then
@@ -324,7 +324,7 @@ local function generate_river(surface, left_top_x, left_top_y)
                 surface.set_tiles({ { name = 'deepwater', position = pos } })
                 if math_random(1, 64) == 1 then
                     local e = surface.create_entity({ name = 'fish', position = pos })
-                    e.active = false
+                    e.disabled_by_script = false
                 end
             end
         end
@@ -367,7 +367,7 @@ local function generate_extra_worm_turrets(surface, left_top)
         local position = surface.find_non_colliding_position(worm_turret_name, { left_top.x + v[1], left_top.y + v[2] }, 8, 1)
         if position then
             local worm = surface.create_entity({ name = worm_turret_name, position = position, force = 'enemy' })
-            worm.active = false
+            worm.disabled_by_script = false
 
             -- add some scrap
             for _ = 1, math_random(0, 4), 1 do
@@ -377,7 +377,7 @@ local function generate_extra_worm_turrets(surface, left_top)
                 position = surface.find_non_colliding_position(name, position, 16, 1)
                 if position then
                     local e = surface.create_entity({ name = name, position = position, force = 'neutral' })
-                    e.active = false
+                    e.disabled_by_script = false
                 end
             end
         end
@@ -433,10 +433,10 @@ local function draw_biter_area(surface, left_top_x, left_top_y)
         if is_biter_area(position) and surface.can_place_entity({ name = 'spitter-spawner', position = position }) then
             if math_random(1, 4) == 1 then
                 local e = surface.create_entity({ name = 'spitter-spawner', position = position, force = 'enemy' })
-                e.active = false
+                e.disabled_by_script = false
             else
                 local e = surface.create_entity({ name = 'biter-spawner', position = position, force = 'enemy' })
-                e.active = false
+                e.disabled_by_script = false
             end
         end
     end
@@ -562,7 +562,7 @@ function Public.draw_spawn_circle(surface)
         if tiles[i].name == 'deepwater' then
             if math_random(1, 48) == 1 then
                 local e = surface.create_entity({ name = 'fish', position = tiles[i].position })
-                e.active = false
+                e.disabled_by_script = false
             end
         end
     end
@@ -659,8 +659,8 @@ function Public.generate_silo(surface)
                 force = 'neutral'
             }
         )
-    silo.minable = false
-    silo.active = false
+    silo.minable_flag = false
+    silo.disabled_by_script = false
 
     for _ = 1, 32, 1 do
         create_mirrored_tile_chain(surface, { name = 'stone-path', position = silo.position }, 32, 10)
@@ -676,10 +676,10 @@ function Public.generate_silo(surface)
     if bb_config.spawn_turrets_at_silo then
         local turret1 = surface.create_entity({ name = 'gun-turret', position = { x = pos.x, y = pos.y - 5 }, force = 'neutral' })
         turret1.insert({ name = 'firearm-magazine', count = 10 })
-        turret1.active = false
+        turret1.disabled_by_script = false
         local turret2 = surface.create_entity({ name = 'gun-turret', position = { x = pos.x + 2, y = pos.y - 5 }, force = 'neutral' })
         turret2.insert({ name = 'firearm-magazine', count = 10 })
-        turret2.active = false
+        turret2.disabled_by_script = false
     end
 end
 

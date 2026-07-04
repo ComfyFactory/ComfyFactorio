@@ -47,7 +47,7 @@ local function restrict_roboports(custom_force)
         for _, network in pairs(surface_network) do
             if #network.cells > settings.roboport_limit then
                 for _, cell in pairs(network.cells) do
-                    --cell.owner.active = false -- doesn't currently work REEEEEEEEEEEEEE, can't disable roboports
+                    --cell.owner.disabled_by_script = true -- doesn't currently work REEEEEEEEEEEEEE, can't disable roboports
                     if math.random(1, 3) == 1 then
                         damage_entity(cell.owner)
                     end
@@ -64,7 +64,7 @@ local function restrict_robots(custom_force)
         for _, network in pairs(surface_network) do
             if network.all_logistic_robots > settings.logi_robot_limit then
                 for _, robot in pairs(network.logistic_robots) do
-                    --robot.active = false --works but is graphically meh
+                    --robot.disabled_by_script = true --works but is graphically meh
                     if math.random(1, 8) == 1 then
                         damage_entity(robot)
                     end
@@ -72,7 +72,7 @@ local function restrict_robots(custom_force)
             end
             if network.all_construction_robots > settings.cons_robot_limit then
                 for _, robot in pairs(network.construction_robots) do
-                    --robot.active = false --works but is graphically meh
+                    --robot.disabled_by_script = true --works but is graphically meh
                     if math.random(1, 8) == 1 then
                         damage_entity(robot)
                     end

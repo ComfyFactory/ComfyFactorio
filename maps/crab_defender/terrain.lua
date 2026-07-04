@@ -40,7 +40,7 @@ end
 
 local function place_crab_market(surface, position)
     local market = surface.create_entity({ name = 'market', position = position, force = 'player' })
-    market.minable = false
+    market.minable_flag = false
     return market
 end
 
@@ -76,7 +76,7 @@ local function enemy_territory(surface, left_top)
                             else
                                 entity = surface.create_entity({ name = 'biter-spawner', force = 'decoratives', position = pos })
                             end
-                            entity.active = false
+                            entity.disabled_by_script = true
                             entity.destructible = false
                         end
                     end

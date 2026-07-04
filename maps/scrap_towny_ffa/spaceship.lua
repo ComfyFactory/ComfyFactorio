@@ -8,7 +8,7 @@ local function position_tostring(position)
 end
 
 local upgrade_functions = {
-    -- Upgrade Backpack
+
     [1] = function (player)
         local this = ScenarioTable.get_table()
         local surface = player.surface
@@ -26,7 +26,7 @@ local upgrade_functions = {
         surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
-    -- Upgrade Pickaxe Speed
+
     [2] = function (player)
         local this = ScenarioTable.get_table()
         local surface = player.surface
@@ -44,7 +44,7 @@ local upgrade_functions = {
         surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
-    -- Upgrade Crafting Speed
+
     [3] = function (player)
         local this = ScenarioTable.get_table()
         local surface = player.surface
@@ -62,7 +62,7 @@ local upgrade_functions = {
         surface.play_sound({ path = 'utility/achievement_unlocked', position = player.physical_position, volume_modifier = 1 })
         return true
     end,
-    -- Set Spawn Point
+
     [4] = function (player)
         local this = ScenarioTable.get_table()
         local surface = player.surface
@@ -98,7 +98,6 @@ end
 local function set_offers(market, player)
     local market_items = {}
 
-    -- special offers are only for outlanders and rogues
     local special_offers = {}
     local force = player.force
     if force.index == game.forces['player'].index or force.index == game.forces['rogue'].index then
@@ -128,14 +127,13 @@ local function set_offers(market, player)
         table_insert(market_items, { price = v[1], offer = { type = 'nothing', effect_description = v[2] } })
     end
 
-    -- coin purchases
     table_insert(market_items, { price = { { 'coin', 1 } }, offer = { type = 'give-item', item = 'raw-fish', count = 1 } })
     table_insert(market_items, { price = { { 'coin', 4 } }, offer = { type = 'give-item', item = 'firearm-magazine', count = 5 } })
     table_insert(market_items, { price = { { 'coin', 10 } }, offer = { type = 'give-item', item = 'grenade', count = 6 } })
     table_insert(market_items, { price = { { 'coin', 40 } }, offer = { type = 'give-item', item = 'piercing-rounds-magazine', count = 10 } })
     table_insert(market_items, { price = { { 'coin', 75 } }, offer = { type = 'give-item', item = 'heavy-armor', count = 1 } })
     table_insert(market_items, { price = { { 'coin', 150 } }, offer = { type = 'give-item', item = 'modular-armor', count = 1 } })
-    -- scrap selling
+
     table_insert(market_items, { price = { { 'raw-fish', 1 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
     table_insert(market_items, { price = { { 'wood', 7 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
     table_insert(market_items, { price = { { 'copper-cable', 12 } }, offer = { type = 'give-item', item = 'coin', count = 1 } })
@@ -208,7 +206,7 @@ local function offer_purchased(event)
         return
     end
     if upgrade_functions[offer_index](player) then
-        -- reimburse extra purchased
+
         if count > 1 then
             local offers = market.get_market_items()
             if offers[offer_index].price ~= nil then
@@ -217,7 +215,7 @@ local function offer_purchased(event)
             end
         end
     else
-        -- reimburse purchase
+
         local offers = market.get_market_items()
         if offers[offer_index].price ~= nil then
             local price = offers[offer_index].price[1].amount
@@ -231,7 +229,7 @@ local function on_gui_opened(event)
     if gui_type == defines.gui_type.entity then
         local entity = event.entity
         if entity ~= nil or entity.valid then
-            -- crash-site-spaceship
+
             if entity.name == 'crash-site-spaceship-market' then
                 refresh_offers(event)
             end

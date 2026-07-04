@@ -6,19 +6,20 @@ local math_floor = math.floor
 local table_insert = table.insert
 local table_shuffle = table.shuffle_table
 
-
-local valid_entities = {
+local valid_entities =
+{
     ['big-rock'] = true,
     ['huge-rock'] = true,
     ['big-sand-rock'] = true
 }
 
-local size_raffle = {
+local size_raffle =
+{
     { 'giant', 500, 1000 },
-    { 'huge',  300, 500 },
-    { 'big',   150, 300 },
-    { 'small', 80,  150 },
-    { 'tiny',  50,  80 }
+    { 'huge', 300, 500 },
+    { 'big', 150, 300 },
+    { 'small', 80, 150 },
+    { 'tiny', 50, 80 }
 }
 
 local function get_chances()
@@ -56,7 +57,7 @@ local function draw_chain(surface, count, ore, ore_entities, ore_positions)
         table_shuffle(vectors)
         for i = 1, 4, 1 do
             local p = { x = position.x + vectors[i][1], y = position.y + vectors[i][2] }
-            -- dispersion will make patches more round
+
             local dx = (math_random(0, 100) - 50) / 100
             local dy = (math_random(0, 100) - 50) / 100
             local dp = { x = p.x + dx, y = p.y + dy }
@@ -76,7 +77,7 @@ local function draw_chain(surface, count, ore, ore_entities, ore_positions)
                     end
                 end
             else
-                -- existing ore of same name
+
                 if surface.can_fast_replace({ name = name, position = p, force = 'neutral' }) then
                     local amount = get_amount()
                     local deposit = surface.find_entity(name, p)
@@ -140,9 +141,11 @@ local function ore_vein(event)
     local position = event.entity.position
     local ore_entities = { { ore = { name = ore, position = { x = position.x, y = position.y } }, amount = get_amount() } }
     if ore == 'mixed' then
-        ore_entities = {
+        ore_entities =
+        {
             {
-                ore = {
+                ore =
+                {
                     name = this.rocks_yield_ore_veins.mixed_ores[math_random(1, #this.rocks_yield_ore_veins.mixed_ores)],
                     position = { x = position.x, y = position.y }
                 },
@@ -167,7 +170,6 @@ local function ore_vein(event)
         end
     end
 
-    -- place the ore
     for _, ore_entity in pairs(ore_entities) do
         if ore_entity.fast_replace then
             local e = surface.find_entity(ore_entity.ore.name, ore_entity.ore.position)

@@ -164,7 +164,7 @@ function Public.create_hold_surface(nth)
 		})
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.operable = false
 			local type = b.type
@@ -212,7 +212,7 @@ function Public.create_hold_surface(nth)
 		})
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			boat.downstairs_poles[nth][i] = e
 		end
@@ -234,7 +234,7 @@ function Public.create_hold_surface(nth)
 		})
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = true
 			boat.downstairs_fluid_storages[nth][i] = e
 		end
@@ -258,7 +258,7 @@ function Public.create_hold_surface(nth)
 	for _, e in pairs(boxes) do
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 		end
 	end
@@ -325,7 +325,7 @@ function Public.upgrade_chests(nth, new_chest)
 	for _, p in pairs(ps) do
 		local es = surface.find_entities_filtered({ name = 'wooden-chest', position = p, radius = 0.05 })
 		if es and #es == 1 then
-			es[1].minable = true
+			es[1].minable_flag = true
 			es[1].destructible = true
 			es[1].rotatable = true
 		end
@@ -336,7 +336,7 @@ function Public.upgrade_chests(nth, new_chest)
 			spill = false,
 			force = boat.force_name,
 		})
-		e2.minable = false
+		e2.minable_flag = false
 		e2.destructible = false
 		e2.rotatable = false
 	end

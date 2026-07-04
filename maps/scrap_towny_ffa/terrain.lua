@@ -8,100 +8,94 @@ local table_insert = table.insert
 local math_random = math.random
 local math_floor = math.floor
 
-local scrap_entities = {
-    -- simple entity with owner
-    { name = 'crash-site-spaceship-wreck-small-1' }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-small-1' }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-small-2' }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-small-3' }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-small-4' }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-small-5' }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-small-6' }  -- these do not have mining animation
+local scrap_entities =
+{
+    { name = 'mineable-wreckage' },
+    { name = 'mineable-wreckage' },
+    { name = 'mineable-wreckage' },
+    { name = 'mineable-wreckage' },
+    { name = 'mineable-wreckage' },
+    { name = 'mineable-wreckage' },
+    { name = 'mineable-wreckage' }
 }
 
 local scrap_entities_index = table.size(scrap_entities)
 
-local scrap_containers = {
-    -- containers
-    { name = 'crash-site-chest-1',                  size = 8 }, -- these do not have mining animation
-    { name = 'crash-site-chest-2',                  size = 8 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-1', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-1', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-1', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-1', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-2', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-2', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-2', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-2', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-3', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-3', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-3', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-medium-3', size = 1 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-big-1',    size = 2 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-big-1',    size = 2 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-big-1',    size = 2 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-big-2',    size = 2 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-big-2',    size = 2 }, -- these do not have mining animation
-    { name = 'crash-site-spaceship-wreck-big-2',    size = 2 }  -- these do not have mining animation
+local scrap_containers =
+{
+    { name = 'crash-site-chest-1', size = 8 },
+    { name = 'crash-site-chest-2', size = 8 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 1 },
+    { name = 'mineable-wreckage', size = 2 },
+    { name = 'mineable-wreckage', size = 2 },
+    { name = 'mineable-wreckage', size = 2 },
+    { name = 'mineable-wreckage', size = 2 },
+    { name = 'mineable-wreckage', size = 2 },
+    { name = 'mineable-wreckage', size = 2 }
 }
 local scrap_containers_index = table.size(scrap_containers)
 
--- loot chances and amounts for scrap containers
+local container_loot_chance =
+{
+    { name = 'advanced-circuit', chance = 15 },
 
-local container_loot_chance = {
-    { name = 'advanced-circuit',       chance = 15 },
-    --{name = "artillery-shell", chance = 1},
-    { name = 'battery',                chance = 15 },
-    { name = 'cannon-shell',           chance = 4 },
-    --{name = "cluster-grenade", chance = 2},
-    { name = 'construction-robot',     chance = 1 },
-    { name = 'copper-cable',           chance = 250 },
-    { name = 'copper-plate',           chance = 250 },
-    { name = 'crude-oil-barrel',       chance = 30 },
-    { name = 'defender-capsule',       chance = 5 },
-    { name = 'destroyer-capsule',      chance = 1 },
-    { name = 'distractor-capsule',     chance = 2 },
-    { name = 'electric-engine-unit',   chance = 2 },
-    { name = 'electronic-circuit',     chance = 150 },
-    { name = 'barrel',                 chance = 10 },
-    { name = 'engine-unit',            chance = 5 },
+    { name = 'battery', chance = 15 },
+    { name = 'cannon-shell', chance = 4 },
+
+    { name = 'construction-robot', chance = 1 },
+    { name = 'copper-cable', chance = 250 },
+    { name = 'copper-plate', chance = 250 },
+    { name = 'crude-oil-barrel', chance = 30 },
+    { name = 'defender-capsule', chance = 5 },
+    { name = 'destroyer-capsule', chance = 1 },
+    { name = 'distractor-capsule', chance = 2 },
+    { name = 'electric-engine-unit', chance = 2 },
+    { name = 'electronic-circuit', chance = 150 },
+    { name = 'barrel', chance = 10 },
+    { name = 'engine-unit', chance = 5 },
     { name = 'explosive-cannon-shell', chance = 2 },
-    --{name = "explosive-rocket", chance = 3},
-    --{name = "explosive-uranium-cannon-shell", chance = 1},
-    { name = 'explosives',             chance = 5 },
-    { name = 'grenade',                chance = 10 },
-    { name = 'heavy-oil-barrel',       chance = 20 },
-    { name = 'iron-gear-wheel',        chance = 500 },
-    { name = 'iron-plate',             chance = 500 },
-    { name = 'iron-stick',             chance = 50 },
-    { name = 'land-mine',              chance = 3 },
-    { name = 'light-oil-barrel',       chance = 20 },
-    { name = 'logistic-robot',         chance = 1 },
-    { name = 'low-density-structure',  chance = 1 },
-    { name = 'lubricant-barrel',       chance = 20 },
-    { name = 'nuclear-fuel',           chance = 1 },
-    { name = 'petroleum-gas-barrel',   chance = 30 },
-    { name = 'pipe',                   chance = 100 },
-    { name = 'pipe-to-ground',         chance = 10 },
-    { name = 'plastic-bar',            chance = 5 },
-    { name = 'processing-unit',        chance = 2 },
-    --{name = "rocket", chance = 3},
-    --{name = "rocket-fuel", chance = 3},
-    { name = 'solid-fuel',             chance = 100 },
-    { name = 'steel-plate',            chance = 150 },
-    { name = 'sulfuric-acid-barrel',   chance = 15 },
-    --{name = "uranium-cannon-shell", chance = 1},
-    { name = 'uranium-fuel-cell',      chance = 1 },
-    --{name = "depleted-uranium-fuel-cell", chance = 1},
-    { name = 'water-barrel',           chance = 10 }
+
+    { name = 'explosives', chance = 5 },
+    { name = 'grenade', chance = 10 },
+    { name = 'heavy-oil-barrel', chance = 20 },
+    { name = 'iron-gear-wheel', chance = 500 },
+    { name = 'iron-plate', chance = 500 },
+    { name = 'iron-stick', chance = 50 },
+    { name = 'land-mine', chance = 3 },
+    { name = 'light-oil-barrel', chance = 20 },
+    { name = 'logistic-robot', chance = 1 },
+    { name = 'low-density-structure', chance = 1 },
+    { name = 'lubricant-barrel', chance = 20 },
+    { name = 'nuclear-fuel', chance = 1 },
+    { name = 'petroleum-gas-barrel', chance = 30 },
+    { name = 'pipe', chance = 100 },
+    { name = 'pipe-to-ground', chance = 10 },
+    { name = 'plastic-bar', chance = 5 },
+    { name = 'processing-unit', chance = 2 },
+
+    { name = 'solid-fuel', chance = 100 },
+    { name = 'steel-plate', chance = 150 },
+    { name = 'sulfuric-acid-barrel', chance = 15 },
+
+    { name = 'uranium-fuel-cell', chance = 1 },
+
+    { name = 'water-barrel', chance = 10 }
 }
 
-local container_loot_amounts = {
+local container_loot_amounts =
+{
     ['advanced-circuit'] = 6,
-    --["artillery-shell"] = 0.3,
+
     ['battery'] = 2,
     ['cannon-shell'] = 4,
-    --["cluster-grenade"] = 0.3,
+
     ['construction-robot'] = 0.3,
     ['copper-cable'] = 24,
     ['copper-plate'] = 16,
@@ -114,8 +108,7 @@ local container_loot_amounts = {
     ['barrel'] = 3,
     ['engine-unit'] = 2,
     ['explosive-cannon-shell'] = 2,
-    --["explosive-rocket"] = 2,
-    --["explosive-uranium-cannon-shell"] = 2,
+
     ['explosives'] = 4,
     ['grenade'] = 6,
     ['heat-pipe'] = 1,
@@ -134,14 +127,13 @@ local container_loot_amounts = {
     ['pipe-to-ground'] = 1,
     ['plastic-bar'] = 4,
     ['processing-unit'] = 2,
-    --["rocket"] = 2,
-    --["rocket-fuel"] = 0.3,
+
     ['solid-fuel'] = 4,
     ['steel-plate'] = 4,
     ['sulfuric-acid-barrel'] = 3,
-    --["uranium-cannon-shell"] = 2,
+
     ['uranium-fuel-cell'] = 0.3,
-    --["depleted-uranium-fuel-cell"] = 1,
+
     ['water-barrel'] = 3
 }
 
@@ -159,22 +151,21 @@ local function place_scrap(surface, position)
     if this.spaceships == nil then
         this.spaceships = {}
     end
-    -- place turrets
+
     if math_random(1, 700) == 1 then
         if position.x ^ 2 + position.x ^ 2 > 4096 then
             local e = surface.create_entity({ name = 'gun-turret', position = position, force = 'enemy' })
-            e.minable = false
+            e.minable_flag = false
             e.operable = false
             e.insert({ name = 'piercing-rounds-magazine', count = 100 })
             return
         end
     end
 
-    -- place scrap containers with loot
     if math_random(1, 128) == 1 then
         local scrap = scrap_containers[math_random(1, scrap_containers_index)]
         local e = surface.create_entity({ name = scrap.name, position = position, force = 'neutral' })
-        e.minable = true
+        e.minable_flag = true
         local i = e.get_inventory(defines.inventory.chest)
         if i then
             local size = scrap.size
@@ -188,10 +179,9 @@ local function place_scrap(surface, position)
         return
     end
 
-    -- place scrap entities with loot
     local scrap = scrap_entities[math_random(1, scrap_entities_index)]
     local e = surface.create_entity({ name = scrap.name, position = position, force = 'neutral' })
-    e.minable = true
+    e.minable_flag = true
 end
 
 local function is_scrap_area(n)
@@ -216,7 +206,7 @@ end
 local vectors = { { 0, 0 }, { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }
 
 local function landfill_under(entity)
-    -- landfill the area under the entity
+
     local surface = entity.surface
     for _, v in pairs(vectors) do
         local position = { entity.position.x + v[1], entity.position.y + v[2] }
@@ -246,12 +236,8 @@ local function on_entity_died(event)
     end
 end
 
---local function on_init(event)
---
---end
-
 local function on_chunk_generated(event)
-    --log("scrap_towny_ffa::on_chunk_generated")
+
     local surface = event.surface
     local this = ScenarioTable.get_table()
     local map_surface = game.get_surface(this.active_surface_index)
@@ -311,7 +297,7 @@ local function on_chunk_generated(event)
     end
 
     local chunk_position = event.position
-    --log('chunk_position = {' .. chunk_position.x .. ',' .. chunk_position.y .. '}')
+
     if chunk_position.x >= -33 and chunk_position.x <= 32 and chunk_position.y >= -33 and chunk_position.y <= 32 then
         if chunk_position.x == -33 or chunk_position.x == 32 or chunk_position.y == -33 or chunk_position.y == 32 then
             local area = { { x = left_top_x, y = left_top_y }, { x = left_top_x + 31, y = left_top_y + 31 } }
@@ -345,7 +331,7 @@ local function on_chunk_generated(event)
     end
 
     move_away_biteys(surface, event.area)
-    --this.chunk_generated[key] = true
+
 end
 
 local function on_chunk_charted(event)
@@ -362,12 +348,6 @@ local function on_chunk_charted(event)
     end
 end
 
--- local on_init = function ()
--- 	local this = ScenarioTable.get_table()
---  this.chunk_generated = {}
--- end
-
--- Event.on_init(on_init)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_chunk_charted, on_chunk_charted)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

@@ -32,7 +32,7 @@ local function create_arena(arena)
     for _, entity in pairs(entities) do
         local e = surface.create_entity(entity)
         e.destructible = false
-        e.minable = false
+        e.minable_flag = false
     end
     arenatable.created[arena] = true
 end

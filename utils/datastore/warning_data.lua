@@ -40,7 +40,7 @@ local function set_character_state(player, state)
     end
 
     if player.character ~= nil then
-        player.character.active = state
+        player.character.disabled_by_script = state
     end
 
     return true

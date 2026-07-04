@@ -11,15 +11,15 @@ local function on_player_joined_game()
 
         local power_source = surface.create_entity({name = 'solar-panel', position = {x = -4, y = 3}, force = 'player'})
         power_source.destructible = false
-        power_source.minable = true
+        power_source.minable_flag = true
 
         local power_pole = surface.create_entity({name = 'small-electric-pole', position = {x = -4, y = 1}, force = 'player'})
         power_pole.destructible = false
-        power_pole.minable = true
+        power_pole.minable_flag = true
 
         local assembler = surface.create_entity({name = 'assembling-machine-2', position = {x = -4, y = -1}, force = 'player'})
         assembler.destructible = false
-        assembler.minable = false
+        assembler.minable_flag = false
         assembler.operable = true
     end
 end

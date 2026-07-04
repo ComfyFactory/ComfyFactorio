@@ -9,7 +9,7 @@ local tick_tack_trap = require 'utils.functions.tick_tack_trap'
 local math_random = math.random
 
 local function trap(entity)
-    -- check if within 32 blocks of market
+
     if entity.type == 'tree' or Scrap.is_scrap(entity) and not Town_center.in_any_town(entity.position) then
         if math_random(1, 1024) == 1 then
             tick_tack_trap(entity.surface, entity.position)

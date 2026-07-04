@@ -481,7 +481,7 @@ local function generate_spawn_area(surface)
     end
 
     storage.rocket_silo = surface.create_entity({ name = 'rocket-silo', position = { 0, 0 }, force = 'player' })
-    storage.rocket_silo.minable = false
+    storage.rocket_silo.minable_flag = false
 
     local p = game.permissions.get_group('Default')
     p.set_allows_action(defines.input_action.start_walking, true)

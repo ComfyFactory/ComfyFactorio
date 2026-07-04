@@ -1,7 +1,6 @@
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 
--- called whenever a player places an item
 local function on_built_entity(event)
     local this = ScenarioTable.get_table()
     local entity = event.entity
@@ -65,7 +64,6 @@ local function on_built_entity(event)
     end
 end
 
--- called whenever a robot places an item
 local function on_robot_built_entity(event)
     local this = ScenarioTable.get_table()
     local entity = event.entity
@@ -127,7 +125,6 @@ local function on_robot_built_entity(event)
     end
 end
 
--- called whenever a laser-turret is removed from the map
 local function on_object_destroyed(event)
     local key = event.registration_number
     local this = ScenarioTable.get_table()

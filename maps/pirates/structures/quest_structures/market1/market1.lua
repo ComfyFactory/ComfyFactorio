@@ -35,7 +35,7 @@ function Public.create_step1_entities()
 		force = 'environment',
 	})
 	if quest_structure_data.blue_chest and quest_structure_data.blue_chest.valid then
-		quest_structure_data.blue_chest.minable = false
+		quest_structure_data.blue_chest.minable_flag = false
 		quest_structure_data.blue_chest.rotatable = false
 		quest_structure_data.blue_chest.operable = false
 		quest_structure_data.blue_chest.destructible = false
@@ -46,7 +46,7 @@ function Public.create_step1_entities()
 		force = 'environment',
 	})
 	if quest_structure_data.red_chest and quest_structure_data.red_chest.valid then
-		quest_structure_data.red_chest.minable = false
+		quest_structure_data.red_chest.minable_flag = false
 		quest_structure_data.red_chest.rotatable = false
 		quest_structure_data.red_chest.operable = false
 		quest_structure_data.red_chest.destructible = false
@@ -59,7 +59,7 @@ function Public.create_step1_entities()
 			force = 'environment',
 		})
 		if e and e.valid then
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.operable = false
 			e.destructible = false
@@ -87,7 +87,7 @@ function Public.create_step2_entities()
 		force = memory.ancient_friendly_force_name,
 	})
 	if quest_structure_data.market and quest_structure_data.market.valid then
-		quest_structure_data.market.minable = false
+		quest_structure_data.market.minable_flag = false
 		quest_structure_data.market.rotatable = false
 		quest_structure_data.market.destructible = false
 
@@ -162,7 +162,7 @@ function Public.create_step2_entities()
 		force = memory.ancient_friendly_force_name,
 	})
 	if quest_structure_data.steel_chest and quest_structure_data.steel_chest.valid then
-		quest_structure_data.steel_chest.minable = false
+		quest_structure_data.steel_chest.minable_flag = false
 		quest_structure_data.steel_chest.rotatable = false
 		quest_structure_data.steel_chest.destructible = false
 
@@ -189,7 +189,7 @@ function Public.create_step2_entities()
 			force = memory.ancient_friendly_force_name,
 		})
 		if e and e.valid then
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.destructible = false
 

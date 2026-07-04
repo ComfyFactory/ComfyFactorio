@@ -83,7 +83,7 @@ local function shipwreck(position, surface)
         end
     end
     local e = surface.create_entity { name = wreck, position = position, force = 'player' }
-    e.minable = false
+    e.minable_flag = false
     local i = e.get_inventory(defines.inventory.chest)
     for x = 1, math.random(2, 3), 1 do
         local loot = wreck_raffle_table[math.random(1, #wreck_raffle_table)]

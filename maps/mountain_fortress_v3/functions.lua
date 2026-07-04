@@ -422,7 +422,7 @@ local function do_refill_turrets()
 
     local data = turret_data.data
     if data.liquid then
-        turret.set_fluid(1, data)
+        turret.set_fluid(data, 1)
     elseif data then
         turret.insert(data)
     end
@@ -520,7 +520,7 @@ local function do_magic_fluid_crafters()
                 local fb_data = entity.get_fluid(fluidbox_index) or { name = data.item, amount = 0 }
                 fb_data.amount = fb_data.amount + fcount
                 -- fb_data.quality = 'normal'
-                entity.set_fluid(fluidbox_index, fb_data)
+                entity.set_fluid(fb_data, fluidbox_index)
 
                 entity.products_finished = entity.products_finished + fcount
 
@@ -1089,7 +1089,7 @@ Public.deactivate_callback =
     Task.register(
         function (entity)
             if entity and entity.valid then
-                entity.active = false
+                entity.disabled_by_script = true
                 entity.operable = false
                 entity.destructible = false
             end
@@ -1118,7 +1118,7 @@ Public.active_not_destructible_callback =
     Task.register(
         function (entity)
             if entity and entity.valid then
-                entity.active = true
+                entity.disabled_by_script = false
                 entity.operable = false
                 entity.destructible = false
             end
@@ -1183,7 +1183,7 @@ Public.disable_active_callback =
     Task.register(
         function (entity)
             if entity and entity.valid then
-                entity.active = false
+                entity.disabled_by_script = true
             end
         end
     )
@@ -1208,7 +1208,7 @@ Public.refill_artillery_turret_callback =
             local art_table = this.art_table
             local index = art_table.index
 
-            turret.active = false
+            turret.disabled_by_script = true
             turret.direction = 3
 
             refill_turrets[#refill_turrets + 1] = { turret = turret, data = data.callback_data }

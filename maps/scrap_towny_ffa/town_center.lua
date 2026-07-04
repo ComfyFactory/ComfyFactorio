@@ -7,12 +7,115 @@ local Colors = require 'maps.scrap_towny_ffa.colors'
 local Enemy = require 'maps.scrap_towny_ffa.enemy'
 local Color = require 'utils.color_presets'
 
+local PvPTownShield
+if ScenarioTable.enabled('pvp_offline_shield') or ScenarioTable.enabled('pvp_league_shield') or ScenarioTable.enabled('pvp_afk_shield') then
+    PvPTownShield = require 'maps.scrap_towny_ffa.pvp_town_shield'
+end
+
 local Public = {}
+
+local math_max = math.max
+local math_min = math.min
+local math_abs = math.abs
+
+local town_rest_min_period_ticks = 2 * 60 * 60 * 60
+local town_rest_loop_time = 60
+local town_rest_up_per_loop = town_rest_loop_time * (1 / (20 - 2) / (60 * 60 * 60))
+local town_rest_down_per_loop = town_rest_loop_time * (1 / 4 / (60 * 60 * 60))
+
+local market_label_offsets =
+{
+    town_name = { 0, -4.25 },
+    health = { 0, -3.25 },
+}
+
+local function round(num)
+    return num >= 0 and math.floor(num + 0.5) or math.ceil(num - 0.5)
+end
+
+local function format_rest_modifier(modifier)
+    return string.format('+%.0f%%', 100 * modifier)
+end
+Public.format_rest_modifier = format_rest_modifier
+
+function Public.init_score_fields(town_center)
+    town_center.survival_time_ticks = town_center.survival_time_ticks or 0
+    town_center.last_swarm = town_center.last_swarm or 0
+    town_center.laser_turrets = town_center.laser_turrets or 0
+    town_center.labs = town_center.labs or 0
+    town_center.pvp_shield_mgmt = town_center.pvp_shield_mgmt or {}
+    town_center.marked_afk = false
+    town_center.scoring_last_online = game.tick
+    town_center.town_rest = town_center.town_rest or {}
+    town_center.town_rest.last_online = game.tick
+    town_center.town_rest.current_modifier = 0
+    town_center.town_rest.previous_modifier = 0
+    town_center.town_rest.mining_prod_bonus = 0
+
+    local market = town_center.market
+
+    if town_center.enemies_text and town_center.enemies_text.valid then
+        town_center.enemies_text.destroy()
+        town_center.enemies_text = nil
+    end
+    if town_center.shield_text and town_center.shield_text.valid then
+        town_center.shield_text.destroy()
+        town_center.shield_text = nil
+    end
+    if town_center.coins_text and town_center.coins_text.valid then
+        town_center.coins_text.destroy()
+        town_center.coins_text = nil
+    end
+
+    if market.valid then
+        if town_center.town_caption and town_center.town_caption.valid then
+            town_center.town_caption.target = { entity = market, offset = market_label_offsets.town_name }
+        end
+        if town_center.health_text and town_center.health_text.valid then
+            town_center.health_text.target = { entity = market, offset = market_label_offsets.health }
+        end
+    end
+
+    if PvPTownShield then
+        PvPTownShield.init_town()
+    end
+end
+
+local function update_town_rest()
+    if not ScenarioTable.enabled('town_rest_bonus') then
+        return
+    end
+    local this = ScenarioTable.get_table()
+    for _, town_center in pairs(this.town_centers) do
+        if not town_center.town_rest then
+            Public.init_score_fields(town_center)
+        end
+        local town_force = town_center.market.force
+        if #town_force.connected_players > 0 then
+            town_center.town_rest.current_modifier = math_max(town_center.town_rest.current_modifier - town_rest_down_per_loop, 0)
+            town_center.town_rest.last_online = game.tick
+        elseif game.tick - town_center.town_rest.last_online > town_rest_min_period_ticks then
+            town_center.town_rest.current_modifier = math_min(town_center.town_rest.current_modifier + town_rest_up_per_loop, 1)
+        end
+        local target_prod_bonus = town_center.town_rest.current_modifier * 0.5
+        if math_abs(town_center.town_rest.mining_prod_bonus - target_prod_bonus) >= 0.01 then
+            local diff = target_prod_bonus - town_center.town_rest.mining_prod_bonus
+            local combined_bonus_precise = town_center.market.force.mining_drill_productivity_bonus + diff
+            local combined_bonus_rounded = round(100 * combined_bonus_precise) / 100
+            local rounding_error = combined_bonus_rounded - combined_bonus_precise
+            town_center.market.force.mining_drill_productivity_bonus = combined_bonus_rounded
+            town_center.town_rest.mining_prod_bonus = town_center.town_rest.mining_prod_bonus + diff + rounding_error
+        end
+    end
+end
+
+if ScenarioTable.enabled('town_rest_bonus') then
+    Event.on_nth_tick(town_rest_loop_time, update_town_rest)
+end
 
 local math_random = math.random
 local table_insert = table.insert
 local math_floor = math.floor
-local math_sqrt = math.sqrt
 local table_shuffle = table.shuffle_table
 local table_size = table.size
 local town_radius = 27
@@ -109,29 +212,18 @@ for _, vector in pairs(additional_resource_vectors[3]) do
     table_insert(additional_resource_vectors[4], { vector[1], vector[2] * -1 })
 end
 
---local clear_whitelist_types = {
---    ['character'] = true,
---    ['market'] = true,
---    ['simple-entity'] = true,
---    ['simple-entity-with-owner'] = true,
---    ['container'] = true,
---    ['car'] = true,
---    ['resource'] = true,
---    ['cliff'] = true,
---    ['tree'] = true
---}
-
-local starter_supplies = {
-    { name = 'raw-fish',         count = 20 },
-    { name = 'grenade',          count = 5 },
-    { name = 'stone',            count = 100 },
-    { name = 'land-mine',        count = 4 },
-    { name = 'iron-gear-wheel',  count = 16 },
-    { name = 'iron-plate',       count = 200 },
-    { name = 'shotgun',          count = 1 },
-    { name = 'shotgun-shell',    count = 8 },
+local starter_supplies =
+{
+    { name = 'raw-fish', count = 20 },
+    { name = 'grenade', count = 5 },
+    { name = 'stone', count = 100 },
+    { name = 'land-mine', count = 4 },
+    { name = 'iron-gear-wheel', count = 16 },
+    { name = 'iron-plate', count = 200 },
+    { name = 'shotgun', count = 1 },
+    { name = 'shotgun-shell', count = 8 },
     { name = 'firearm-magazine', count = 20 },
-    { name = 'gun-turret',       count = 4 }
+    { name = 'gun-turret', count = 4 }
 }
 
 local function count_nearby_ore(surface, position, ore_name)
@@ -149,26 +241,16 @@ local function draw_town_spawn(player_name)
     local position = market.position
     local surface = market.surface
 
-    --local area = {{position.x - (town_radius + 1), position.y - (town_radius + 1)}, {position.x + (town_radius + 1), position.y + (town_radius + 1)}}
-
-    -- remove other than cliffs, rocks and ores and trees
-    --for _, e in pairs(surface.find_entities_filtered({area = area, force = 'neutral'})) do
-    --    if not clear_whitelist_types[e.type] then
-    --        e.destroy()
-    --    end
-    --end
-
-    -- create walls
     for _, vector in pairs(gate_vectors_horizontal) do
         local p = { position.x + vector[1], position.y + vector[2] }
-        --p = surface.find_non_colliding_position("gate", p, 64, 1)
+
         if p then
-            surface.create_entity({ name = 'gate', position = p, force = player_name, direction = 2 })
+            surface.create_entity({ name = 'gate', position = p, force = player_name, direction = 4 })
         end
     end
     for _, vector in pairs(gate_vectors_vertical) do
         local p = { position.x + vector[1], position.y + vector[2] }
-        --p = surface.find_non_colliding_position("gate", p, 64, 1)
+
         if p then
             surface.create_entity({ name = 'gate', position = p, force = player_name, direction = 0 })
         end
@@ -176,13 +258,12 @@ local function draw_town_spawn(player_name)
 
     for _, vector in pairs(town_wall_vectors) do
         local p = { position.x + vector[1], position.y + vector[2] }
-        --p = surface.find_non_colliding_position("stone-wall", p, 64, 1)
+
         if p then
             surface.create_entity({ name = 'stone-wall', position = p, force = player_name })
         end
     end
 
-    -- ore patches
     local ores = { 'iron-ore', 'copper-ore', 'stone', 'coal' }
     table_shuffle(ores)
 
@@ -198,7 +279,6 @@ local function draw_town_spawn(player_name)
         end
     end
 
-    -- starter chests
     for _, item_stack in pairs(starter_supplies) do
         local m1 = -8 + math_random(0, 16)
         local m2 = -8 + math_random(0, 16)
@@ -214,21 +294,6 @@ local function draw_town_spawn(player_name)
     local vector_indexes = { 1, 2, 3, 4 }
     table_shuffle(vector_indexes)
 
-    -- trees
-    --local tree = "tree-0" .. math_random(1, 9)
-    --for _, vector in pairs(additional_resource_vectors[vector_indexes[1]]) do
-    --	if math_random(1, 6) == 1 then
-    --		local p = {position.x + vector[1], position.y + vector[2]}
-    --		p = surface.find_non_colliding_position(tree, p, 64, 1)
-    --		if p then
-    --			surface.create_entity({name = tree, position = p})
-    --		end
-    --	end
-    --end
-
-    --local area = {{position.x - town_radius * 1.5, position.y - town_radius * 1.5}, {position.x + town_radius * 1.5, position.y + town_radius * 1.5}}
-
-    -- pond
     for _, vector in pairs(additional_resource_vectors[vector_indexes[2]]) do
         local x = position.x + vector[1]
         local y = position.y + vector[2]
@@ -238,7 +303,6 @@ local function draw_town_spawn(player_name)
         end
     end
 
-    -- fish
     for _, vector in pairs(additional_resource_vectors[vector_indexes[2]]) do
         local x = position.x + vector[1] + 0.5
         local y = position.y + vector[2] + 0.5
@@ -250,28 +314,6 @@ local function draw_town_spawn(player_name)
             end
         end
     end
-
-    -- uranium ore
-    --if count_nearby_ore(surface, position, "uranium-ore") < 100000 then
-    --	for _, vector in pairs(additional_resource_vectors[vector_indexes[3]]) do
-    --		local p = {position.x + vector[1], position.y + vector[2]}
-    --		p = surface.find_non_colliding_position("uranium-ore", p, 64, 1)
-    --		if p then
-    --			surface.create_entity({name = "uranium-ore", position = p, amount = ore_amount * 2})
-    --		end
-    --	end
-    --end
-
-    -- oil patches
-    --local vectors = additional_resource_vectors[vector_indexes[4]]
-    --for _ = 1, 3, 1 do
-    --	local vector = vectors[math_random(1, #vectors)]
-    --	local p = {position.x + vector[1], position.y + vector[2]}
-    --	p = surface.find_non_colliding_position("crude-oil", p, 64, 1)
-    --	if p then
-    --		surface.create_entity({name = "crude-oil", position = p, amount = 500000})
-    --	end
-    --end
 end
 
 local function is_valid_location(force_name, surface, position)
@@ -279,11 +321,12 @@ local function is_valid_location(force_name, surface, position)
     if not surface.can_place_entity({ name = 'market', position = position }) then
         for _, p in pairs(game.connected_players) do
             if p.surface == surface then
-                p.create_local_flying_text({
-                    position = position,
-                    text = 'Position is obstructed - no room for market!',
-                    color = { r = 0.77, g = 0.0, b = 0.0 }
-                })
+                p.create_local_flying_text(
+                    {
+                        position = position,
+                        text = 'Position is obstructed - no room for market!',
+                        color = { r = 0.77, g = 0.0, b = 0.0 }
+                    })
             end
         end
         return false
@@ -294,11 +337,12 @@ local function is_valid_location(force_name, surface, position)
         if Building.in_restricted_zone(surface, p) then
             for _, player in pairs(game.connected_players) do
                 if player.surface == surface then
-                    player.create_local_flying_text({
-                        position = position,
-                        text = 'Can not build in restricted zone!',
-                        color = { r = 0.77, g = 0.0, b = 0.0 }
-                    })
+                    player.create_local_flying_text(
+                        {
+                            position = position,
+                            text = 'Can not build in restricted zone!',
+                            color = { r = 0.77, g = 0.0, b = 0.0 }
+                        })
                 end
             end
             return false
@@ -308,11 +352,12 @@ local function is_valid_location(force_name, surface, position)
     if table_size(this.town_centers) > 48 then
         for _, p in pairs(game.connected_players) do
             if p.surface == surface then
-                p.create_local_flying_text({
-                    position = position,
-                    text = 'Too many towns on the map!',
-                    color = { r = 0.77, g = 0.0, b = 0.0 }
-                })
+                p.create_local_flying_text(
+                    {
+                        position = position,
+                        text = 'Too many towns on the map!',
+                        color = { r = 0.77, g = 0.0, b = 0.0 }
+                    })
             end
         end
         return false
@@ -321,11 +366,12 @@ local function is_valid_location(force_name, surface, position)
     if Building.near_another_town(force_name, position, surface, radius_between_towns) == true then
         for _, p in pairs(game.connected_players) do
             if p.surface == surface then
-                p.create_local_flying_text({
-                    position = position,
-                    text = 'Town location is too close to others!',
-                    color = { r = 0.77, g = 0.0, b = 0.0 }
-                })
+                p.create_local_flying_text(
+                    {
+                        position = position,
+                        text = 'Town location is too close to others!',
+                        color = { r = 0.77, g = 0.0, b = 0.0 }
+                    })
             end
         end
         return false
@@ -366,55 +412,27 @@ function Public.set_market_health(entity, final_damage_amount)
     town_center.health_text.text = 'HP: ' .. town_center.health .. ' / ' .. town_center.max_health
 end
 
-function Public.update_coin_balance(force)
-    local this = ScenarioTable.get_table()
-    local town_center = this.town_centers[force.name]
-    town_center.coins_text.text = 'Coins: ' .. town_center.coin_balance
-end
-
-function Public.enemy_players_nearby(town_center, max_radius)
-    local own_force = town_center.market.force
-    local town_position = town_center.market.position
-
-    for _, player in pairs(game.connected_players) do
-        if player.surface == town_center.market.surface then
-            local distance = math_floor(math_sqrt((player.physical_position.x - town_position.x) ^ 2 + (player.physical_position.y - town_position.y) ^ 2))
-            if distance < max_radius then
-                if player.force ~= 'enemy' and (own_force ~= player.force and not own_force.get_friend(player.force)) then
-                    return true
-                end
-            end
-        end
-    end
-    return false
-end
-
 local function found_town(event)
     local entity = event.entity
-    -- is a valid entity placed?
+
     if entity == nil or not entity.valid then
         return
     end
 
     local player = game.players[event.player_index]
 
-    -- is player not a character?
     local character = player.character
     if character == nil then
         return
     end
 
-    -- is it a stone-furnace?
     if entity.name ~= 'stone-furnace' then
         return
     end
 
-    -- is player in a town already?
     if player.force.index ~= game.forces.player.index and player.force.index ~= game.forces['rogue'].index then
         return
     end
-
-    -- try to place the town
 
     local force_name = tostring(player.name)
     local surface = entity.surface
@@ -422,7 +440,6 @@ local function found_town(event)
 
     entity.destroy()
 
-    -- are towns enabled?
     local this = ScenarioTable.get_table()
     if not this.towns_enabled then
         player.print('You must wait for more players to join!', { 255, 255, 0 })
@@ -430,29 +447,26 @@ local function found_town(event)
         return
     end
 
-    -- is player mayor of town that still exists?
-
     if game.forces[force_name] then
         player.insert({ name = 'stone-furnace', count = 1 })
         return
     end
 
-    -- has player placed a town already?
     if Team.has_key(player.index) == false then
         player.insert({ name = 'stone-furnace', count = 1 })
         return
     end
 
-    -- is town placement on cooldown?
     if this.cooldowns_town_placement[player.index] then
         if game.tick < this.cooldowns_town_placement[player.index] then
             for _, p in pairs(game.connected_players) do
                 if p.surface == surface then
-                    p.create_local_flying_text({
-                        position = position,
-                        text = 'Town founding is on cooldown for ' .. math.ceil((this.cooldowns_town_placement[player.index] - game.tick) / 3600) .. ' minutes.',
-                        color = { r = 0.77, g = 0.0, b = 0.0 }
-                    })
+                    p.create_local_flying_text(
+                        {
+                            position = position,
+                            text = 'Town founding is on cooldown for ' .. math.ceil((this.cooldowns_town_placement[player.index] - game.tick) / 3600) .. ' minutes.',
+                            color = { r = 0.77, g = 0.0, b = 0.0 }
+                        })
                 end
             end
             player.insert({ name = 'stone-furnace', count = 1 })
@@ -460,7 +474,6 @@ local function found_town(event)
         end
     end
 
-    -- is it a valid location to place a town?
     if not is_valid_location(force_name, surface, position) then
         player.insert({ name = 'stone-furnace', count = 1 })
         return
@@ -495,11 +508,12 @@ local function found_town(event)
     town_center.creation_tick = game.tick
 
     town_center.town_caption =
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = town_center.town_name,
             surface = surface,
             forces = { force_name, game.forces.player, game.forces.rogue },
-            target = { entity = town_center.market, offset = { 0, -4.25 } },
+            target = { entity = town_center.market, offset = market_label_offsets.town_name },
             color = town_center.color,
             scale = 1.30,
             font = 'default-game',
@@ -508,24 +522,12 @@ local function found_town(event)
         }
 
     town_center.health_text =
-        rendering.draw_text {
+        rendering.draw_text
+        {
             text = 'HP: ' .. town_center.health .. ' / ' .. town_center.max_health,
             surface = surface,
             forces = { force_name, game.forces.player, game.forces.rogue },
-            target = { entity = town_center.market, offset = { 0, -3.25 } },
-            color = { 200, 200, 200 },
-            scale = 1.00,
-            font = 'default-game',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
-
-    town_center.coins_text =
-        rendering.draw_text {
-            text = 'Coins: ' .. town_center.coin_balance,
-            surface = surface,
-            forces = { force_name },
-            target = { entity = town_center.market, offset = { 0, -2.75 } },
+            target = { entity = town_center.market, offset = market_label_offsets.health },
             color = { 200, 200, 200 },
             scale = 1.00,
             font = 'default-game',
@@ -536,10 +538,14 @@ local function found_town(event)
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
 
-    -- set the spawn point
     local pos = { x = town_center.market.position.x, y = town_center.market.position.y + 4 }
-    --log("setting spawn point = {" .. spawn_point.x .. "," .. spawn_point.y .. "}")
+
     force.set_spawn_position(pos, surface)
+
+    if ScenarioTable.enabled('town_rest_bonus') or ScenarioTable.enabled('market_enemy_display') or ScenarioTable.enabled('pvp_offline_shield')
+        or ScenarioTable.enabled('pvp_league_shield') or ScenarioTable.enabled('pvp_afk_shield') then
+        Public.init_score_fields(town_center)
+    end
 
     Team.add_player_to_town(player, town_center)
     Team.remove_key(player.index)
@@ -560,13 +566,6 @@ local function on_player_repaired_entity(event)
         Public.set_market_health(entity, -4)
     end
 end
-
---local function on_robot_repaired_entity(event)
---	local entity = event.entity
---	if entity.name == "market" then
---		Public.set_market_health(entity, -4)
---	end
---end
 
 local function on_entity_damaged(event)
     local entity = event.entity

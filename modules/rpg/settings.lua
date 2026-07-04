@@ -448,8 +448,6 @@ function Public.extra_settings(player)
     if not rpg_t then
         return
     end
-    -- local trusted = Session.get_trusted_table()
-
     local main_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'screen', settings_frame_name, settings_tooltip_name, nil, 'RPG Settings', true)
     if not main_frame then
         return
@@ -641,11 +639,6 @@ function Public.extra_settings(player)
     local reset_gui_input = create_input_element(reset_input, 'boolean', false)
 
     if not rpg_t.reset then
-        -- if not trusted[player.name] then
-        --     reset_gui_input.enabled = false
-        --     reset_gui_input.tooltip = ({ 'rpg_settings.not_trusted' })
-        --     goto continue
-        -- end
         if rpg_t.level < settings_level['reset_text_label'] then
             reset_gui_input.enabled = false
             reset_gui_input.tooltip = ({ 'rpg_settings.low_level', 50 })

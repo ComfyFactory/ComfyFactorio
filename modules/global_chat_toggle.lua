@@ -1,10 +1,17 @@
 local Gui = require 'utils.gui'
+
+local function get_chat_button(player)
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player).global_chat_toggle
+    end
+    return player.gui.top.global_chat_toggle
+end
+
 local function toggle(player)
-    if not player.gui.top.global_chat_toggle then
+    local button = get_chat_button(player)
+    if not button then
         return
     end
-
-    local button = player.gui.top.global_chat_toggle
 
     if button.caption == 'Global Chat' then
         button.caption = 'Team Chat'
@@ -19,24 +26,46 @@ local function toggle(player)
 end
 
 local function create_gui_button(player)
-    if player.gui.top.global_chat_toggle then
+    if get_chat_button(player) then
         return
     end
-    local b =
-        player.gui.top.add(
-        {
-            type = 'sprite-button',
-            name = 'global_chat_toggle',
-            caption = '',
-            style = Gui.button_style
-        }
-    )
-    b.style.font = 'heading-2'
-    b.style.minimal_width = 100
-    b.style.minimal_height = 38
-    b.style.maximal_height = 38
-    b.style.padding = 1
-    b.style.margin = 0
+    local b
+    if Gui.get_mod_gui_top_frame() then
+        b =
+            Gui.add_mod_button(
+                player,
+                {
+                    type = 'sprite-button',
+                    name = 'global_chat_toggle',
+                    caption = '',
+                    style = Gui.button_style
+                }
+            )
+        if b then
+            b.style.font = 'default-semibold'
+            b.style.minimal_width = 100
+            b.style.minimal_height = 36
+            b.style.maximal_height = 36
+            b.style.padding = -2
+            b.style.margin = 0
+        end
+    else
+        b =
+            player.gui.top.add(
+                {
+                    type = 'sprite-button',
+                    name = 'global_chat_toggle',
+                    caption = '',
+                    style = Gui.button_style
+                }
+            )
+        b.style.font = 'heading-2'
+        b.style.minimal_width = 100
+        b.style.minimal_height = 38
+        b.style.maximal_height = 38
+        b.style.padding = 1
+        b.style.margin = 0
+    end
     toggle(player)
 end
 
@@ -70,10 +99,10 @@ local function on_console_chat(event)
         return
     end
     local player = game.players[event.player_index]
-    if not player.gui.top.global_chat_toggle then
+    local button = get_chat_button(player)
+    if not button then
         return
     end
-    local button = player.gui.top.global_chat_toggle
     if button.caption ~= 'Global Chat' then
         return
     end

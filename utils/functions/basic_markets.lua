@@ -290,7 +290,7 @@ function Public.super_market(surface, position, rarity)
         table.shuffle_table(items)
     end
     local m = surface.create_entity({ name = 'market', position = position, force = 'neutral' })
-    m.minable = false
+    m.minable_flag = false
     m.destructible = false
 
     for i = 1, math.random(6, 12), 1 do

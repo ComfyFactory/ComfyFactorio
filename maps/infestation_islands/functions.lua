@@ -1629,7 +1629,7 @@ function Public.print_grid_value(value, surface, position, scale, offset)
         color = color,
         text = text,
         position = position
-    }.active = false
+    }.disabled_by_script = true
 end
 
 function Public.get_tile_name_by_level(level)

@@ -155,7 +155,7 @@ local function CreateRocketSilo(surface, siloPosition, force)
             force = force
         }
     silo.destructible = false
-    silo.minable = false
+    silo.minable_flag = false
     -- end
 
     ChunkCleaner.mark_area_safe_tiles(siloPosition, 5, true)
@@ -328,93 +328,93 @@ function Public.PhilipsBeacons(surface, siloPos, force)
     local beacon
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x - 8, siloPos.y - 8 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- top 2
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x - 5, siloPos.y - 8 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- top 3
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x - 2, siloPos.y - 8 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- top 4
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x + 2, siloPos.y - 8 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- top 5
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x + 5, siloPos.y - 8 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- top 6 right 1
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x + 8, siloPos.y - 8 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- left 2
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x - 8, siloPos.y - 5 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- left 3
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x - 8, siloPos.y - 2 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- left 4
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x - 8, siloPos.y + 2 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- left 5
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x - 8, siloPos.y + 5 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- left 6 bottom 1
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x - 8, siloPos.y + 8 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- left 7 bottom 2
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x - 5, siloPos.y + 8 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- right 2
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x + 8, siloPos.y - 5 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- right 3
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x + 8, siloPos.y - 2 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- right 4
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x + 8, siloPos.y + 2 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- right 5
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x + 8, siloPos.y + 5 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- right 6 bottom 3
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x + 5, siloPos.y + 8 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- right 7 bottom 4
     beacon = surface.create_entity { name = 'beacon', position = { siloPos.x + 8, siloPos.y + 8 }, force = force }
     beacon.destructible = false
-    beacon.minable = false
+    beacon.minable_flag = false
     -- substations
     local substation
     -- top left
     substation = surface.create_entity { name = 'substation', position = { siloPos.x - 5, siloPos.y - 5 }, force = force }
     substation.destructible = false
-    substation.minable = false
+    substation.minable_flag = false
     -- top right
     substation = surface.create_entity { name = 'substation', position = { siloPos.x + 6, siloPos.y - 5 }, force = force }
     substation.destructible = false
-    substation.minable = false
+    substation.minable_flag = false
     -- bottom left
     substation = surface.create_entity { name = 'substation', position = { siloPos.x - 5, siloPos.y + 6 }, force = force }
     substation.destructible = false
-    substation.minable = false
+    substation.minable_flag = false
     -- bottom right
     substation = surface.create_entity { name = 'substation', position = { siloPos.x + 6, siloPos.y + 6 }, force = force }
     substation.destructible = false
-    substation.minable = false
+    substation.minable_flag = false
 
     -- end adding beacons
 end

@@ -80,7 +80,7 @@ function Public.reveal(cave_miner, surface, source_surface, position, brushsize)
         if (position.x - entity_position.x) ^ 2 + (position.y - entity_position.y) ^ 2 < brushsize_square then
             local e = entity.clone({ position = entity_position, surface = surface })
             if entity.force.index == 2 then
-                e.active = true
+                e.disabled_by_script = false
                 table.insert(cave_miner.reveal_queue, { entity.type, entity.position.x, entity.position.y })
             end
             entity.destroy()
@@ -169,7 +169,7 @@ function Public.loot_crate(surface, position, container_name, player_index)
     for _, item_stack in pairs(item_stacks) do
         container.insert(item_stack)
     end
-    container.minable = false
+    container.minable_flag = false
 
     if not description then
         return

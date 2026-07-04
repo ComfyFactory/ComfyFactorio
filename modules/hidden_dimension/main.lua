@@ -208,14 +208,14 @@ local function add_container(name, pos, direction, type, logistic_building)
             container_entity.direction = direction
         elseif name == 'substation' then
             container_entity = logistic_building.surface.create_entity { name = name, position = pos2, force = game.forces.player }
-            container_entity.minable = false
+            container_entity.minable_flag = false
             container_entity.destructible = false
             container_entity.operable = false
         else
             container_entity = logistic_building.surface.create_entity { name = name, position = pos2, force = game.forces.player }
         end
     end
-    container_entity.minable = false
+    container_entity.minable_flag = false
     container_entity.destructible = false
     return container_entity
 end
@@ -575,7 +575,7 @@ local function create_main_surface(hidden_dimension, rebuild)
                 alignment = 'center',
                 scale_with_zoom = false
             }
-        hidden_dimension.main_surface.reference.minable = false
+        hidden_dimension.main_surface.reference.minable_flag = false
         hidden_dimension.main_surface.reference.destructible = false
         hidden_dimension.main_surface.reference.operable = false
         hidden_dimension.main_surface.reference.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 100 })
@@ -605,7 +605,7 @@ local function create_main_surface(hidden_dimension, rebuild)
                 alignment = 'center',
                 scale_with_zoom = false
             }
-        hidden_dimension.main_surface.reference.minable = false
+        hidden_dimension.main_surface.reference.minable_flag = false
         hidden_dimension.main_surface.reference.destructible = false
         hidden_dimension.main_surface.reference.operable = false
         hidden_dimension.main_surface.reference.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 100 })
@@ -681,7 +681,7 @@ local function create_underground_surfaces(hidden_dimension)
                 only_in_alt_mode = false
             }
         )
-        floor_table.going_up.reference.minable = false
+        floor_table.going_up.reference.minable_flag = false
         floor_table.going_up.reference.destructible = false
         floor_table.going_up.reference.operable = false
         floor_table.going_up.reference.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 100 })
@@ -695,7 +695,7 @@ local function create_underground_surfaces(hidden_dimension)
                     force = game.forces.neutral,
                     create_build_effect_smoke = false
                 }
-            floor_table.going_down.reference.minable = false
+            floor_table.going_down.reference.minable_flag = false
             floor_table.going_down.reference.destructible = false
             floor_table.going_down.reference.operable = false
             floor_table.going_down.reference.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 100 })
@@ -884,7 +884,7 @@ local function upgrade_transport_buildings(hidden_dimension, level)
         clear_surroundings(hidden_dimension.name, surface, pos)
 
         transport.reference = surface.create_entity { name = building_type, position = pos, force = game.forces.enemy }
-        transport.reference.minable = false
+        transport.reference.minable_flag = false
         transport.reference.destructible = false
         transport.reference.operable = false
         transport.reference.get_inventory(defines.inventory.fuel).insert({ name = 'coal', count = 100 })

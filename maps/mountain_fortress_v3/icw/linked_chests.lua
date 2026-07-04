@@ -248,7 +248,7 @@ local function fetch_share(text)
 end
 
 local function create_chest(entity, name, mode, icw)
-    entity.active = false
+    entity.disabled_by_script = true
     entity.destructible = false
     local unit_number = entity.unit_number
 
