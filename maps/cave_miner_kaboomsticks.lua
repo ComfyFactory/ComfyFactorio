@@ -1699,14 +1699,20 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
         if entity and entity.valid and entity.health then
             if entity.health < schedule.damage_remaining then
                 explosion_animation = 'big-explosion'
-                if entity.health > 500 then
-                    explosion_animation = 'big-artillery-explosion'
+                if entity and entity.valid and entity.health then
+                    if entity.health > 500 then
+                        explosion_animation = 'big-artillery-explosion'
+                    end
                 end
-                schedule.damage_remaining = schedule.damage_remaining - entity.health
-                entity.damage(999999, 'player', 'explosion')
+                if entity and entity.valid and entity.health then
+                    schedule.damage_remaining = schedule.damage_remaining - entity.health
+                    entity.damage(999999, 'player', 'explosion')
+                end
             else
-                entity.damage(schedule.damage_remaining, 'player', 'explosion')
-                schedule.damage_remaining = schedule.damage_remaining - entity.health
+                if entity and entity.valid and entity.health then
+                    entity.damage(schedule.damage_remaining, 'player', 'explosion')
+                    schedule.damage_remaining = schedule.damage_remaining - entity.health
+                end
             end
         end
     end
