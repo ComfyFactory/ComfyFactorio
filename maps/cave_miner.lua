@@ -484,10 +484,15 @@ local function secret_shop(pos)
 end
 
 local function on_chunk_generated(event)
+    local surface = event.surface
+    local cur_surf = 'nauvis'
+    if string.sub(surface.name, 0, #cur_surf) ~= cur_surf then
+        return
+    end
+
     if not storage.noise_seed then
         storage.noise_seed = math_random(1, 5000000)
     end
-    local surface = game.surfaces[1]
     local noise = {}
     local tiles = {}
     local enemy_building_positions = {}
