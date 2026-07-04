@@ -232,7 +232,7 @@ local function on_player_mined_entity(event)
         end
     end
 
-    entity.surface.spill_item_stack(entity.position, { name = 'coin', count = 1 }, true)
+    entity.surface.spill_item_stack({ position = entity.position, stack = { name = 'coin', count = 1 }, enable_looted = true })
 end
 
 local function on_entity_died(event)

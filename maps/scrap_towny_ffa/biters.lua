@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local FlyingText = require 'utils.functions.flying_texts'
 
 local Public = {}
 local math_random = math.random
@@ -322,12 +323,7 @@ local function biter_chatter()
                     force = 'enemy'
                 })
                 if #biters > 0 then
-                    player.surface.create_entity({
-                        name = 'flying-text',
-                        position = biters[1].position,
-                        text = 'Hey outlander, let\'s raid a town together!',
-                        color = { r = 1, g = 0.5, b = 0.25 }
-                    })
+                    FlyingText.flying_text(player, player.surface, biters[1].position, 'Hey outlander, let\'s raid a town together!', { r = 1, g = 0.5, b = 0.25 })
                     storage.last_chatter_time[player.index] = current_tick
                 end
             end

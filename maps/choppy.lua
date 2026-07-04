@@ -351,13 +351,13 @@ local function on_player_mined_entity(event)
         local inserted_count = player.insert({ name = main_item, count = amount })
         amount = amount - inserted_count
         if amount > 0 then
-            entity.surface.spill_item_stack(entity.position, { name = main_item, count = amount }, true)
+            entity.surface.spill_item_stack({ position = entity.position, stack = { name = main_item, count = amount }, enable_looted = true })
         end
 
         local second_inserted_count = player.insert({ name = second_item, count = second_item_amount })
         second_item_amount = second_item_amount - second_inserted_count
         if second_item_amount > 0 then
-            entity.surface.spill_item_stack(entity.position, { name = second_item, count = second_item_amount }, true)
+            entity.surface.spill_item_stack({ position = entity.position, stack = { name = second_item, count = second_item_amount }, enable_looted = true })
         end
     end
 end

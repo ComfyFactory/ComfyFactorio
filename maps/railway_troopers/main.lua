@@ -2,6 +2,8 @@ require 'modules.sticky_landfill'
 require 'modules.dynamic_player_spawn'
 require 'modules.biters_yield_ore'
 
+local FlyingText = require 'utils.functions.flying_texts'
+
 local math_random = math.random
 local math_floor = math.floor
 local table_insert = table.insert
@@ -243,14 +245,7 @@ local function deny_building(event)
         inventory.insert({ name = entity.name, count = 1 })
     end
 
-    event.entity.surface.create_entity(
-        {
-            name = 'flying-text',
-            position = entity.position,
-            text = 'Can only be built west!',
-            color = { r = 0.98, g = 0.66, b = 0.22 }
-        }
-    )
+    FlyingText.flying_text(nil, event.entity.surface, entity.position, 'Can only be built west!', { r = 0.98, g = 0.66, b = 0.22 })
 
     entity.destroy()
 end

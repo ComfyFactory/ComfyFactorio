@@ -405,13 +405,15 @@ local function transport_resources(container1, container2, transport_type)
         local temperature = 0
 
         local function test_for(temp)
-            local count = container.remove_fluid({ name = 'steam', amount = 1, temperature = temp })
-            if count ~= 0 then
-                temperature = temp
-            else
+            local fluid = container.get_fluid(1)
+            if not fluid or fluid.name ~= 'steam' or fluid.temperature ~= temp then
                 return
             end
-            container.insert_fluid({ name = 'steam', amount = count, temperature = temp })
+            local count = container.remove_fluid(1, 1)
+            if count ~= 0 then
+                temperature = temp
+                container.insert_fluid({ name = 'steam', amount = count, temperature = temp })
+            end
         end
 
         test_for(15)

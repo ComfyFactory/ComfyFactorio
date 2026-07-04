@@ -22,12 +22,10 @@ local Public = {}
 
 -- Prints flying text.
 -- Color is optional
+local FlyingText = require 'utils.functions.flying_texts'
+
 function Public.FlyingText(msg, pos, color, surface)
-    if color == nil then
-        surface.create_entity({ name = 'flying-text', position = pos, text = msg })
-    else
-        surface.create_entity({ name = 'flying-text', position = pos, text = msg, color = color })
-    end
+    FlyingText.flying_text(nil, surface, pos, msg, color)
 end
 
 -- Requires having an on_tick handler.

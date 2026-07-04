@@ -1517,12 +1517,13 @@ local function on_entity_damaged(event)
 	if event.cause then
 		if event.cause.name == "flamethrower-turret" and event.entity.force.name == "enemy" then
 			for i = 1, 2, 1 do
-				if event.cause.fluidbox[i] then
-					if event.cause.fluidbox[i].amount > 0.1 then
-						local fluid_name = event.cause.fluidbox[i].name
-						local new_amount = event.cause.fluidbox[i].amount - 0.25
+				if event.cause.get_fluid(i) then
+					local fluid = event.cause.get_fluid(i)
+					if fluid.amount > 0.1 then
+						local fluid_name = fluid.name
+						local new_amount = fluid.amount - 0.25
 						if new_amount < 0 then new_amount = 0 end
-						event.cause.fluidbox[i] = {name = fluid_name, amount = new_amount}
+						event.cause.set_fluid({name = fluid_name, amount = new_amount, temperature = fluid.temperature}, i)
 					end
 				end
 			end

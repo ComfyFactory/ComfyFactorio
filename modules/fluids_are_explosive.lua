@@ -120,7 +120,11 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 end
 
 local function create_explosion_schedule(entity)
-    local explosives_amount = math.floor(entity.fluidbox[1].amount)
+    local fluid = entity.get_fluid(1)
+    if not fluid then
+        return
+    end
+    local explosives_amount = math.floor(fluid.amount)
 
     if explosives_amount < 1 then
         return
@@ -133,7 +137,7 @@ local function create_explosion_schedule(entity)
     storage.fluid_explosion_schedule[#storage.fluid_explosion_schedule + 1] = {}
     storage.fluid_explosion_schedule[#storage.fluid_explosion_schedule].surface = entity.surface.name
 
-    storage.fluid_explosion_schedule[#storage.fluid_explosion_schedule].damage_remaining = fluid_damages[entity.fluidbox[1].name] * explosives_amount
+    storage.fluid_explosion_schedule[#storage.fluid_explosion_schedule].damage_remaining = fluid_damages[fluid.name] * explosives_amount
 
     local circle_coordinates = {
         [1] = { { x = 0, y = 0 } },
@@ -932,10 +936,11 @@ local function on_entity_damaged(event)
     if not container_types[entity.type] then
         return
     end
-    if not entity.fluidbox[1] then
+    local fluid = entity.get_fluid(1)
+    if not fluid then
         return
     end
-    if not fluid_damages[entity.fluidbox[1].name] then
+    if not fluid_damages[fluid.name] then
         return
     end
     if entity.health > entity.max_health * 0.75 then

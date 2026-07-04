@@ -1,5 +1,7 @@
 --luacheck: ignore
 
+local FlyingText = require 'utils.functions.flying_texts'
+
 local Public = {}
 local LootRaffle = require "utils.functions.loot_raffle"
 local Get_noise = require "utils.math.get_noise"
@@ -103,12 +105,7 @@ function Public.disarm_reward(position)
 	local surface = game.surfaces[1]
 	local distance_to_center = math.sqrt(position.x ^ 2 + position.y ^ 2)
 
-	surface.create_entity({
-		name = "flying-text",
-		position = {position.x + 1, position.y + 1},
-		text = "Mine disarmed!",
-		color = {r=0.98, g=0.66, b=0.22}
-	})
+	FlyingText.flying_text(nil, surface, { x = position.x + 1, y = position.y + 1 }, 'Mine disarmed!', { r = 0.98, g = 0.66, b = 0.22 })
 
 	local tile_name = Public.get_terrain_tile(surface, position)
 

@@ -141,7 +141,7 @@ local function on_player_mined_entity(event)
 
     if inserted_count ~= amount then
         local amount_to_spill = amount - inserted_count
-        entity.surface.spill_item_stack(entity.position, { name = scrap, count = amount_to_spill }, true)
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = scrap, count = amount_to_spill }, enable_looted = true })
     end
 
     local text = '+' .. amount .. ' [img=item/' .. scrap .. ']'

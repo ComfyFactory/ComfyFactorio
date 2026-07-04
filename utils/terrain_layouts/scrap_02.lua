@@ -1,3 +1,5 @@
+local FlyingText = require 'utils.functions.flying_texts'
+
 require 'modules.no_deconstruction_of_neutral_entities'
 
 local get_noise = require 'utils.math.get_noise'
@@ -239,17 +241,10 @@ local function on_player_mined_entity(event)
 
     if inserted_count ~= amount then
         local amount_to_spill = amount - inserted_count
-        entity.surface.spill_item_stack(entity.position, { name = scrap, count = amount_to_spill }, true)
+        entity.surface.spill_item_stack({ position = entity.position, stack = { name = scrap, count = amount_to_spill }, enable_looted = true })
     end
 
-    entity.surface.create_entity(
-        {
-            name = 'flying-text',
-            position = entity.position,
-            text = '+' .. amount .. ' [img=item/' .. scrap .. ']',
-            color = { r = 0.98, g = 0.66, b = 0.22 }
-        }
-    )
+    FlyingText.flying_text(nil, entity.surface, entity.position, '+' .. amount .. ' [img=item/' .. scrap .. ']', { r = 0.98, g = 0.66, b = 0.22 })
 end
 
 local function on_entity_died(event)

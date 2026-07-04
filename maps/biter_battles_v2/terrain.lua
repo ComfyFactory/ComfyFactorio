@@ -1,3 +1,4 @@
+local FlyingText = require 'utils.functions.flying_texts'
 --luacheck: ignore
 local Public = {}
 local LootRaffle = require 'utils.functions.loot_raffle'
@@ -747,17 +748,10 @@ function Public.minable_wrecks(event)
         local inserted_count = player.insert({ name = name, count = amount })
         if inserted_count ~= amount then
             local amount_to_spill = amount - inserted_count
-            surface.spill_item_stack(entity.position, { name = name, count = amount_to_spill }, true)
+            surface.spill_item_stack({ position = entity.position, stack = { name = name, count = amount_to_spill }, enable_looted = true })
         end
 
-        surface.create_entity(
-            {
-                name = 'flying-text',
-                position = { entity.position.x, entity.position.y - 0.5 * k },
-                text = '+' .. amount .. ' [img=item/' .. name .. ']',
-                color = { r = 0.98, g = 0.66, b = 0.22 }
-            }
-        )
+        FlyingText.flying_text(nil, surface, { x = entity.position.x, y = entity.position.y - 0.5 * k }, '+' .. amount .. ' [img=item/' .. name .. ']', { r = 0.98, g = 0.66, b = 0.22 })
     end
 end
 

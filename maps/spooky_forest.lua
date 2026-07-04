@@ -448,7 +448,7 @@ local function on_entity_died(event)
     end
 
     if event.entity.type == 'unit' and math_random(1, 8) == 1 then
-        surface.spill_item_stack(event.entity.position, { name = 'raw-fish', count = 1 }, true)
+        surface.spill_item_stack({ position = event.entity.position, stack = { name = 'raw-fish', count = 1 }, enable_looted = true })
     end
 
     if event.entity.type == 'tree' then

@@ -1,3 +1,5 @@
+local FlyingText = require 'utils.functions.flying_texts'
+
 local Public = {}
 
 local connection_radius = 7
@@ -83,14 +85,7 @@ local function refund_item(event, item_name)
 end
 
 local function error_floaty(surface, position, msg)
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = position,
-            text = msg,
-            color = {r = 0.77, g = 0.0, b = 0.0}
-        }
-    )
+    FlyingText.flying_text(nil, surface, position, msg, { r = 0.77, g = 0.0, b = 0.0 })
 end
 
 local function is_town_market_nearby(entity)

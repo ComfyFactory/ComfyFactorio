@@ -1,3 +1,5 @@
+local FlyingText = require 'utils.functions.flying_texts'
+
 local function deny_building(event)
     local entity = event.entity
     if not entity.valid then
@@ -10,8 +12,8 @@ local function deny_building(event)
     local name = entity.name
     local position = {entity.position.x, entity.position.y}
     entity.destroy()
-    surface.create_entity({name = 'flying-text', position = position, text = name .. ' can not be placed.', color = {r = 0.77, g = 0.00, b = 0.00}})
-    surface.spill_item_stack(position, {name = name, count = 1}, true)
+    FlyingText.flying_text(nil, surface, position, name .. ' can not be placed.', { r = 0.77, g = 0.00, b = 0.00 })
+    surface.spill_item_stack({ position = position, stack = { name = name, count = 1 }, enable_looted = true })
 end
 
 local function on_built_entity(event)

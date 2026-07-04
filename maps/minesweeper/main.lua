@@ -14,6 +14,8 @@ if script.active_mods['space-age'] then
     error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
 end
 
+local FlyingText = require 'utils.functions.flying_texts'
+
 require 'modules.satellite_score'
 
 local Functions = require 'maps.minesweeper.functions'
@@ -338,14 +340,7 @@ local function mark_mine(entity, player)
             score_change = 1
         end
 
-        surface.create_entity(
-            {
-                name = 'flying-text',
-                position = entity.position,
-                text = 'Mine marked.',
-                color = { r = 0.98, g = 0.66, b = 0.22 }
-            }
-        )
+        FlyingText.flying_text(nil, surface, entity.position, 'Mine marked.', { r = 0.98, g = 0.66, b = 0.22 })
 
         cell[1] = 11
         update_rendering(cell, position)

@@ -1,3 +1,5 @@
+local FlyingText = require 'utils.functions.flying_texts'
+
 local Event = require 'utils.event'
 local max_spill = 40
 local math_random = math.random
@@ -108,21 +110,21 @@ local function on_player_mined_entity(event)
     local count = get_amount(entity)
     local position = { x = entity.position.x, y = entity.position.y }
 
-    player.surface.create_entity({ name = 'flying-text', position = position, text = '+' .. count .. ' [img=item/' .. ore .. ']', color = { r = 200, g = 160, b = 30 } })
+    FlyingText.flying_text(player, player.surface, position, '+' .. count .. ' [img=item/' .. ore .. ']', { r = 200, g = 160, b = 30 })
     create_particles(player.surface, particles[ore], position, 64, { x = player.position.x, y = player.position.y })
 
     --entity.destroy()
 
     if count > max_spill then
-        player.surface.spill_item_stack(position, { name = ore, count = max_spill }, true)
+        player.surface.spill_item_stack({ position = position, stack = { name = ore, count = max_spill }, enable_looted = true })
         count = count - max_spill
         local inserted_count = player.insert({ name = ore, count = count })
         count = count - inserted_count
         if count > 0 then
-            player.surface.spill_item_stack(position, { name = ore, count = count }, true)
+            player.surface.spill_item_stack({ position = position, stack = { name = ore, count = count }, enable_looted = true })
         end
     else
-        player.surface.spill_item_stack(position, { name = ore, count = count }, true)
+        player.surface.spill_item_stack({ position = position, stack = { name = ore, count = count }, enable_looted = true })
     end
 end
 
@@ -149,7 +151,7 @@ local function on_entity_died(event)
         end
     end
     entity.destroy()
-    surface.spill_item_stack(pos, { name = ore, count = math_random(8, 12) }, true)
+    surface.spill_item_stack({ position = pos, stack = { name = ore, count = math_random(8, 12) }, enable_looted = true })
 end
 
 Event.add(defines.events.on_entity_died, on_entity_died)

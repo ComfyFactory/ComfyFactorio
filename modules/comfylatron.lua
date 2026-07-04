@@ -1,4 +1,5 @@
 local Event = require 'utils.event'
+local FlyingText = require 'utils.functions.flying_texts'
 local math_random = math.random
 
 if script.active_mods['base'] > "1.2" then
@@ -252,7 +253,7 @@ local function desync()
         )
     end
     storage.comfylatron.surface.create_entity({ name = 'medium-explosion', position = storage.comfylatron.position })
-    storage.comfylatron.surface.create_entity({ name = 'flying-text', position = storage.comfylatron.position, text = 'desync', color = { r = 150, g = 0, b = 0 } })
+    FlyingText.flying_text(nil, storage.comfylatron.surface, storage.comfylatron.position, 'desync', { r = 150, g = 0, b = 0 })
     storage.comfylatron.destroy()
     storage.comfylatron = nil
 end

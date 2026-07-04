@@ -1,5 +1,6 @@
 local Team = require 'maps.scrap_towny_ffa.team'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local FlyingText = require 'utils.functions.flying_texts'
 
 storage.force_available_recipe_cache = storage.force_available_recipe_cache or {}
 
@@ -50,13 +51,7 @@ local allowed_for_towns =
 }
 
 local function error_floaty(surface, position)
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = position,
-            text = 'Technology not available!',
-            color = { r = 0.77, g = 0.0, b = 0.0 }
-        })
+    FlyingText.flying_text(nil, surface, position, 'Technology not available!', { r = 0.77, g = 0.0, b = 0.0 })
 end
 
 local function force_unequip_armor(player, armor_inventory, armor)

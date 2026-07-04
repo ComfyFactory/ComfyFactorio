@@ -139,10 +139,10 @@ local function return_value(tab)
 end
 
 local function detect_item(container)
-    local fluidbox = container.entity.fluidbox
-    local fluid = fluidbox[1]
+    local entity = container.entity
+    local fluid = entity.get_fluid(1)
     if fluid then
-        fluidbox.set_filter(1, { name = fluid.name, force = true })
+        entity.set_fluid_filter({ name = fluid.name, force = true }, 1)
         container.item = fluid.name
         container.temperature = fluid.temperature
         return true, container.item
@@ -179,7 +179,7 @@ local function update_single_container(container)
         return
     end
     local capacity = container.capacity
-    local max_capacity = entity.fluidbox.get_capacity(1) * 0.5
+    local max_capacity = entity.get_fluid_capacity(1) * 0.5
     if capacity > max_capacity then
         container.capacity = max_capacity
         capacity = max_capacity
@@ -187,9 +187,10 @@ local function update_single_container(container)
 
     local inventory_count = entity.get_fluid_count(item)
     if inventory_count > capacity then
-        local amount_removed = entity.remove_fluid { name = item, amount = inventory_count - capacity }
+        local amount_removed = entity.remove_fluid(inventory_count - capacity, 1)
+        local fluid = entity.get_fluid(1)
         container.temperature = combine_tempatures(container.count, container.temperature, amount_removed,
-            entity.fluidbox[1].temperature)
+            fluid and fluid.temperature or container.temperature)
         container.count = container.count + amount_removed
     elseif inventory_count < capacity then
         local to_add = capacity - inventory_count
@@ -396,7 +397,7 @@ local function create_container(entity, stack, player)
         local container =
         {
             entity = entity,
-            capacity = 0.5 * entity.fluidbox.get_capacity(1),
+            capacity = 0.5 * entity.get_fluid_capacity(1),
             count = 0,
             owner = player.force.index,
             unit_number = unit_number,
@@ -421,7 +422,7 @@ local function create_container(entity, stack, player)
             container.count = tags.count
             container.temperature = tags.temperature
             container.item = tags.name
-            entity.fluidbox.set_filter(1, { name = tags.name, force = true })
+            entity.set_fluid_filter({ name = tags.name, force = true }, 1)
             update_single_container(container)
         end
         local c = add_object(unit_number, container)

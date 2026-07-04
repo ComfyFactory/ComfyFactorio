@@ -628,7 +628,7 @@ local function grow_cell(chunk_position, surface) -- luacheck: ignore
                 entity.insert({ name = ammo, count = math.random(50, 150) })
             end
             if entity.name == 'storage-tank' then
-                entity.fluidbox[1] = { name = 'crude-oil', amount = 25000 }
+                entity.set_fluid({ name = 'crude-oil', amount = 25000 }, 1)
             end
         end
 

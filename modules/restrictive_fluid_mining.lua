@@ -15,20 +15,21 @@ local function restrict_fluid_mining(event)
     if not max_fill_percentages[event.entity.type] then
         return
     end
-    if not event.entity.fluidbox then
+
+    local entity = event.entity
+    local fluidbox_count = #entity.prototype.fluidbox_prototypes
+    if fluidbox_count == 0 then
         return
     end
 
     local total_capacity = 0
     local total_current_fluid_amount = 0
 
-    for i = 1, #event.entity.fluidbox, 1 do
-        if event.entity.fluidbox[i] then
-            local capacity = event.entity.fluidbox.get_capacity(i)
-            total_capacity = total_capacity + capacity
-
-            local current_fluid_amount = event.entity.fluidbox[i].amount
-            total_current_fluid_amount = total_current_fluid_amount + current_fluid_amount
+    for i = 1, fluidbox_count, 1 do
+        local fluid = entity.get_fluid(i)
+        if fluid then
+            total_capacity = total_capacity + entity.get_fluid_capacity(i)
+            total_current_fluid_amount = total_current_fluid_amount + fluid.amount
         end
     end
 
@@ -58,10 +59,11 @@ local function restrict_fluid_mining(event)
     local fluid_name = 'fluid'
     local container_name = event.entity.name
 
-    for i = 1, #event.entity.fluidbox, 1 do
-        if event.entity.fluidbox[i] then
-            replacement_entity.fluidbox[i] = {name = event.entity.fluidbox[i].name, amount = event.entity.fluidbox[i].amount, temperature = event.entity.fluidbox[i].temperature}
-            fluid_name = event.entity.fluidbox[i].name
+    for i = 1, fluidbox_count, 1 do
+        local fluid = entity.get_fluid(i)
+        if fluid then
+            replacement_entity.set_fluid({ name = fluid.name, amount = fluid.amount, temperature = fluid.temperature }, i)
+            fluid_name = fluid.name
         end
     end
 

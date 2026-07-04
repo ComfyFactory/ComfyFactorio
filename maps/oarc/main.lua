@@ -289,16 +289,13 @@ Event.add(
         if not SessionData.allowed(player, 'unlimited-radars') then
             if entity.name == 'radar' then
                 if entity.surface.count_entities_filtered({ type = 'radar', position = position, radius = 64 }) > 1 then
-                    player.surface.create_entity(
-                        {
-                            name = 'flying-text',
-                            position = entity.position,
-                            text = 'Another radar is found nearby!',
-                            color = { 255, 0, 0 }
-                        }
-                    )
+                    player.create_local_flying_text({
+                        position = entity.position,
+                        text = 'Another radar is found nearby!',
+                        color = { 255, 0, 0 }
+                    })
 
-                    player.surface.spill_item_stack(position, { name = entity.name, count = 1, true })
+                    player.surface.spill_item_stack({ position = position, stack = { name = entity.name, count = 1 }, enable_looted = true })
                     entity.destroy()
                     return
                 end

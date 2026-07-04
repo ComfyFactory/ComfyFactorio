@@ -7,6 +7,7 @@ local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
 local Team = require 'maps.scrap_towny_ffa.team'
 local Building = require 'maps.scrap_towny_ffa.building'
 local table = require 'utils.table'
+local FlyingText = require 'utils.functions.flying_texts'
 
 local town_zoning_entity_types = { "ammo-turret", "electric-turret", "fluid-turret" }
 local default_protected_radius = 30
@@ -274,13 +275,7 @@ local function process_built_entities(event)
             if allowed_entities_neutral[name] and not (PvPShield.protected_by_shields(surface, position, force, 0)
                     or Public.near_another_town(force_name, position, surface, 10, 0)) then
                 entity.force = game.forces['neutral']
-                surface.create_entity(
-                    {
-                        name = 'flying-text',
-                        position = position,
-                        text = "Neutral",
-                        color = { r = 0, g = 1, b = 0 }
-                    })
+                FlyingText.flying_text(player, surface, position, 'Neutral', { r = 0, g = 1, b = 0 })
             else
 
                 entity.destroy()
@@ -300,29 +295,23 @@ local function process_built_entities(event)
         and not allowed_entities_keep_force[name] then
         if not ignore_neutral_build_feature[entity.type] and not table.array_contains(town_zoning_entity_types, entity.type) then
             entity.force = game.forces['neutral']
-            surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = position,
-                    text = "Neutral (setting)",
-                    color = { r = 0, g = 1, b = 0 }
-                })
+            FlyingText.flying_text(player, surface, position, 'Neutral (setting)', { r = 0, g = 1, b = 0 })
         else
-            surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = position,
-                    text = "Can't build neutral (Setting)",
-                    color = { r = 0, g = 1, b = 1 }
-                })
+            FlyingText.flying_text(player, surface, position, "Can't build neutral (Setting)", { r = 0, g = 1, b = 1 })
         end
     end
 
-    if entity.type == 'electric-pole' and entity.get_max_wire_distance() > 0 then
-        for _, other_pole in pairs(entity.neighbours.copper) do
-            if other_pole.force ~= force then
-                entity.disconnect_neighbour(other_pole)
-                Building.build_error_notification(player or force, surface, position, "Can't connect to other town", player)
+    if entity.type == 'electric-pole' and entity.prototype.get_max_wire_distance() > 0 then
+        local pole_connector = entity.get_wire_connector(defines.wire_connector_id.pole_copper, false)
+        if pole_connector and pole_connector.valid then
+            for _, connected_connector in pairs(pole_connector.connections) do
+                if connected_connector.valid and connected_connector.owner and connected_connector.owner.valid then
+                    local other_pole = connected_connector.owner
+                    if other_pole.force ~= force then
+                        pole_connector.disconnect_from(connected_connector, defines.wire_origin.script)
+                        Building.build_error_notification(player or force, surface, position, "Can't connect to other town", player)
+                    end
+                end
             end
         end
     end

@@ -1,3 +1,4 @@
+local FlyingText = require 'utils.functions.flying_texts'
 local Event = require 'utils.event'
 local Color = require 'utils.color_presets'
 local Utils = require 'utils.core'
@@ -87,14 +88,7 @@ local function spaghett_deny_building(event)
         inventory.insert({ name = entity.name, count = 1 })
     end
 
-    event.entity.surface.create_entity(
-        {
-            name = 'flying-text',
-            position = entity.position,
-            text = 'Spaghett Mode Active!',
-            color = { r = 0.98, g = 0.66, b = 0.22 }
-        }
-    )
+    FlyingText.flying_text(event.player_index and game.get_player(event.player_index) or nil, event.entity.surface, entity.position, 'Spaghett Mode Active!', { r = 0.98, g = 0.66, b = 0.22 })
 
     entity.destroy()
 end

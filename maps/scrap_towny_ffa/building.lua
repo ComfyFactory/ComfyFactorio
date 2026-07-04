@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local FlyingText = require 'utils.functions.flying_texts'
 
 local Public = {}
 
@@ -58,15 +59,7 @@ local function refund_item(event, item_name)
 end
 
 local function error_floaty(surface, position, msg)
-    for _, p in pairs(game.connected_players) do
-        if p.surface == surface then
-            p.create_local_flying_text({
-                position = position,
-                text = msg,
-                color = { r = 0.77, g = 0.0, b = 0.0 }
-            })
-        end
-    end
+    FlyingText.flying_text(nil, surface, position, msg, { r = 0.77, g = 0.0, b = 0.0 })
 end
 
 function Public.in_range(pos1, pos2, radius)
@@ -446,12 +439,7 @@ function Public.build_error_notification(force_or_player, surface, position, msg
         end
     end
     if show then
-        surface.create_entity({
-            name = 'flying-text',
-            position = position,
-            text = msg,
-            color = { r = 0.77, g = 0.0, b = 0.0 }
-        })
+        FlyingText.flying_text(nil, surface, position, msg, { r = 0.77, g = 0.0, b = 0.0 })
     end
     if player_sound then
         player_sound.play_sound({ path = 'utility/cannot_build', position = player_sound.position, volume_modifier = 0.75 })

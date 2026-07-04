@@ -1,3 +1,4 @@
+local FlyingText = require 'utils.functions.flying_texts'
 --luacheck:ignore
 local string_sub = string.sub
 local math_random = math.random
@@ -245,14 +246,7 @@ function Public.no_turret_creep(event)
         inventory.insert({ name = entity.name, count = 1 })
     end
 
-    surface.create_entity(
-        {
-            name = 'flying-text',
-            position = entity.position,
-            text = 'Turret too close to spawner!',
-            color = { r = 0.98, g = 0.66, b = 0.22 }
-        }
-    )
+    FlyingText.flying_text(nil, surface, entity.position, 'Turret too close to spawner!', { r = 0.98, g = 0.66, b = 0.22 })
 
     entity.destroy()
 end

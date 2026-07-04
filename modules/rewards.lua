@@ -198,10 +198,9 @@ local function reward_messages(data)
     end
     local print_text = ''
 
-    player.surface.create_entity({ name = 'flying-text', position = { player.position.x, player.position.y }, text = 'Reached Combat Level: ' .. data.next_level, color = { r = 0.2, g = 1.0, b = 0.1 } })
-    -- Loop through all of the rewards for this level and print out flying text
+    player.create_local_flying_text({ position = { player.position.x, player.position.y }, text = 'Reached Combat Level: ' .. data.next_level, color = { r = 0.2, g = 1.0, b = 0.1 } })
     for i = 1, #item_rewards, 1 do
-        player.surface.create_entity({ name = 'flying-text', position = { player.position.x, player.position.y + (i * 0.5) }, text = item_rewards[i].text, color = { r = 1.0, g = 1.0, b = 1.0 } })
+        player.create_local_flying_text({ position = { player.position.x, player.position.y + (i * 0.5) }, text = item_rewards[i].text, color = { r = 1.0, g = 1.0, b = 1.0 } })
         if i > 1 then
             print_text = item_rewards[i].text .. ' ' .. print_text
         else
@@ -243,7 +242,7 @@ local function kill_rewards(event)
             local inserted_count = pinsert { name = item.name, count = item.count }
             -- Check if player inventory is full, store remaining rewards in table
             if (item.count - inserted_count) > 0 then
-                surface.spill_item_stack(center_position, { name = item.name, count = (item.count - inserted_count) }, true)
+                surface.spill_item_stack({ position = center_position, stack = { name = item.name, count = (item.count - inserted_count) }, enable_looted = true })
                 player.print('[WARNING] Inventory Full, Rewards Dropped', { r = 1.0, g = 0.0, b = 0.0 })
             end
         end

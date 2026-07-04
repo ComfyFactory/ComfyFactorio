@@ -63,7 +63,7 @@ local function place_teleporter(journey, surface, position, build_beacon)
         journey.beacon_objective_health = 10000
         beacon.operable = true
         beacon.minable_flag = false
-        beacon.active = true
+        beacon.disabled_by_script = false
         rendering.draw_text
         {
             text = { 'journey.teleporter' },

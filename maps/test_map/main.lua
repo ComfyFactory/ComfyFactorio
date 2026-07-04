@@ -1,5 +1,7 @@
 -- Test Map for testing general game mechanics
 
+local FlyingText = require 'utils.functions.flying_texts'
+
 local Event = require 'utils.event'
 local Task = require 'utils.task_token'
 local Misc = require 'utils.commands.misc'
@@ -126,13 +128,7 @@ local function spawn_all_entities(surface)
 
         local label_pos = { x = -5, y = current_y + 2 }
         pcall(function ()
-            surface.create_entity(
-                {
-                    name = 'flying-text',
-                    position = label_pos,
-                    text = entity_type .. ' (' .. #entities .. ')',
-                    color = { r = 1, g = 1, b = 0 }
-                })
+            FlyingText.flying_text(nil, surface, label_pos, entity_type .. ' (' .. #entities .. ')', { r = 1, g = 1, b = 0 })
         end)
 
         local new_y, created = create_entity_grid(surface, 0, current_y, entities)

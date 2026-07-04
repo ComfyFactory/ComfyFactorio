@@ -118,7 +118,7 @@ local function sip(player)
         return
     end
 
-    player.surface.spill_item_stack(player.position, { name = 'barrel', count = 1 }, true)
+    player.surface.spill_item_stack({ position = player.position, stack = { name = 'barrel', count = 1 }, enable_looted = true })
 end
 
 local function on_player_changed_position(event)

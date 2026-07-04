@@ -1,5 +1,7 @@
 -- too many same entities close together will explode
 
+local FlyingText = require 'utils.functions.flying_texts'
+
 local Event = require 'utils.event'
 local math_random = math.random
 require 'utils.table'
@@ -119,14 +121,7 @@ local function spaghett(surface, entity, inventory, player)
                 storage.last_spaghett_error[player.index] = 0
             end
             if game.tick - storage.last_spaghett_error[player.index] > 30 then
-                surface.create_entity(
-                    {
-                        name = 'flying-text',
-                        position = entity.position,
-                        text = error_message(),
-                        color = { r = math.random(200, 255), g = math.random(0, 125), b = math.random(0, 125) }
-                    }
-                )
+                FlyingText.flying_text(player, surface, entity.position, error_message(), { r = math.random(200, 255), g = math.random(0, 125), b = math.random(0, 125) })
                 storage.last_spaghett_error[player.index] = game.tick
             end
         end

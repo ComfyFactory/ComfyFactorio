@@ -1,3 +1,5 @@
+local FlyingText = require 'utils.functions.flying_texts'
+
 local Public = {}
 
 local shop_list =
@@ -51,9 +53,7 @@ local function process_shopping_chest(k, chest)
         return
     end
     if not shop_list[requested_item_stack.name] then
-        chest.surface.create_entity(
-            { name = 'flying-text', position = { chest.position.x - 2, chest.position.y }, text = requested_item_stack.name .. ' is not for sale', color = { r = 200, g = 160, b = 30 } }
-        )
+        FlyingText.flying_text(nil, chest.surface, { x = chest.position.x - 2, y = chest.position.y }, requested_item_stack.name .. ' is not for sale', { r = 200, g = 160, b = 30 })
         return
     end
     local inventory = chest.get_inventory(defines.inventory.chest)
@@ -73,7 +73,7 @@ local function process_shopping_chest(k, chest)
     end
     local spent_credits = inserted_amount * shop_list[requested_item_stack.name]
     storage.credits = storage.credits - spent_credits
-    chest.surface.create_entity({ name = 'flying-text', position = chest.position, text = '-' .. spent_credits .. ' ø', color = { r = 200, g = 160, b = 30 } })
+    FlyingText.flying_text(nil, chest.surface, chest.position, '-' .. spent_credits .. ' ø', { r = 200, g = 160, b = 30 })
 end
 
 local function process_dump_chest(key, chest)
@@ -90,7 +90,7 @@ local function process_dump_chest(key, chest)
         if removed > 0 then
             local gain = removed * shop_list[k]
             storage.credits = storage.credits + gain
-            chest.surface.create_entity({ name = 'flying-text', position = chest.position, text = '+' .. gain .. ' ø', color = { r = 200, g = 160, b = 30 } })
+            FlyingText.flying_text(nil, chest.surface, chest.position, '+' .. gain .. ' ø', { r = 200, g = 160, b = 30 })
             return
         end
     end
@@ -145,13 +145,13 @@ local function on_gui_opened(event)
     if event.entity.name == 'passive-provider-chest' then
         storage.dump_chests[#storage.dump_chests + 1] = event.entity
         storage.registerd_shopping_chests[index] = true
-        event.entity.surface.create_entity({ name = 'flying-text', position = event.entity.position, text = 'Chest registered, shop active!', color = { r = 200, g = 160, b = 30 } })
+        FlyingText.flying_text(nil, event.entity.surface, event.entity.position, 'Chest registered, shop active!', { r = 200, g = 160, b = 30 })
         return
     end
     if event.entity.name == 'requester-chest' then
         storage.shopping_chests[#storage.shopping_chests + 1] = event.entity
         storage.registerd_shopping_chests[index] = true
-        event.entity.surface.create_entity({ name = 'flying-text', position = event.entity.position, text = 'Chest registered, shop active!', color = { r = 200, g = 160, b = 30 } })
+        FlyingText.flying_text(nil, event.entity.surface, event.entity.position, 'Chest registered, shop active!', { r = 200, g = 160, b = 30 })
         return
     end
 end

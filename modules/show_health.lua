@@ -29,23 +29,19 @@ Event.add(
             if storage.player_health[index] ~= health then
                 if health < storage.player_health[index] then
                     local text = health .. ' (-' .. math.floor(event.final_damage_amount) .. ')'
+                    local color
                     if health > 200 then
-                        player.surface.create_entity {
-                            name = 'flying-text',
-                            color = { b = 0.2, r = 0.1, g = 1, a = 0.8 },
-                            text = text,
-                            position = { player.position.x, player.position.y - 2 }
-                        }
+                        color = { b = 0.2, r = 0.1, g = 1, a = 0.8 }
                     elseif health > 100 then
-                        player.surface.create_entity { name = 'flying-text', color = { r = 1, g = 1, b = 0 }, text = text, position = { player.position.x, player.position.y - 2 } }
+                        color = { r = 1, g = 1, b = 0 }
                     else
-                        player.surface.create_entity {
-                            name = 'flying-text',
-                            color = { b = 0.1, r = 1, g = 0, a = 0.8 },
-                            text = text,
-                            position = { player.position.x, player.position.y - 2 }
-                        }
+                        color = { b = 0.1, r = 1, g = 0, a = 0.8 }
                     end
+                    player.create_local_flying_text({
+                        color = color,
+                        text = text,
+                        position = { player.position.x, player.position.y - 2 }
+                    })
                 end
                 storage.player_health[index] = health
             end

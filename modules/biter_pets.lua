@@ -1,17 +1,12 @@
+local FlyingText = require 'utils.functions.flying_texts'
+
 local math_random = math.random
 local nom_msg = { 'munch', 'munch', 'yum' }
 
 local Public = {}
 
 local function feed_floaty_text(unit)
-    unit.surface.create_entity(
-        {
-            name = 'flying-text',
-            position = unit.position,
-            text = nom_msg[math_random(1, #nom_msg)],
-            color = { math_random(50, 100), 0, 255 }
-        }
-    )
+    FlyingText.flying_text(nil, unit.surface, unit.position, nom_msg[math_random(1, #nom_msg)], { math_random(50, 100), 0, 255 })
 end
 
 local function floaty_hearts(entity, c)
@@ -22,7 +17,7 @@ local function floaty_hearts(entity, c)
             (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1),
             position.y + (b * -1 + math_random(0, b * 20) * 0.1)
         }
-        entity.surface.create_entity({ name = 'flying-text', position = p, text = '♥', color = { math_random(150, 255), 0, 255 } })
+        FlyingText.flying_text(nil, entity.surface, p, '♥', { math_random(150, 255), 0, 255 })
     end
 end
 

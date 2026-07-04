@@ -747,7 +747,7 @@ local function on_entity_died(event)
 
     if entity.name == 'wooden-chest' then
         local loot_amp = loot_raffle[random(1, #loot_raffle)]
-        entity.surface.spill_item_stack(entity.position, loot_amp, true)
+        entity.surface.spill_item_stack({ position = entity.position, stack = loot_amp, enable_looted = true })
     end
 end
 

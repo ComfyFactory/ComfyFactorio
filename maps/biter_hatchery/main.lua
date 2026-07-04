@@ -8,6 +8,7 @@ require 'modules.no_acid_puddles'
 require 'maps.biter_hatchery.share_chat'
 local CoreGui = require 'utils.gui'
 local Event = require 'utils.event'
+local FlyingText = require 'utils.functions.flying_texts'
 local Map_score = require 'utils.gui.map_score'
 local unit_raffle = require 'maps.biter_hatchery.raffle_tables'
 local Terrain = require 'maps.biter_hatchery.terrain'
@@ -120,12 +121,12 @@ end
 local nom_msg = { 'munch', 'munch', 'yum', 'nom' }
 
 local function feed_floaty_text(entity)
-    entity.surface.create_entity({ name = 'flying-text', position = entity.position, text = nom_msg[math_random(1, 4)], color = { math_random(50, 100), 0, 255 } })
+    FlyingText.flying_text(nil, entity.surface, entity.position, nom_msg[math_random(1, 4)], { math_random(50, 100), 0, 255 })
     local position = { x = entity.position.x - 0.75, y = entity.position.y - 1 }
     local b = 1.35
     for _ = 1, math_random(0, 2), 1 do
         local p = { (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1) }
-        entity.surface.create_entity({ name = 'flying-text', position = p, text = '♥', color = { math_random(150, 255), 0, 255 } })
+        FlyingText.flying_text(nil, entity.surface, p, '♥', { math_random(150, 255), 0, 255 })
     end
 end
 

@@ -212,7 +212,6 @@ function Public.BuildSiloAttempt(event)
     if (entity.last_user ~= nil) then
         entity.last_user.create_local_flying_text(
             {
-                name = 'flying-text',
                 position = entity.position,
                 text = "Can't build the silo here! Check the map!",
                 color = { 255, 0, 0 }

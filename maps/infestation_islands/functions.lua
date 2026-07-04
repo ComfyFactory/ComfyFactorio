@@ -1,3 +1,4 @@
+local FlyingText = require 'utils.functions.flying_texts'
 --created by Gerkiz
 local Event = require 'utils.event'
 local simplex_noise = require 'utils.math.simplex_noise'.d2
@@ -1615,21 +1616,7 @@ function Public.print_grid_value(value, surface, position, scale, offset)
 
     text = tostring(text)
 
-    local text_entity = surface.find_entity('flying-text', position)
-
-    if text_entity then
-        text_entity.text = text
-        text_entity.color = color
-        return
-    end
-
-    surface.create_entity
-    {
-        name = 'flying-text',
-        color = color,
-        text = text,
-        position = position
-    }.disabled_by_script = true
+    FlyingText.flying_text(nil, surface, position, text, color)
 end
 
 function Public.get_tile_name_by_level(level)

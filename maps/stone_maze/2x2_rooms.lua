@@ -229,7 +229,7 @@ room.scrapyard = function (surface, cell_left_top, direction)
     end
     local e = surface.create_entity({ name = 'storage-tank', position = { left_top.x + grid_size, left_top.y + grid_size }, force = 'neutral', direction = math.random(0, 3) })
     local fluids = { 'crude-oil', 'lubricant', 'heavy-oil', 'light-oil', 'petroleum-gas', 'sulfuric-acid', 'water' }
-    e.fluidbox[1] = { name = fluids[math.random(1, #fluids)], amount = math.random(20000, 25000) }
+    e.set_fluid({ name = fluids[math.random(1, #fluids)], amount = math.random(20000, 25000) }, 1)
 end
 
 room.circle_pond_with_trees = function (surface, cell_left_top, direction)
