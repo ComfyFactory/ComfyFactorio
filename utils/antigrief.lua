@@ -112,6 +112,44 @@ local create_ghost_token =
         true
     )
 
+local check_verified_player_token =
+    Task.register(
+        function (event)
+            local player_index = event.player_index
+            local player = game.get_player(player_index)
+            if not player or not player.valid then
+                return
+            end
+
+            if player.admin then
+                return
+            end
+
+            if not Session.get_trusted_player(player) then
+                Task.set_timeout_in_ticks_text_to_player(150,
+                    {
+                        player = player,
+                        text = 'Antigrief protection is active.',
+                        color = Color.warning
+                    })
+
+                Task.set_timeout_in_ticks_text_to_player(200,
+                    {
+                        player = player,
+                        text = 'Some actions are restricted until you verify on our Discord via /verify command or reach trusted status automatically after 24 hours of total playtime.',
+                        color = Color.warning
+                    })
+
+                Task.set_timeout_in_ticks_text_to_player(250,
+                    {
+                        player = player,
+                        text = 'Thanks for helping us keep the community safe!',
+                        color = Color.warning
+                    })
+            end
+        end
+    )
+
 -- Clears the player from players_warn_when_decon tbl.
 local clear_player_decon_warnings =
     Token.register(
@@ -394,28 +432,7 @@ local function on_player_created(event)
         return
     end
 
-    if not Session.get_trusted_player(player) then
-        Task.set_timeout_in_ticks_text_to_player(150,
-            {
-                player = player,
-                text = 'Antigrief protection is active.',
-                color = Color.warning
-            })
-
-        Task.set_timeout_in_ticks_text_to_player(200,
-            {
-                player = player,
-                text = 'Some actions are restricted until you verify on our Discord via /verify command or reach trusted status automatically after 24 hours of total playtime.',
-                color = Color.warning
-            })
-
-        Task.set_timeout_in_ticks_text_to_player(250,
-            {
-                player = player,
-                text = 'Thanks for helping us keep the community safe!',
-                color = Color.warning
-            })
-    end
+    Task.set_timeout_in_ticks(200, check_verified_player_token, { player_index = player.index })
 end
 
 local function on_player_built_tile(event)
