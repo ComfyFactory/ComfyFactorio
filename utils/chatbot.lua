@@ -3,13 +3,15 @@ local Color = require 'utils.color_presets'
 local Global = require 'utils.global'
 local Session = require 'utils.datastore.session_data'
 local Core = require 'utils.core'
+local Config = require 'utils.gui.config'
 
 local this =
 {
     settings =
     {
         enable_classic_print = false
-    }
+    },
+    announcements_disabled = {}
 }
 
 Global.register(
@@ -182,6 +184,34 @@ end
 Event.add(defines.events.on_player_created, on_player_created)
 Event.add(defines.events.on_console_chat, on_console_chat)
 
+Config.register_scenario_module(
+    {
+        id = 'chatbot',
+        admin_only = false,
+        gui_rows = Config.register_token(
+            function (player, frame)
+                local switch_state = 'left'
+                if this.announcements_disabled[player.index] then
+                    switch_state = 'right'
+                end
+                Config.add_switch(frame, switch_state, 'chatbot_announcements_switch', 'Chat Bot', 'Periodic server announcements about player count, uptime, and discord.')
+                frame.add({ type = 'line' })
+            end),
+        handlers =
+        {
+            ['chatbot_announcements_switch'] = Config.register_token(
+                function (player, event)
+                    if event.element.switch_state == 'left' then
+                        this.announcements_disabled[player.index] = nil
+                        player.print('[color=blue][Chat Bot][/color]: Chat bot announcements enabled.')
+                    else
+                        this.announcements_disabled[player.index] = true
+                        player.print('[color=blue][Chat Bot][/color]: Chat bot announcements disabled.')
+                    end
+                end)
+        }
+    })
+
 Event.on_nth_tick(
     108000,
     function ()
@@ -189,8 +219,14 @@ Event.on_nth_tick(
             return
         end
         local players = #game.connected_players
-        game.print('[color=blue][Chat Bot][/color]: There are ' .. players .. ' players online.')
-        game.print('[color=blue][Chat Bot][/color]: The map has been running for ' .. Core.format_time(game.ticks_played) .. '.')
+        local message_one = '[color=blue][Chat Bot][/color]: There are ' .. players .. ' players online.'
+        local message_two = '[color=blue][Chat Bot][/color]: The map has been running for ' .. Core.format_time(game.ticks_played) .. '.'
+        for _, player in pairs(game.connected_players) do
+            if not this.announcements_disabled[player.index] then
+                player.print(message_one)
+                player.print(message_two)
+            end
+        end
     end
 )
 
@@ -201,7 +237,12 @@ Event.on_nth_tick(
         if game.tick <= 10 then
             return
         end
-        game.print('[color=blue][Chat Bot][/color]: If you have any issues or feedback, please join our discord at: https://getcomfy.eu/discord.')
+        local message = '[color=blue][Chat Bot][/color]: If you have any issues or feedback, please join our discord at: https://getcomfy.eu/discord.'
+        for _, player in pairs(game.connected_players) do
+            if not this.announcements_disabled[player.index] then
+                player.print(message)
+            end
+        end
     end
 )
 return Public

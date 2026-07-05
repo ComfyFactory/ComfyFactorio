@@ -282,8 +282,13 @@ local function process_built_entities(event)
                 entity.destroy()
                 Building.build_error_notification(player or force, surface, position, "Can't build near " .. REASON_TEXTS[reason], player)
                 if name ~= 'entity-ghost' then
-                    if event.stack.valid_for_read then
-                        refund_item(event, event.stack.name)
+                    local stack = event.stack
+                    if stack and stack.valid_for_read then
+                        refund_item(event, stack.name)
+                    elseif event.item then
+                        refund_item(event, event.item.name)
+                    else
+                        refund_item(event, name)
                     end
                 end
                 return

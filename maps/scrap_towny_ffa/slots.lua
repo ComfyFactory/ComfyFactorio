@@ -30,7 +30,7 @@ local function on_built_entity(event)
         entity.destroy()
         return
     end
-    local key = script.register_on_entity_destroyed(entity)
+    local key = script.register_on_object_destroyed(entity)
     if (this.laser_turrets == nil) then
         this.laser_turrets = {}
     end
@@ -68,7 +68,7 @@ local function on_robot_built_entity(event)
         entity.destroy()
         return
     end
-    local key = script.register_on_entity_destroyed(entity)
+    local key = script.register_on_object_destroyed(entity)
     if (this.laser_turrets == nil) then
         this.laser_turrets = {}
     end

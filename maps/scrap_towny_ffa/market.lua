@@ -389,8 +389,15 @@ local function trade_scrap_for_coin(town_center, trade, stack)
     end
     town_center.input_buffer[item] = town_center.input_buffer[item] + amount
 
-    local price = trade.price[1].amount
-    local count = trade.offer.count
+    local price_item = trade.price[1]
+    local price = price_item and (price_item.amount or price_item.count)
+    local count = trade.offer.count or trade.offer.amount
+    if not price or not count then
+        return
+    end
+    if town_center.coin_balance == nil then
+        town_center.coin_balance = 0
+    end
     while town_center.input_buffer[item] >= price do
         town_center.input_buffer[item] = town_center.input_buffer[item] - price
         town_center.coin_balance = town_center.coin_balance + count
@@ -399,8 +406,15 @@ end
 
 local function trade_coin_for_items(town_center, trade)
     local item = trade.offer.item
-    local count = trade.offer.count
-    local price = trade.price[1].amount
+    local count = trade.offer.count or trade.offer.amount
+    local price_item = trade.price[1]
+    local price = price_item and (price_item.amount or price_item.count)
+    if not price or not count then
+        return
+    end
+    if town_center.coin_balance == nil then
+        town_center.coin_balance = 0
+    end
     if town_center.output_buffer[item] == nil then
         town_center.output_buffer[item] = 0
     end
