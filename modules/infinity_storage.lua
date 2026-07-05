@@ -3,6 +3,7 @@ local Color = require 'utils.color_presets'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task'
+local Compat = require 'utils.functions.factorio_compat'
 local Token = require 'utils.token'
 local Commands = require 'utils.commands'
 
@@ -140,9 +141,9 @@ end
 
 local function detect_item(container)
     local entity = container.entity
-    local fluid = entity.get_fluid(1)
+    local fluid = Compat.get_fluid(entity, 1)
     if fluid then
-        entity.set_fluid_filter({ name = fluid.name, force = true }, 1)
+        Compat.set_fluid_filter(entity, 1, { name = fluid.name, force = true })
         container.item = fluid.name
         container.temperature = fluid.temperature
         return true, container.item
@@ -179,7 +180,7 @@ local function update_single_container(container)
         return
     end
     local capacity = container.capacity
-    local max_capacity = entity.get_fluid_capacity(1) * 0.5
+    local max_capacity = Compat.get_fluid_capacity(entity, 1) * 0.5
     if capacity > max_capacity then
         container.capacity = max_capacity
         capacity = max_capacity
@@ -187,8 +188,8 @@ local function update_single_container(container)
 
     local inventory_count = entity.get_fluid_count(item)
     if inventory_count > capacity then
-        local amount_removed = entity.remove_fluid(inventory_count - capacity, 1)
-        local fluid = entity.get_fluid(1)
+        local amount_removed = Compat.remove_fluid(entity, 1, inventory_count - capacity)
+        local fluid = Compat.get_fluid(entity, 1)
         container.temperature = combine_tempatures(container.count, container.temperature, amount_removed,
             fluid and fluid.temperature or container.temperature)
         container.count = container.count + amount_removed
@@ -397,7 +398,7 @@ local function create_container(entity, stack, player)
         local container =
         {
             entity = entity,
-            capacity = 0.5 * entity.get_fluid_capacity(1),
+            capacity = 0.5 * Compat.get_fluid_capacity(entity, 1),
             count = 0,
             owner = player.force.index,
             unit_number = unit_number,
@@ -422,7 +423,7 @@ local function create_container(entity, stack, player)
             container.count = tags.count
             container.temperature = tags.temperature
             container.item = tags.name
-            entity.set_fluid_filter({ name = tags.name, force = true }, 1)
+            Compat.set_fluid_filter(entity, 1, { name = tags.name, force = true })
             update_single_container(container)
         end
         local c = add_object(unit_number, container)
@@ -525,7 +526,7 @@ local function item_links(data)
                 local inventory_count = data.destination_container.entity.get_fluid_count(data.destination_container
                     .item)
                 if inventory_count then
-                    local amount_removed = data.destination_container.entity.remove_fluid { name = data.destination_container.item, amount = inventory_count }
+                    local amount_removed = Compat.extract_fluid(data.destination_container.entity, { name = data.destination_container.item, amount = inventory_count })
                     data.source_container.count = data.source_container.count + amount_removed
                     if data.source_container.item == nil then
                         data.source_container.item = destination_requested_fluid
@@ -548,7 +549,7 @@ local function item_links(data)
 
             local inventory_count = data.destination_container.entity.get_fluid_count(data.destination_container.item)
             if inventory_count then
-                local amount_removed = data.destination_container.entity.remove_fluid { name = data.destination_container.item, amount = inventory_count }
+                local amount_removed = Compat.extract_fluid(data.destination_container.entity, { name = data.destination_container.item, amount = inventory_count })
                 data.source_container.count = data.source_container.count + amount_removed
             end
         end

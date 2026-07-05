@@ -2,6 +2,8 @@ local Public = {}
 
 local math_sqrt = math.sqrt
 
+local Compat = require 'utils.functions.factorio_compat'
+
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local CommonFunctions = require 'utils.common'
@@ -91,8 +93,11 @@ local function control_buildings_inside(surface, box, active)
     local this = ScenarioTable.get_table()
     local disabled = not active
     for _, e in pairs(surface.find_entities_filtered({ type = shield_inactive_types, area = box })) do
-        if e.valid and e.disabled_by_script ~= disabled then
-            e.disabled_by_script = disabled
+        if e.valid then
+            local is_disabled = e.disabled_by_script
+            if is_disabled ~= disabled then
+                Compat.set_entity_active(e, not disabled)
+            end
             if disabled then
                 visualise_entity_deactivated(e)
             else
@@ -375,7 +380,7 @@ local function on_built_entity(event)
     for _, shield in pairs(this.pvp_shields) do
         if shield.shield_type ~= Public.SHIELD_TYPE.LEAGUE_BALANCE then
             if CommonFunctions.point_in_bounding_box(entity.position, shield.box) then
-                entity.disabled_by_script = true
+                Compat.set_entity_active(entity, false)
                 visualise_entity_deactivated(entity)
             end
         end

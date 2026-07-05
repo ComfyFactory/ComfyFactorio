@@ -3,6 +3,7 @@ local get_noise = require 'utils.math.get_noise'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Scrap = require 'maps.scrap_towny_ffa.scrap'
 local get_perlin = require 'utils.math.get_perlin'
+local Compat = require 'utils.functions.factorio_compat'
 
 local table_insert = table.insert
 local math_random = math.random
@@ -155,7 +156,7 @@ local function place_scrap(surface, position)
     if math_random(1, 700) == 1 then
         if position.x ^ 2 + position.x ^ 2 > 4096 then
             local e = surface.create_entity({ name = 'gun-turret', position = position, force = 'enemy' })
-            e.minable_flag = false
+            Compat.set_minable(e, false)
             e.operable = false
             e.insert({ name = 'piercing-rounds-magazine', count = 100 })
             return
@@ -165,7 +166,7 @@ local function place_scrap(surface, position)
     if math_random(1, 128) == 1 then
         local scrap = scrap_containers[math_random(1, scrap_containers_index)]
         local e = surface.create_entity({ name = scrap.name, position = position, force = 'neutral' })
-        e.minable_flag = true
+        Compat.set_minable(e, true)
         local i = e.get_inventory(defines.inventory.chest)
         if i then
             local size = scrap.size
@@ -181,7 +182,7 @@ local function place_scrap(surface, position)
 
     local scrap = scrap_entities[math_random(1, scrap_entities_index)]
     local e = surface.create_entity({ name = scrap.name, position = position, force = 'neutral' })
-    e.minable_flag = true
+        Compat.set_minable(e, true)
 end
 
 local function is_scrap_area(n)

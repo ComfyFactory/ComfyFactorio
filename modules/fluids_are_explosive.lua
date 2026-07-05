@@ -2,6 +2,7 @@
 --Made by MewMew
 
 local Event = require 'utils.event'
+local Compat = require 'utils.functions.factorio_compat'
 
 local empty_tile_damage_decay = 50
 local out_of_map_tile_health = 1500
@@ -120,7 +121,7 @@ local function process_explosion_tile(pos, explosion_index, current_radius)
 end
 
 local function create_explosion_schedule(entity)
-    local fluid = entity.get_fluid(1)
+    local fluid = Compat.get_fluid(entity, 1)
     if not fluid then
         return
     end
@@ -936,7 +937,7 @@ local function on_entity_damaged(event)
     if not container_types[entity.type] then
         return
     end
-    local fluid = entity.get_fluid(1)
+    local fluid = Compat.get_fluid(entity, 1)
     if not fluid then
         return
     end

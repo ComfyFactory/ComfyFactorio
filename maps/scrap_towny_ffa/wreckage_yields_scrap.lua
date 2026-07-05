@@ -1,6 +1,8 @@
 local Event = require 'utils.event'
 local Scrap = require 'maps.scrap_towny_ffa.scrap'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local Compat = require 'utils.functions.factorio_compat'
+local FlyingText = require 'utils.functions.flying_texts'
 
 local insert = table.insert
 local random = math.random
@@ -145,19 +147,10 @@ local function on_player_mined_entity(event)
 
     if inserted_count ~= amount then
         local amount_to_spill = amount - inserted_count
-        entity.surface.spill_item_stack({ position = position, stack = { name = scrap, count = amount_to_spill }, enable_looted = true })
+        Compat.spill_item_stack(entity.surface, { position = position, stack = { name = scrap, count = amount_to_spill }, enable_looted = true })
     end
 
-    for _, p in pairs(game.connected_players) do
-        if p.surface == entity.surface then
-            p.create_local_flying_text(
-                {
-                    position = position,
-                    text = '+' .. amount .. ' [img=item/' .. scrap .. ']',
-                    color = { r = 0.98, g = 0.66, b = 0.22 }
-                })
-        end
-    end
+    FlyingText.flying_text(nil, entity.surface, position, '+' .. amount .. ' [img=item/' .. scrap .. ']', { r = 0.98, g = 0.66, b = 0.22 })
 end
 
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)

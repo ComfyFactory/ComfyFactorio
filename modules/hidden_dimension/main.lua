@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local HDT = require 'modules.hidden_dimension.table'
 local SessionData = require 'utils.datastore.session_data'
+local Compat = require 'utils.functions.factorio_compat'
 
 local Public = {}
 
@@ -405,11 +406,11 @@ local function transport_resources(container1, container2, transport_type)
         local temperature = 0
 
         local function test_for(temp)
-            local fluid = container.get_fluid(1)
+            local fluid = Compat.get_fluid(container, 1)
             if not fluid or fluid.name ~= 'steam' or fluid.temperature ~= temp then
                 return
             end
-            local count = container.remove_fluid(1, 1)
+            local count = Compat.remove_fluid(container, 1, 1)
             if count ~= 0 then
                 temperature = temp
                 container.insert_fluid({ name = 'steam', amount = count, temperature = temp })
@@ -430,8 +431,8 @@ local function transport_resources(container1, container2, transport_type)
     end
 
     local function divide_fluids()
-        local af = container1.get_fluid_contents()
-        local bf = container2.get_fluid_contents()
+        local af = Compat.get_fluid_contents(container1)
+        local bf = Compat.get_fluid_contents(container2)
         local name1, amount1 = get_table(af)
         local name2, amount2 = get_table(bf)
         amount1 = amount1 or 0

@@ -6,6 +6,7 @@ local Building = require 'maps.scrap_towny_ffa.building'
 local Colors = require 'maps.scrap_towny_ffa.colors'
 local Enemy = require 'maps.scrap_towny_ffa.enemy'
 local Color = require 'utils.color_presets'
+local FlyingText = require 'utils.functions.flying_texts'
 
 local PvPTownShield
 if ScenarioTable.enabled('pvp_offline_shield') or ScenarioTable.enabled('pvp_league_shield') or ScenarioTable.enabled('pvp_afk_shield') then
@@ -319,61 +320,25 @@ end
 local function is_valid_location(force_name, surface, position)
     local this = ScenarioTable.get_table()
     if not surface.can_place_entity({ name = 'market', position = position }) then
-        for _, p in pairs(game.connected_players) do
-            if p.surface == surface then
-                p.create_local_flying_text(
-                    {
-                        position = position,
-                        text = 'Position is obstructed - no room for market!',
-                        color = { r = 0.77, g = 0.0, b = 0.0 }
-                    })
-            end
-        end
+        FlyingText.flying_text(nil, surface, position, 'Position is obstructed - no room for market!', { r = 0.77, g = 0.0, b = 0.0 })
         return false
     end
 
     for _, vector in pairs(town_wall_vectors) do
         local p = { x = math_floor(position.x + vector[1]), y = math_floor(position.y + vector[2]) }
         if Building.in_restricted_zone(surface, p) then
-            for _, player in pairs(game.connected_players) do
-                if player.surface == surface then
-                    player.create_local_flying_text(
-                        {
-                            position = position,
-                            text = 'Can not build in restricted zone!',
-                            color = { r = 0.77, g = 0.0, b = 0.0 }
-                        })
-                end
-            end
+            FlyingText.flying_text(nil, surface, position, 'Can not build in restricted zone!', { r = 0.77, g = 0.0, b = 0.0 })
             return false
         end
     end
 
     if table_size(this.town_centers) > 48 then
-        for _, p in pairs(game.connected_players) do
-            if p.surface == surface then
-                p.create_local_flying_text(
-                    {
-                        position = position,
-                        text = 'Too many towns on the map!',
-                        color = { r = 0.77, g = 0.0, b = 0.0 }
-                    })
-            end
-        end
+        FlyingText.flying_text(nil, surface, position, 'Too many towns on the map!', { r = 0.77, g = 0.0, b = 0.0 })
         return false
     end
 
     if Building.near_another_town(force_name, position, surface, radius_between_towns) == true then
-        for _, p in pairs(game.connected_players) do
-            if p.surface == surface then
-                p.create_local_flying_text(
-                    {
-                        position = position,
-                        text = 'Town location is too close to others!',
-                        color = { r = 0.77, g = 0.0, b = 0.0 }
-                    })
-            end
-        end
+        FlyingText.flying_text(nil, surface, position, 'Town location is too close to others!', { r = 0.77, g = 0.0, b = 0.0 })
         return false
     end
 
@@ -459,16 +424,7 @@ local function found_town(event)
 
     if this.cooldowns_town_placement[player.index] then
         if game.tick < this.cooldowns_town_placement[player.index] then
-            for _, p in pairs(game.connected_players) do
-                if p.surface == surface then
-                    p.create_local_flying_text(
-                        {
-                            position = position,
-                            text = 'Town founding is on cooldown for ' .. math.ceil((this.cooldowns_town_placement[player.index] - game.tick) / 3600) .. ' minutes.',
-                            color = { r = 0.77, g = 0.0, b = 0.0 }
-                        })
-                end
-            end
+            FlyingText.flying_text(nil, surface, position, 'Town founding is on cooldown for ' .. math.ceil((this.cooldowns_town_placement[player.index] - game.tick) / 3600) .. ' minutes.', { r = 0.77, g = 0.0, b = 0.0 })
             player.insert({ name = 'stone-furnace', count = 1 })
             return
         end

@@ -2,6 +2,7 @@
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Pollution = require 'maps.scrap_towny_ffa.pollution'
+local Compat = require 'utils.functions.factorio_compat'
 
 local math_random = math.random
 local math_floor = math.floor
@@ -103,7 +104,7 @@ end
 
 local function create_explosion_schedule(entity)
     local this = ScenarioTable.get_table()
-    local fluid = entity.get_fluid(1)
+    local fluid = Compat.get_fluid(entity, 1)
     if not fluid then
         return
     end
@@ -936,7 +937,7 @@ local function on_entity_damaged(event)
     if not container_types[entity.type] then
         return
     end
-    local fluid = entity.get_fluid(1)
+    local fluid = Compat.get_fluid(entity, 1)
     if not fluid then
         return
     end

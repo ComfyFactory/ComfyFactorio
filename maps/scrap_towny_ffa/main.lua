@@ -120,6 +120,7 @@ local Server = require 'utils.server'
 local Where = require 'utils.commands.where'
 local Inventory = require 'modules.show_inventory'
 local JailData = require 'utils.datastore.jail_data'
+local FlyingText = require 'utils.functions.flying_texts'
 
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
@@ -205,7 +206,7 @@ local function ui_smell_evolution()
             else
                 extra = 'Not good to start a new town. Maybe somewhere else?'
             end
-            player.create_local_flying_text(
+            FlyingText.player_flying_text(player,
                 {
                     position = { x = player.physical_position.x, y = player.physical_position.y },
                     text = 'You smell the evolution around here: ' .. string.format('%.0f', e * 100) .. '%. ' .. extra,

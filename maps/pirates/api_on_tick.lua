@@ -1768,7 +1768,7 @@ local function equalise_fluid_storage_pair(storage1, storage2)
 	local inserted_amount =
 		storage2.insert_fluid({ name = source_fluid.name, amount = amount, temperature = source_fluid.temperature })
 	if inserted_amount > 0 then
-		storage1.remove_fluid({ name = source_fluid.name, amount = inserted_amount })
+		storage1.remove_fluid(1, inserted_amount)
 	end
 end
 

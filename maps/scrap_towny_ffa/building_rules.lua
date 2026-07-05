@@ -8,6 +8,7 @@ local Team = require 'maps.scrap_towny_ffa.team'
 local Building = require 'maps.scrap_towny_ffa.building'
 local table = require 'utils.table'
 local FlyingText = require 'utils.functions.flying_texts'
+local Compat = require 'utils.functions.factorio_compat'
 
 local town_zoning_entity_types = { "ammo-turret", "electric-turret", "fluid-turret" }
 local default_protected_radius = 30
@@ -301,19 +302,10 @@ local function process_built_entities(event)
         end
     end
 
-    if entity.type == 'electric-pole' and entity.prototype.get_max_wire_distance() > 0 then
-        local pole_connector = entity.get_wire_connector(defines.wire_connector_id.pole_copper, false)
-        if pole_connector and pole_connector.valid then
-            for _, connected_connector in pairs(pole_connector.connections) do
-                if connected_connector.valid and connected_connector.owner and connected_connector.owner.valid then
-                    local other_pole = connected_connector.owner
-                    if other_pole.force ~= force then
-                        pole_connector.disconnect_from(connected_connector, defines.wire_origin.script)
-                        Building.build_error_notification(player or force, surface, position, "Can't connect to other town", player)
-                    end
-                end
-            end
-        end
+    if entity.type == 'electric-pole' and Compat.get_max_wire_distance(entity) > 0 then
+        Compat.disconnect_foreign_pole_links(entity, force, function ()
+            Building.build_error_notification(player or force, surface, position, "Can't connect to other town", player)
+        end)
     end
 end
 
@@ -428,7 +420,7 @@ local function on_marked_for_deconstruction(event)
     if Team.is_outlander(player.force)
         and (disabled_for_outlander_deconstruction[event.entity.name] or event.entity.type == 'tree') then
         event.entity.cancel_deconstruction(player.force.name)
-        player.create_local_flying_text(
+        FlyingText.player_flying_text(player,
             {
                 position = event.entity.position,
                 text = "Not possible as outlander",

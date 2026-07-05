@@ -1523,7 +1523,7 @@ local function on_entity_damaged(event)
 						local fluid_name = fluid.name
 						local new_amount = fluid.amount - 0.25
 						if new_amount < 0 then new_amount = 0 end
-						event.cause.set_fluid({name = fluid_name, amount = new_amount, temperature = fluid.temperature}, i)
+						event.cause.set_fluid(i, {name = fluid_name, amount = new_amount, temperature = fluid.temperature})
 					end
 				end
 			end

@@ -1,5 +1,6 @@
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Event = require 'utils.event'
+local FlyingText = require 'utils.functions.flying_texts'
 
 local table_insert = table.insert
 
@@ -72,15 +73,7 @@ local upgrade_functions = {
             this.spawn_point[player.index] = { x = position.x, y = position.y }
             surface.play_sound({ path = 'utility/scenario_message', position = player.physical_position, volume_modifier = 1 })
         else
-            for _, p in pairs(game.connected_players) do
-                if p.surface == surface then
-                    p.create_local_flying_text({
-                        position = position,
-                        text = 'Could not find open space for spawnpoint!',
-                        color = { r = 0.77, g = 0.0, b = 0.0 }
-                    })
-                end
-            end
+            FlyingText.flying_text(nil, surface, position, 'Could not find open space for spawnpoint!', { r = 0.77, g = 0.0, b = 0.0 })
         end
         return false
     end

@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local FlyingText = require 'utils.functions.flying_texts'
 
 local function on_built_entity(event)
     local this = ScenarioTable.get_table()
@@ -15,15 +16,7 @@ local function on_built_entity(event)
     local town_center = this.town_centers[force.name]
     local surface = entity.surface
     if force.index == game.forces['player'].index or force.index == game.forces['rogue'].index or town_center == nil then
-        for _, p in pairs(game.connected_players) do
-            if p.surface == surface then
-                p.create_local_flying_text({
-                    position = entity.position,
-                    text = 'You are not acclimated to this technology!',
-                    color = { r = 0.77, g = 0.0, b = 0.0 }
-                })
-            end
-        end
+        FlyingText.flying_text(nil, surface, entity.position, 'You are not acclimated to this technology!', { r = 0.77, g = 0.0, b = 0.0 })
         player.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
@@ -32,15 +25,7 @@ local function on_built_entity(event)
     local locations = town_center.upgrades.laser_turret.locations
 
     if locations >= slots then
-        for _, p in pairs(game.connected_players) do
-            if p.surface == surface then
-                p.create_local_flying_text({
-                    position = entity.position,
-                    text = 'You do not have enough slots!',
-                    color = { r = 0.77, g = 0.0, b = 0.0 }
-                })
-            end
-        end
+        FlyingText.flying_text(nil, surface, entity.position, 'You do not have enough slots!', { r = 0.77, g = 0.0, b = 0.0 })
         player.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
@@ -53,15 +38,7 @@ local function on_built_entity(event)
     locations = locations + 1
     town_center.upgrades.laser_turret.locations = locations
 
-    for _, p in pairs(game.connected_players) do
-        if p.surface == surface then
-            p.create_local_flying_text({
-                position = entity.position,
-                text = 'Using ' .. locations .. '/' .. slots .. ' slots',
-                color = { r = 1.0, g = 1.0, b = 1.0 }
-            })
-        end
-    end
+    FlyingText.flying_text(nil, surface, entity.position, 'Using ' .. locations .. '/' .. slots .. ' slots', { r = 1.0, g = 1.0, b = 1.0 })
 end
 
 local function on_robot_built_entity(event)
@@ -78,15 +55,7 @@ local function on_robot_built_entity(event)
     local town_center = this.town_centers[force.name]
     local surface = entity.surface
     if force.index == game.forces['player'].index or force.index == game.forces['rogue'].index or town_center == nil then
-        for _, p in pairs(game.connected_players) do
-            if p.surface == surface then
-                p.create_local_flying_text({
-                    position = entity.position,
-                    text = 'Robot not acclimated to this technology!',
-                    color = { r = 0.77, g = 0.0, b = 0.0 }
-                })
-            end
-        end
+        FlyingText.flying_text(nil, surface, entity.position, 'Robot not acclimated to this technology!', { r = 0.77, g = 0.0, b = 0.0 })
         robot.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
@@ -94,15 +63,7 @@ local function on_robot_built_entity(event)
     local slots = town_center.upgrades.laser_turret.slots
     local locations = town_center.upgrades.laser_turret.locations
     if locations >= slots then
-        for _, p in pairs(game.connected_players) do
-            if p.surface == surface then
-                p.create_local_flying_text({
-                    position = entity.position,
-                    text = 'Town does not have enough slots!',
-                    color = { r = 0.77, g = 0.0, b = 0.0 }
-                })
-            end
-        end
+        FlyingText.flying_text(nil, surface, entity.position, 'Town does not have enough slots!', { r = 0.77, g = 0.0, b = 0.0 })
         robot.insert({ name = 'laser-turret', count = 1 })
         entity.destroy()
         return
@@ -114,15 +75,7 @@ local function on_robot_built_entity(event)
     this.laser_turrets[key] = force.index
     locations = locations + 1
     town_center.upgrades.laser_turret.locations = locations
-    for _, p in pairs(game.connected_players) do
-        if p.surface == surface then
-            p.create_local_flying_text({
-                position = entity.position,
-                text = 'Using ' .. locations .. '/' .. slots .. ' slots',
-                color = { r = 1.0, g = 1.0, b = 1.0 }
-            })
-        end
-    end
+    FlyingText.flying_text(nil, surface, entity.position, 'Using ' .. locations .. '/' .. slots .. ' slots', { r = 1.0, g = 1.0, b = 1.0 })
 end
 
 local function on_object_destroyed(event)

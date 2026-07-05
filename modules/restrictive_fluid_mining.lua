@@ -1,6 +1,7 @@
 -- restricts mining of fluid filled entities -- by mewmew
 
 local Event = require 'utils.event'
+local Compat = require 'utils.functions.factorio_compat'
 local math_random = math.random
 
 local message_color = {r = 255, g = 150, b = 0}
@@ -17,7 +18,7 @@ local function restrict_fluid_mining(event)
     end
 
     local entity = event.entity
-    local fluidbox_count = #entity.prototype.fluidbox_prototypes
+    local fluidbox_count = Compat.fluidbox_count(entity)
     if fluidbox_count == 0 then
         return
     end
@@ -26,9 +27,9 @@ local function restrict_fluid_mining(event)
     local total_current_fluid_amount = 0
 
     for i = 1, fluidbox_count, 1 do
-        local fluid = entity.get_fluid(i)
+        local fluid = Compat.get_fluid(entity, i)
         if fluid then
-            total_capacity = total_capacity + entity.get_fluid_capacity(i)
+            total_capacity = total_capacity + Compat.get_fluid_capacity(entity, i)
             total_current_fluid_amount = total_current_fluid_amount + fluid.amount
         end
     end
@@ -60,9 +61,9 @@ local function restrict_fluid_mining(event)
     local container_name = event.entity.name
 
     for i = 1, fluidbox_count, 1 do
-        local fluid = entity.get_fluid(i)
+        local fluid = Compat.get_fluid(entity, i)
         if fluid then
-            replacement_entity.set_fluid({ name = fluid.name, amount = fluid.amount, temperature = fluid.temperature }, i)
+            Compat.set_fluid(replacement_entity, i, { name = fluid.name, amount = fluid.amount, temperature = fluid.temperature })
             fluid_name = fluid.name
         end
     end

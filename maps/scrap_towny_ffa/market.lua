@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Town_center = require 'maps.scrap_towny_ffa.town_center'
+local FlyingText = require 'utils.functions.flying_texts'
 
 local PvPTownShield
 if ScenarioTable.enabled('market_afk_offer') then
@@ -200,16 +201,7 @@ local function refresh_offers(event)
     else
         if player.opened ~= nil then
             player.opened = nil
-            for _, p in pairs(game.connected_players) do
-                if p.surface == player.surface then
-                    p.create_local_flying_text(
-                        {
-                            position = { market.position.x - 1.75, market.position.y },
-                            text = 'Sorry, we are closed.',
-                            color = { r = 0.77, g = 0.0, b = 0.0 }
-                        })
-                end
-            end
+            FlyingText.flying_text(nil, player.surface, { x = market.position.x - 1.75, y = market.position.y }, 'Sorry, we are closed.', { r = 0.77, g = 0.0, b = 0.0 })
         end
     end
 end

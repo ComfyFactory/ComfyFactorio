@@ -1,30 +1,13 @@
+local Compat = require 'utils.functions.factorio_compat'
+
 local Public = {}
 
-
----Create Flying text for the player, or for all players on that surface if no player specified
----@param player LuaPlayer|nil
----@param surface LuaSurface
----@param position MapPosition
----@param text string|table
----@param color Color|table
 function Public.flying_text(player, surface, position, text, color)
-    if not player then
-        for _, p in pairs(game.connected_players) do
-            if p.surface == surface then
-                p.create_local_flying_text({
-                    text = text,
-                    position = position,
-                    color = color
-                })
-            end
-        end
-    else
-        player.create_local_flying_text({
-            text = text,
-            position = position,
-            color = color
-        })
-    end
+    Compat.flying_text(player, surface, position, text, color)
+end
+
+function Public.player_flying_text(player, opts)
+    Compat.player_flying_text(player, opts)
 end
 
 return Public
