@@ -73,6 +73,11 @@ end
 local function visualise_entity_deactivated(entity)
     local this = ScenarioTable.get_table()
 
+    local existing_label = this.entity_labels[entity.unit_number]
+    if existing_label and existing_label.valid then
+        return
+    end
+
     local entity_label = rendering.draw_text
         {
             text = "Inactive",
@@ -95,12 +100,15 @@ local function control_buildings_inside(surface, box, active)
     for _, e in pairs(surface.find_entities_filtered({ type = shield_inactive_types, area = box })) do
         if e.valid then
             local is_disabled = e.disabled_by_script
-            if is_disabled ~= disabled then
-                Compat.set_entity_active(e, not disabled)
-            end
             if disabled then
+                if is_disabled ~= disabled then
+                    Compat.set_entity_active(e, false)
+                end
                 visualise_entity_deactivated(e)
             else
+                if is_disabled ~= disabled then
+                    Compat.set_entity_active(e, true)
+                end
                 local entity_label = this.entity_labels[e.unit_number]
                 if entity_label and entity_label.valid then
                     entity_label.destroy()

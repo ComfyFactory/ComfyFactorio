@@ -30,6 +30,152 @@ local market_label_offsets =
     health = { 0, -3.25 },
 }
 
+local function create_market_labels(town_center)
+    local market = town_center.market
+    local force_name = market.force.name
+
+    town_center.town_caption =
+        rendering.draw_text
+        {
+            text = town_center.town_name,
+            surface = market.surface,
+            forces = { force_name, game.forces.player, game.forces.rogue },
+            target = { entity = market, offset = market_label_offsets.town_name },
+            color = town_center.color,
+            scale = 1.30,
+            font = 'default-game',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+
+    town_center.health_text =
+        rendering.draw_text
+        {
+            text = 'HP: ' .. town_center.health .. ' / ' .. town_center.max_health,
+            surface = market.surface,
+            forces = { force_name, game.forces.player, game.forces.rogue },
+            target = { entity = market, offset = market_label_offsets.health },
+            color = { 200, 200, 200 },
+            scale = 1.00,
+            font = 'default-game',
+            alignment = 'center',
+            scale_with_zoom = false
+        }
+end
+
+local function track_market_label(tracked, label)
+    if label and label.valid then
+        tracked[label] = true
+    end
+end
+
+local function destroy_untracked_market_render(id, tracked)
+    if tracked[id] then
+        return false
+    end
+    rendering.destroy(id)
+    return true
+end
+
+local function ensure_market_labels(town_center)
+    local market = town_center.market
+    if not market or not market.valid then
+        return 0
+    end
+
+    local recreated = 0
+    local force_name = market.force.name
+
+    if not town_center.town_caption or not town_center.town_caption.valid then
+        town_center.town_caption =
+            rendering.draw_text
+            {
+                text = town_center.town_name,
+                surface = market.surface,
+                forces = { force_name, game.forces.player, game.forces.rogue },
+                target = { entity = market, offset = market_label_offsets.town_name },
+                color = town_center.color,
+                scale = 1.30,
+                font = 'default-game',
+                alignment = 'center',
+                scale_with_zoom = false
+            }
+        recreated = recreated + 1
+    else
+        town_center.town_caption.text = town_center.town_name
+        town_center.town_caption.target = { entity = market, offset = market_label_offsets.town_name }
+    end
+
+    if not town_center.health_text or not town_center.health_text.valid then
+        town_center.health_text =
+            rendering.draw_text
+            {
+                text = 'HP: ' .. town_center.health .. ' / ' .. town_center.max_health,
+                surface = market.surface,
+                forces = { force_name, game.forces.player, game.forces.rogue },
+                target = { entity = market, offset = market_label_offsets.health },
+                color = { 200, 200, 200 },
+                scale = 1.00,
+                font = 'default-game',
+                alignment = 'center',
+                scale_with_zoom = false
+            }
+        recreated = recreated + 1
+    else
+        town_center.health_text.text = 'HP: ' .. town_center.health .. ' / ' .. town_center.max_health
+        town_center.health_text.target = { entity = market, offset = market_label_offsets.health }
+    end
+
+    return recreated
+end
+
+function Public.reconcile_market_renderings()
+    local this = ScenarioTable.get_table()
+    local tracked = {}
+    local removed = 0
+    local ensured = 0
+    local recreated = 0
+
+    for _, town_center in pairs(this.town_centers) do
+        local market = town_center.market
+        if market and market.valid then
+            track_market_label(tracked, town_center.town_caption)
+            track_market_label(tracked, town_center.health_text)
+        end
+    end
+
+    local all = rendering.get_all_objects()
+    if all.target then
+        for id, target in pairs(all.target) do
+            if all.valid[id] and target.entity and target.entity.valid and target.entity.name == 'market' then
+                if destroy_untracked_market_render(id, tracked) then
+                    removed = removed + 1
+                end
+            end
+        end
+    else
+        for _, obj in pairs(all) do
+            if type(obj) == 'table' and obj.valid and obj.target and obj.target.entity
+                and obj.target.entity.valid and obj.target.entity.name == 'market' then
+                if not tracked[obj] then
+                    obj.destroy()
+                    removed = removed + 1
+                end
+            end
+        end
+    end
+
+    for _, town_center in pairs(this.town_centers) do
+        local market = town_center.market
+        if market and market.valid then
+            ensured = ensured + 1
+            recreated = recreated + ensure_market_labels(town_center)
+        end
+    end
+
+    return { ensured = ensured, removed = removed, recreated = recreated }
+end
+
 local function round(num)
     return num >= 0 and math.floor(num + 0.5) or math.ceil(num - 0.5)
 end
@@ -463,33 +609,7 @@ local function found_town(event)
     town_center.evolution.worms = 0
     town_center.creation_tick = game.tick
 
-    town_center.town_caption =
-        rendering.draw_text
-        {
-            text = town_center.town_name,
-            surface = surface,
-            forces = { force_name, game.forces.player, game.forces.rogue },
-            target = { entity = town_center.market, offset = market_label_offsets.town_name },
-            color = town_center.color,
-            scale = 1.30,
-            font = 'default-game',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
-
-    town_center.health_text =
-        rendering.draw_text
-        {
-            text = 'HP: ' .. town_center.health .. ' / ' .. town_center.max_health,
-            surface = surface,
-            forces = { force_name, game.forces.player, game.forces.rogue },
-            target = { entity = town_center.market, offset = market_label_offsets.health },
-            color = { 200, 200, 200 },
-            scale = 1.00,
-            font = 'default-game',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
+    create_market_labels(town_center)
 
     Enemy.clear_enemies(position, surface, town_radius * 5)
     draw_town_spawn(force_name)
@@ -574,6 +694,8 @@ commands.add_command(
         rename_town(cmd)
     end
 )
+
+Event.on_nth_tick(200, Public.reconcile_market_renderings)
 
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_player_repaired_entity, on_player_repaired_entity)
