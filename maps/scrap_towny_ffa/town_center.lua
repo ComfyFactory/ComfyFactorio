@@ -192,7 +192,7 @@ function Public.init_score_fields(town_center)
     town_center.labs = town_center.labs or 0
     town_center.pvp_shield_mgmt = town_center.pvp_shield_mgmt or {}
     town_center.marked_afk = false
-    town_center.scoring_last_online = game.tick
+    local previous_mining_prod_bonus = town_center.town_rest and town_center.town_rest.mining_prod_bonus or 0
     town_center.town_rest = town_center.town_rest or {}
     town_center.town_rest.last_online = game.tick
     town_center.town_rest.current_modifier = 0
@@ -200,6 +200,9 @@ function Public.init_score_fields(town_center)
     town_center.town_rest.mining_prod_bonus = 0
 
     local market = town_center.market
+    if previous_mining_prod_bonus ~= 0 and not ScenarioTable.enabled('town_rest_bonus') then
+        market.force.mining_drill_productivity_bonus = market.force.mining_drill_productivity_bonus - previous_mining_prod_bonus
+    end
 
     if town_center.enemies_text and town_center.enemies_text.valid then
         town_center.enemies_text.destroy()
@@ -618,7 +621,7 @@ local function found_town(event)
 
     force.set_spawn_position(pos, surface)
 
-    if ScenarioTable.enabled('town_rest_bonus') or ScenarioTable.enabled('market_enemy_display') or ScenarioTable.enabled('pvp_offline_shield')
+    if ScenarioTable.mode('win_condition') == 'score' or ScenarioTable.enabled('town_rest_bonus') or ScenarioTable.enabled('market_enemy_display') or ScenarioTable.enabled('pvp_offline_shield')
         or ScenarioTable.enabled('pvp_league_shield') or ScenarioTable.enabled('pvp_afk_shield') then
         Public.init_score_fields(town_center)
     end

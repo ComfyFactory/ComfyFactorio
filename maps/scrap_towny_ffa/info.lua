@@ -8,34 +8,42 @@ local Public = {}
 local info = [[This is Comfy Towny. Who will survive?
 
 In this mode, players build towns and fight against other towns and the biters.
+The winner is the first town to reach the research progress goal.
+Offline time does not add progress.
 The Comfy gui has been disabled since it contains too many goodies.
 
 Have fun and be comfy ^.^]]
 
-local pvp_shield_help_base =
-    'Requires Automation research.\n'
-    .. 'Offline shield: when all town members leave (or AFK mode is on), enemy players cannot attack or build inside the shield for up to 24 hours total.\n'
-    .. 'Biters are never blocked. Shield will not activate if enemy players are near your town.\n'
-    .. 'League balance shield deploys when higher-league enemies are nearby. League 4 towns cannot use offline shields.'
-
 local function pvp_shield_help_text()
+    local offline_enabled = ScenarioTable.enabled('pvp_offline_shield') or ScenarioTable.enabled('pvp_afk_shield')
+    local league_enabled = ScenarioTable.enabled('pvp_league_shield')
+    local help = 'Requires Automation research.\n'
+    if offline_enabled then
+        help = help .. 'Offline shield: when all town members leave (or AFK mode is on), enemy players cannot attack or build inside the shield for up to 24 hours total.\n'
+            .. 'Biters are never blocked. Shield will not activate if enemy players are near your town.\n'
+    else
+        help = help .. 'Offline and AFK PvP shields are disabled in this game mode.\n'
+    end
+    if league_enabled then
+        help = help .. 'League balance shield deploys when higher-league enemies are nearby. League 4 towns cannot use PvP shields.'
+    end
     if not ScenarioTable.enabled('pvp_shield_upkeep') then
-        return pvp_shield_help_base
+        return help
     end
     local offline_cost = PvPShield.upkeep_coins_per_minute(PvPShield.SHIELD_TYPE.OFFLINE)
     local league_cost = PvPShield.upkeep_coins_per_minute(PvPShield.SHIELD_TYPE.LEAGUE_BALANCE)
     local min_coins = PvPShield.min_coins_for_shield()
     local upkeep_line = '\nShields cost town coins while active. To drop coins in the market, use a loader.'
-    if offline_cost > 0 then
+    if offline_enabled and offline_cost > 0 then
         upkeep_line = upkeep_line .. ' Offline shield: ' .. offline_cost .. ' coins/min.'
     end
-    if league_cost > 0 then
+    if league_enabled and league_cost > 0 then
         upkeep_line = upkeep_line .. ' League balance shield: ' .. league_cost .. ' coins/min.'
     end
-    if min_coins > 0 then
+    if offline_enabled and min_coins > 0 then
         upkeep_line = upkeep_line .. ' Minimum ' .. min_coins .. ' coins to activate.'
     end
-    return pvp_shield_help_base .. upkeep_line
+    return help .. upkeep_line
 end
 
 local function pvp_info_enabled()

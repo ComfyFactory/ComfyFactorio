@@ -44,8 +44,8 @@ But most importantly - have fun!
 
     this.silo_island_mode = false -- keep disabled for random pos
     this.silo_fixed_pos = false -- keep disabled for random pos
-    this.frontier_rocket_silo_mode = false
-    this.ms_silos_generated = false
+    this.frontier_rocket_silo_mode = false -- keep true for random silos generation
+    this.ms_silos_generated = false -- keep false on init
     this.silo_spawns = 5
     this.silo_distance = 200
     this.silo_pos =

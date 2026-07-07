@@ -7,8 +7,6 @@ items.spawn =
     { price = { { name = 'coin', count = 10 } }, offer = { type = 'give-item', quality = 'legendary', item = 'train-stop' } },
     { price = { { name = 'coin', count = 94 } }, offer = { type = 'give-item', quality = 'legendary', item = 'locomotive' } },
     { price = { { name = 'coin', count = 35 } }, offer = { type = 'give-item', quality = 'legendary', item = 'cargo-wagon' } },
-    { price = { { name = 'coin', count = 5 } }, offer = { type = 'give-item', quality = 'legendary', item = 'red-wire', count = 1 } },
-    { price = { { name = 'coin', count = 5 } }, offer = { type = 'give-item', quality = 'legendary', item = 'green-wire', count = 1 } },
     { price = { { name = 'coin', count = 4 } }, offer = { type = 'give-item', quality = 'legendary', item = 'decider-combinator' } },
     { price = { { name = 'coin', count = 4 } }, offer = { type = 'give-item', quality = 'legendary', item = 'arithmetic-combinator' } },
     { price = { { name = 'coin', count = 5 } }, offer = { type = 'give-item', quality = 'legendary', item = 'constant-combinator' } },

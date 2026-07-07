@@ -142,6 +142,9 @@ local function on_player_mined_entity(event)
         amount = random(r1, r2)
     end
     amount = math_max(1, math_ceil(amount * amount_scale))
+    if ScenarioTable.wreckage('rare') then
+        amount = math_max(1, math_ceil(amount * ScenarioTable.wreckage('rare_reward_multiplier')))
+    end
 
     local inserted_count = player.insert({ name = scrap, count = amount })
 

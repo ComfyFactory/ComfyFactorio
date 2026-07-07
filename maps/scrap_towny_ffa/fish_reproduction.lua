@@ -28,16 +28,16 @@ function Public.reproduce()
         local t = math_random(1, #fishes)
         local fish = fishes[t]
 
-        local guppy = false
+        local should_continue = false
         for i, f in pairs(fishes) do
             if i ~= t then
                 if math_floor(fish.position.x) == math_floor(f.position.x) and math_floor(fish.position.y) == math_floor(f.position.y) then
-                    guppy = true
+                    should_continue = true
                 end
             end
         end
-        if guppy == true then
-            for i = 1, math_random(1, 5) do
+        if should_continue == true then
+            for _ = 1, math_random(1, 5) do
                 surface.create_entity({ name = 'water-splash', position = fish.position })
                 surface.create_entity({ name = 'fish', position = fish.position })
             end

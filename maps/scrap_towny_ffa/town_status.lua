@@ -80,10 +80,14 @@ local function pvp_lines(town_center)
 end
 
 local enemies_tooltip =
-'Enemy players near your town. Red = in town range (offline shield blocked). Yellow = nearby.'
+'Enemy players near your town. Red = in town range. Yellow = nearby.'
 
 local shield_tooltip =
-'Current league and PvP shield state. Standby = ready when everyone leaves. Abandoned = offline shield time used up.'
+'Current league and PvP shield state.'
+
+if ScenarioTable.enabled('pvp_offline_shield') or ScenarioTable.enabled('pvp_afk_shield') then
+    shield_tooltip = shield_tooltip .. ' Standby = ready when everyone leaves. Abandoned = offline shield time used up.'
+end
 
 local function init_panel(player)
     local this = ScenarioTable.get_table()

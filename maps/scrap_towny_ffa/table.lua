@@ -13,6 +13,12 @@ local config =
     chat_mode = 'global',
     damage_pipeline = 'towny',
     game_mode = 2,
+    score =
+    {
+        survival_points = false,
+        research_points_to_win = 100,
+        research_evo_score_factor = 100,
+    },
     survival =
     {
         hours = 72,
@@ -21,6 +27,9 @@ local config =
     {
         amount_scale = 0.5,
         scrap_amount_modifier = 1.5,
+        rare = true,
+        rare_spawn_divisor = 4,
+        rare_reward_multiplier = 2,
     },
     pvp_shield =
     {
@@ -31,9 +40,9 @@ local config =
     },
     features =
     {
-        pvp_offline_shield = true,
+        pvp_offline_shield = false,
         pvp_league_shield = true,
-        pvp_afk_shield = true,
+        pvp_afk_shield = false,
         pvp_shield_upkeep = true,
         market_enemy_display = true,
         cease_fire_fish = true,
@@ -43,7 +52,7 @@ local config =
         biter_chatter = true,
         research_balance = true,
         dynamic_damage_modifier = true,
-        town_rest_bonus = true,
+        town_rest_bonus = false,
         tech_gating = true,
         bulldozer_mode = true,
         tank_combat_tweaks = true,
@@ -57,11 +66,11 @@ local config =
         hud_research_cost = true,
         hud_damage = true,
         hud_last_winner = true,
-        market_afk_offer = true,
+        market_afk_offer = false,
         auto_reset_on_win = true,
         persist_last_winner = true,
         score_milestone_announcements = true,
-        boss_swarms_respect_afk = true,
+        boss_swarms_respect_afk = false,
         boss_swarms_online_only = true,
         fluids_are_explosive = true,
         explosives_are_explosive = true,
@@ -110,6 +119,9 @@ local wreckage_defaults =
 {
     amount_scale = 1,
     scrap_amount_modifier = 3,
+    rare = false,
+    rare_spawn_divisor = 4,
+    rare_reward_multiplier = 2,
 }
 
 function Public.wreckage(key)
@@ -132,6 +144,20 @@ function Public.pvp_shield(key)
         return config.pvp_shield[key]
     end
     return pvp_shield_defaults[key]
+end
+
+local score_defaults =
+{
+    survival_points = true,
+    research_points_to_win = 100,
+    research_evo_score_factor = nil,
+}
+
+function Public.score(key)
+    if config.score and config.score[key] ~= nil then
+        return config.score[key]
+    end
+    return score_defaults[key]
 end
 
 function Public.apply_survival_hours(this)

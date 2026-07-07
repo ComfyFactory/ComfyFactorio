@@ -9,6 +9,10 @@ local PvPShield = require 'maps.scrap_towny_ffa.pvp_shield'
 local Team = require 'maps.scrap_towny_ffa.team'
 local Event = require 'utils.event'
 
+local offline_shield_enabled = ScenarioTable.enabled('pvp_offline_shield')
+local league_shield_enabled = ScenarioTable.enabled('pvp_league_shield')
+local afk_shield_enabled = ScenarioTable.enabled('pvp_afk_shield')
+
 Public.offline_shield_size = (ScenarioTable.league_balance_shield_size() - 1)
 
 local shield_radius = (ScenarioTable.league_balance_shield_size() - 1) / 2
@@ -49,7 +53,7 @@ local function update_pvp_shields_display()
                 color = { 255, 0, 0 }
 
                 if not town_center.enemies_warning_status then
-                    town_center.market.force.print("Enemies have been spotted near your town. Your offline PvP shield can not activate now.", { r = 1, g = 0, b = 0 })
+                    town_center.market.force.print("Enemies have been spotted near your town.", { r = 1, g = 0, b = 0 })
                     town_center.enemies_warning_status = 1
                 end
             elseif Public.enemy_players_near_town(town_center, town_control_range + 10) then
@@ -82,11 +86,17 @@ local function update_pvp_shields()
         local shield = this.pvp_shields[force.name]
         local shields_researched = town_shields_researched(force)
         local town_league = Score.get_town_league(town_center)
-        local town_offline_or_afk = #force.connected_players == 0 or town_center.marked_afk
+        local town_offline_or_afk = (offline_shield_enabled and #force.connected_players == 0) or (afk_shield_enabled and town_center.marked_afk)
         local abandoned = false
         local high_league_no_shield = town_league >= 4
 
-        local higher_league_nearby = Public.enemy_players_near_town(town_center, league_shield_activation_range, town_league)
+        if shield and (shield.shield_type == PvPShield.SHIELD_TYPE.OFFLINE or shield.shield_type == PvPShield.SHIELD_TYPE.OFFLINE_POST)
+            and not (offline_shield_enabled or afk_shield_enabled) then
+            PvPShield.remove_shield(shield)
+            shield = nil
+        end
+
+        local higher_league_nearby = league_shield_enabled and Public.enemy_players_near_town(town_center, league_shield_activation_range, town_league)
         if higher_league_nearby then
             town_center.last_higher_league_nearby = game.tick
         end
@@ -147,7 +157,7 @@ local function update_pvp_shields()
                 end
             end
 
-            if not town_center.pvp_shield_mgmt.displayed_offline_hint and shields_researched then
+            if (offline_shield_enabled or afk_shield_enabled) and not town_center.pvp_shield_mgmt.displayed_offline_hint and shields_researched then
                 local upkeep_hint = ''
                 if ScenarioTable.enabled('pvp_shield_upkeep') then
                     local cost = PvPShield.upkeep_coins_per_minute(PvPShield.SHIELD_TYPE.OFFLINE)
@@ -195,7 +205,8 @@ local function update_pvp_shields()
         end
 
         local protect_time_after_nearby = 3 * 60 * 60
-        if shield and shield.shield_type == PvPShield.SHIELD_TYPE.LEAGUE_BALANCE and not higher_league_nearby and game.tick - town_center.last_higher_league_nearby > protect_time_after_nearby then
+        if shield and shield.shield_type == PvPShield.SHIELD_TYPE.LEAGUE_BALANCE and not higher_league_nearby
+            and town_center.last_higher_league_nearby and game.tick - town_center.last_higher_league_nearby > protect_time_after_nearby then
             if town_offline_or_afk then
                 PvPShield.swap_shield_type(shield, PvPShield.SHIELD_TYPE.OFFLINE)
                 shield.expiry_time = town_center.pvp_shield_mgmt.offline_shield_eligible_until
@@ -225,6 +236,8 @@ local function update_pvp_shields()
                 shield_info = shield_info .. ', No shield (League 4)'
             elseif not shields_researched then
                 shield_info = shield_info .. ', Shield not researched'
+            elseif league_shield_enabled and not (offline_shield_enabled or afk_shield_enabled) then
+                shield_info = shield_info .. ', League shield standby'
             else
                 local min_coins = PvPShield.min_coins_for_shield()
                 if min_coins > 0 and town_center.coin_balance < min_coins then
@@ -250,9 +263,8 @@ local function update_leagues()
             if this.previous_leagues[player.index] ~= nil and league ~= this.previous_leagues[player.index] then
                 player.print("You are now in League " .. league, { 255, 255, 0 })
                 if league == 4 and this.previous_leagues[player.index] < 4 then
-                    player.print(" --> Your town can not deploy offline PvP shields anymore", { 255, 0, 0 })
-                    if Score.l4_score_only_offline then
-                        player.print(" --> Your town only gets survival score while you are offline (Game mode setting)", { 255, 0, 0 })
+                    if offline_shield_enabled or afk_shield_enabled then
+                        player.print(" --> Your town can not deploy offline PvP shields anymore", { 255, 0, 0 })
                     end
                 end
             end
@@ -280,6 +292,11 @@ local function all_players_near_center(town_center)
 end
 
 function Public.request_afk_shield(town_center, player)
+    if not afk_shield_enabled then
+        player.print("AFK shields are disabled in this game mode", { 255, 0, 0 })
+        return
+    end
+
     local market = town_center.market
     local this = ScenarioTable.get()
     local force = market.force
@@ -316,6 +333,14 @@ function Public.request_afk_shield(town_center, player)
 end
 
 local function update_afk_shields()
+    if not afk_shield_enabled then
+        local this = ScenarioTable.get()
+        for _, town_center in pairs(this.town_centers) do
+            town_center.marked_afk = false
+        end
+        return
+    end
+
     local this = ScenarioTable.get()
 
     for _, town_center in pairs(this.town_centers) do

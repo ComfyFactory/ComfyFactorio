@@ -227,6 +227,13 @@ local function place_scrap(surface, position)
         return
     end
 
+    if ScenarioTable.wreckage('rare') then
+        local rare_spawn_divisor = ScenarioTable.wreckage('rare_spawn_divisor')
+        if rare_spawn_divisor and rare_spawn_divisor > 1 and math_random(1, rare_spawn_divisor) ~= 1 then
+            return
+        end
+    end
+
     local scrap = scrap_entities[math_random(1, scrap_entities_index)]
     local e = surface.create_entity({ name = scrap.name, position = position, force = 'neutral' })
     Compat.set_minable(e, true)

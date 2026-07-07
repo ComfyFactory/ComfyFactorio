@@ -11,11 +11,14 @@ local Gui = require 'utils.gui'
 
 local button_id = 'towny-score-button'
 local survival_mode = ScenarioTable.mode('win_condition') == 'survival'
+local survival_points_enabled = ScenarioTable.score('survival_points')
 
 local survival_col_widths = { 52, 240, 96 }
 local survival_col_align = { 'center', 'left', 'right' }
 local points_col_widths = { 52, 160, 56, 72, 72, 64 }
 local points_col_align = { 'center', 'left', 'center', 'right', 'right', 'right' }
+local research_col_widths = { 52, 240, 56, 112 }
+local research_col_align = { 'center', 'left', 'center', 'right' }
 
 local function style_table_column(label, column, widths, alignments)
     label.style.horizontal_align = alignments[column]
@@ -149,19 +152,22 @@ local function update_points_scoreboard()
             local inner_frame = frame.add { type = 'frame', style = 'inside_shallow_frame', direction = 'vertical' }
             local subheader = inner_frame.add { type = 'frame', style = 'subheader_frame' }
             subheader.style.horizontally_stretchable = true
-            subheader.add
-            {
-                type = 'label',
-                style = 'subheader_label',
-                caption = 'Reach ' .. Score.score_to_win .. ' points to win!   Players online: ' .. #game.connected_players
-            }
+            local caption = 'Reach ' .. Score.score_to_win .. ' points to win!   Players online: ' .. #game.connected_players
+            if not survival_points_enabled then
+                caption = 'Reach ' .. Score.score_to_win .. ' research progress to win!   Players online: ' .. #game.connected_players
+            end
+            subheader.add { type = 'label', style = 'subheader_label', caption = caption }
 
-            local ranking_table = inner_frame.add { type = 'table', column_count = 6, style = 'bordered_table' }
+            local column_count = survival_points_enabled and 6 or 4
+            local col_widths = survival_points_enabled and points_col_widths or research_col_widths
+            local col_align = survival_points_enabled and points_col_align or research_col_align
+            local ranking_table = inner_frame.add { type = 'table', column_count = column_count, style = 'bordered_table' }
             ranking_table.style.margin = 4
             ranking_table.style.horizontally_stretchable = true
-            local header_captions = { 'Rank', 'Town', 'League', 'Research', 'Survival', 'Score' }
-            for i = 1, 6 do
-                local header = add_table_label(ranking_table, i, header_captions[i], points_col_widths, points_col_align)
+            local header_captions = survival_points_enabled and { 'Rank', 'Town', 'League', 'Research', 'Survival', 'Score' }
+                or { 'Rank', 'Town', 'League', 'Research Progress' }
+            for i = 1, column_count do
+                local header = add_table_label(ranking_table, i, header_captions[i], col_widths, col_align)
                 header.style.font = 'default-bold'
             end
 
@@ -173,7 +179,7 @@ local function update_points_scoreboard()
             local rank = 1
             for town_center, _ in spairs(town_total_scores, function (t, a, b) return t[b] < t[a] end) do
                 local force = town_center.market.force
-                local position = add_table_label(ranking_table, 1, '#' .. rank, points_col_widths, points_col_align)
+                local position = add_table_label(ranking_table, 1, '#' .. rank, col_widths, col_align)
                 if town_center == this.town_centers[player.force.name] then
                     position.style.font = 'default-semibold'
                     position.style.font_color = { r = 1, g = 1 }
@@ -185,25 +191,29 @@ local function update_points_scoreboard()
                 if town_center.pvp_shield_mgmt and town_center.pvp_shield_mgmt.is_abandoned then
                     label_extra = label_extra .. ' (Abandoned)'
                 end
-                local label = add_table_label(ranking_table, 2, town_center.town_name .. ' (' .. #force.connected_players .. '/' .. #force.players .. ')' .. label_extra, points_col_widths, points_col_align)
+                local label = add_table_label(ranking_table, 2, town_center.town_name .. ' (' .. #force.connected_players .. '/' .. #force.players .. ')' .. label_extra, col_widths, col_align)
                 label.style.font = 'default-semibold'
                 label.style.font_color = town_center.color
-                if town_center.town_rest then
+                if ScenarioTable.enabled('town_rest_bonus') and town_center.town_rest then
                     label.tooltip = 'Town rest bonus: ' .. TownCenter.format_rest_modifier(town_center.town_rest.current_modifier or 0)
                 end
-                add_table_label(ranking_table, 3, tostring(Score.get_town_league(town_center)), points_col_widths, points_col_align)
-                add_table_label(ranking_table, 4, Score.format_score(Score.research_score(town_center)), points_col_widths, points_col_align)
-                add_table_label(ranking_table, 5, string.format('%.1fh', Score.survival_time_h(town_center)), points_col_widths, points_col_align)
-                add_table_label(ranking_table, 6, Score.format_score(town_total_scores[town_center]), points_col_widths, points_col_align)
+                add_table_label(ranking_table, 3, tostring(Score.get_town_league(town_center)), col_widths, col_align)
+                add_table_label(ranking_table, 4, Score.format_score(Score.research_score(town_center)), col_widths, col_align)
+                if survival_points_enabled then
+                    add_table_label(ranking_table, 5, string.format('%.1fh', Score.survival_time_h(town_center)), col_widths, col_align)
+                    add_table_label(ranking_table, 6, Score.format_score(town_total_scores[town_center]), col_widths, col_align)
+                end
                 rank = rank + 1
             end
 
-            add_table_label(ranking_table, 1, '-', points_col_widths, points_col_align)
-            add_table_label(ranking_table, 2, 'Outlanders (' .. outlander_online .. ')', points_col_widths, points_col_align)
-            add_table_label(ranking_table, 3, '-', points_col_widths, points_col_align)
-            add_table_label(ranking_table, 4, '-', points_col_widths, points_col_align)
-            add_table_label(ranking_table, 5, '-', points_col_widths, points_col_align)
-            add_table_label(ranking_table, 6, '-', points_col_widths, points_col_align)
+            add_table_label(ranking_table, 1, '-', col_widths, col_align)
+            add_table_label(ranking_table, 2, 'Outlanders (' .. outlander_online .. ')', col_widths, col_align)
+            add_table_label(ranking_table, 3, '-', col_widths, col_align)
+            add_table_label(ranking_table, 4, '-', col_widths, col_align)
+            if survival_points_enabled then
+                add_table_label(ranking_table, 5, '-', col_widths, col_align)
+                add_table_label(ranking_table, 6, '-', col_widths, col_align)
+            end
         end
     end
 end

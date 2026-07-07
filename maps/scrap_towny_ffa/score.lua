@@ -7,20 +7,15 @@ local Event = require 'utils.event'
 local age_score_factors = { 10.0, 2.4, 1.2 }
 local age_score_factor = age_score_factors[storage.game_mode]
 local research_evo_score_factors = { 150, 65, 65 }
-local research_evo_score_factor = research_evo_score_factors[storage.game_mode]
+local research_evo_score_factor = ScenarioTable.score('research_evo_score_factor') or research_evo_score_factors[storage.game_mode]
 
-local l4_score_only_offline_settings = { false, true, true }
-local l4_score_only_offline = l4_score_only_offline_settings[storage.game_mode]
-Public.l4_score_only_offline = l4_score_only_offline
+local survival_points_enabled = ScenarioTable.score('survival_points')
 
-local score_to_win = 100
+local score_to_win = ScenarioTable.score('research_points_to_win')
 Public.score_to_win = score_to_win
 
-local max_research_score = 60
+local max_research_score = survival_points_enabled and 60 or score_to_win
 local max_survival_time_score = 80
-local max_survival_time_score_lower_leagues = 30
-local l4_offline_min_period_hours = 2
-local l4_offline_min_period_ticks = l4_offline_min_period_hours * 60 * 60 * 60
 
 function Public.research_score(town_center)
     return math.min(town_center.evolution.worms * research_evo_score_factor, max_research_score)
@@ -31,7 +26,10 @@ function Public.survival_time_h(town_center)
 end
 
 function Public.total_score(town_center)
-    return Public.research_score(town_center) + Public.survival_score(town_center)
+    if survival_points_enabled then
+        return Public.research_score(town_center) + Public.survival_score(town_center)
+    end
+    return Public.research_score(town_center)
 end
 
 function Public.survival_score(town_center)
@@ -98,31 +96,14 @@ local score_update_loop_interval = 60
 local function update_score()
     local this = ScenarioTable.get_table()
 
-    for _, town_center1 in pairs(this.town_centers) do
-        if #town_center1.market.force.connected_players > 0 then
-            town_center1.scoring_last_online = game.tick
-        end
-        for _, town_center2 in pairs(this.town_centers) do
-            local tc2_force = town_center2.market.force
-            if #tc2_force.connected_players > 0 and town_center1.market.force.get_friend(tc2_force) then
-                town_center1.scoring_last_online = game.tick
-            end
-        end
-    end
-
     local town_highest_score = 0
     local town_total_scores = {}
     for _, town_center in pairs(this.town_centers) do
         local market = town_center.market
         local force = market.force
-        local shield = this.pvp_shields[force.name]
 
-        if not shield and (not l4_score_only_offline or Public.get_town_league(town_center) < 4
-                or game.tick - town_center.scoring_last_online > l4_offline_min_period_ticks) then
-            if not l4_score_only_offline or Public.get_town_league(town_center) == 4 or
-                Public.survival_score(town_center) < max_survival_time_score_lower_leagues then
-                town_center.survival_time_ticks = town_center.survival_time_ticks + score_update_loop_interval
-            end
+        if survival_points_enabled and #force.connected_players > 0 and not town_center.marked_afk then
+            town_center.survival_time_ticks = town_center.survival_time_ticks + score_update_loop_interval
         end
 
         town_total_scores[town_center] = Public.total_score(town_center)
@@ -151,8 +132,10 @@ local function update_score()
             this.next_high_score_announcement = 70
         end
         if town_highest_score >= this.next_high_score_announcement then
-            game.print("A town has reached " .. format_score(town_highest_score) .. " score." ..
-                " The game ends at 100 score", { 255, 255, 0 })
+            local score_name = survival_points_enabled and " score." or " research progress."
+            local end_name = survival_points_enabled and " score" or " research progress"
+            game.print("A town has reached " .. format_score(town_highest_score) .. score_name ..
+                " The game ends at " .. score_to_win .. end_name, { 255, 255, 0 })
             if town_highest_score >= 70 then
                 this.next_high_score_announcement = 80
             end
