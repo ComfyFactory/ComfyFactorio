@@ -46,11 +46,6 @@ local allowed_for_all =
     ['express-loader'] = true
 }
 
-local allowed_for_towns =
-{
-    ['laser-turret'] = true
-}
-
 local function error_floaty(surface, position)
     FlyingText.flying_text(nil, surface, position, 'Technology not available!', { r = 0.77, g = 0.0, b = 0.0 })
 end
@@ -126,7 +121,7 @@ local function process_building_limit(actor, event)
     if not entity.valid then return end
 
     if not is_recipe_available(actor.force, entity.name)
-        and not (allowed_for_towns[entity.name] and Team.is_towny(actor.force)) then
+        and not Team.is_towny(actor.force) then
         error_floaty(entity.surface, entity.position)
         local entity_to_refund = entity.name
         entity.destroy()

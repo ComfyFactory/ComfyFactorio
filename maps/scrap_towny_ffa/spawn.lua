@@ -19,7 +19,6 @@ local spawn_point_safety = 16
 local spawn_point_incremental_distance = 16
 
 local function force_load(position, surface, radius)
-
     surface.request_to_generate_chunks(position, radius)
 
     surface.force_generate_chunk_requests()
@@ -34,7 +33,6 @@ local function get_area(position, w, h)
 end
 
 local function clear_spawn(position, surface, w, h)
-
     local area = get_area(position, w, h)
     for _, e in pairs(surface.find_entities_filtered({ area = area })) do
         if e.type ~= 'character' then
@@ -90,7 +88,6 @@ local function is_empty(position, surface)
     chunk_position.x = math_floor(position.x / 32)
     chunk_position.y = math_floor(position.y / 32)
     if not surface.is_chunk_generated(chunk_position) then
-
         surface.request_to_generate_chunks(position, 0)
         surface.force_generate_chunk_requests()
     end
@@ -120,16 +117,15 @@ local function find_valid_spawn_point(player, force_name, surface)
 
     if not in_use(position) then
         if Building.near_another_town(force_name, position, surface, spawn_point_town_buffer) == false then
-
             if is_empty(position, surface) == true then
-
                 return position
             end
         end
     end
 
     local r = 55
-    local area = {
+    local area =
+    {
         left_top = { x = player.physical_position.x - r, y = player.physical_position.y - r },
         right_bottom = { x = player.physical_position.x + r, y = player.physical_position.y + r }
     }
@@ -151,16 +147,13 @@ local function find_valid_spawn_point(player, force_name, surface)
         if town_center ~= nil then
             position = town_center.market.position
         end
-
     end
 
     local tries = 0
     local radius = spawn_point_town_buffer
     local angle
     while (tries < 100) do
-
         for _ = 1, 8 do
-
             angle = math_random(0, 360)
             local t = math_rad(angle)
             local x = math_floor(position.x + math_cos(t) * radius)
@@ -172,7 +165,6 @@ local function find_valid_spawn_point(player, force_name, surface)
                 if has_pollution(target, surface) == false then
                     if Building.near_another_town(force_name, target, surface, spawn_point_town_buffer) == false then
                         if is_empty(target, surface) == true then
-
                             position = target
                             return position
                         end
@@ -209,9 +201,7 @@ function Public.get_spawn_point(player, surface)
     local position = this.spawn_point[player.index]
 
     if position ~= nil and this.strikes[player.name] < 3 then
-
         if surface.can_place_entity({ name = 'character', position = position }) then
-
             return position
         else
             position = surface.find_non_colliding_position('character', position, 0, 0.25)
@@ -232,7 +222,7 @@ if ScenarioTable.enabled('new_spawn_command') then
     commands.add_command(
         'new-spawn',
         'Set up a new spawn point for the next spawn',
-        function(cmd)
+        function (cmd)
             local player = game.players[cmd.player_index]
             if not player or not player.valid then
                 return

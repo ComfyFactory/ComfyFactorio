@@ -2,6 +2,10 @@ if not script.active_mods['MineableWreckage'] then
     error('MineableWreckage mod is not enabled! Please download it from the mod website.')
 end
 
+if script.active_mods['space-age'] then
+    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
+end
+
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Misc = require 'utils.commands.misc'
 

@@ -220,7 +220,7 @@ function Public.reset_table()
     this.required_time_to_win = 72
     this.required_time_to_win_in_ticks = 15552000
     if not this.surface_terrain then
-        this.surface_terrain = 'desert'
+        this.surface_terrain = 'forest'
     end
     this.shuffle_random_victory_time = false
     this.announced_message = nil
