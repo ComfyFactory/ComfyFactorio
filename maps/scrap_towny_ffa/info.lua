@@ -12,7 +12,7 @@ The winner is the first town to reach the research progress goal.
 Offline time does not add progress.
 The Comfy gui has been disabled since it contains too many goodies.
 
-Have fun and be comfy ^.^]]
+Have fun ^.^]]
 
 local function pvp_shield_help_text()
     local offline_enabled = ScenarioTable.enabled('pvp_offline_shield') or ScenarioTable.enabled('pvp_afk_shield')

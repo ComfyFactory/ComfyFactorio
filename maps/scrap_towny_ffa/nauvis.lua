@@ -12,8 +12,8 @@ local dataset_key_dev = 'scrap_towny_ffa_dev'
 
 local Public = {}
 
-local map_width = 3840
-local map_height = 3840
+local map_width = 6420
+local map_height = 6420
 
 local apply_startup_settings_token =
     Token.register(

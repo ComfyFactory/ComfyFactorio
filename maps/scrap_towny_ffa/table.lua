@@ -28,8 +28,8 @@ local config =
         amount_scale = 0.5,
         scrap_amount_modifier = 1.5,
         rare = true,
-        rare_spawn_divisor = 4,
-        rare_reward_multiplier = 2,
+        rare_spawn_divisor = 35,
+        rare_reward_multiplier = 5,
     },
     pvp_shield =
     {
