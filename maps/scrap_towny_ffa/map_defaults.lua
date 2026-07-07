@@ -1,6 +1,9 @@
+local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+
 local Public = {}
 
 function Public.initialize()
+    game.difficulty_settings.technology_price_multiplier = ScenarioTable.game_mode('tech_price_multiplier')
 
     game.map_settings.pollution.enabled = true
     game.map_settings.pollution.diffusion_ratio = 0.02

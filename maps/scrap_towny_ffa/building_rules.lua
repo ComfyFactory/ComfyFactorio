@@ -13,7 +13,10 @@ local Compat = require 'utils.functions.factorio_compat'
 local town_zoning_entity_types = { "ammo-turret", "electric-turret", "fluid-turret" }
 local default_protected_radius = 30
 local turret_protected_radius = 42
-local base_town_protected_size = (ScenarioTable.league_balance_shield_size() - 1) / 2 + turret_protected_radius
+
+local function base_town_protected_size()
+    return (ScenarioTable.league_balance_shield_size() - 1) / 2 + turret_protected_radius
+end
 
 local ghost_time_after_destruction = 168 * 60 * 60 * 60
 local ghost_age_to_prevent_building = 60 * 60
@@ -264,7 +267,7 @@ local function process_built_entities(event)
             prevented_by_ghosts = true
         end
 
-        local in_protected_zone, reason = Public.near_another_town(force_name, position, surface, radius, radius + base_town_protected_size, prevented_by_ghosts)
+        local in_protected_zone, reason = Public.near_another_town(force_name, position, surface, radius, radius + base_town_protected_size(), prevented_by_ghosts)
 
         if not in_protected_zone and PvPShield.protected_by_shields(surface, position, force, radius) then
             in_protected_zone = true

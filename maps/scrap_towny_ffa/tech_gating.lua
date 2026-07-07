@@ -1,4 +1,5 @@
 local Team = require 'maps.scrap_towny_ffa.team'
+local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local FlyingText = require 'utils.functions.flying_texts'
 local Compat = require 'utils.functions.factorio_compat'
@@ -166,7 +167,6 @@ local function on_player_driving_changed_state(event)
     end
 end
 
-local Event = require 'utils.event'
 Event.add(defines.events.on_research_finished, research_finished)
 Event.add(defines.events.on_built_entity, on_player_built_entity)
 Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)

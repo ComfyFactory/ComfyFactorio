@@ -2,6 +2,8 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Map = require 'maps.scrap_towny_ffa.map'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
+local ResearchBalance = require 'maps.scrap_towny_ffa.research_balance'
+local MapLayout = require 'maps.scrap_towny_ffa.map_layout'
 
 local Public = {}
 
@@ -245,10 +247,10 @@ end
 
 local function update_balance_hud(player, in_town)
     if ScenarioTable.enabled('research_balance') then
-        require('maps.scrap_towny_ffa.research_balance').player_changes_town_status(player, in_town)
+        ResearchBalance.player_changes_town_status()
     end
     if ScenarioTable.enabled('dynamic_damage_modifier') or ScenarioTable.enabled('hud_damage') then
-        require('maps.scrap_towny_ffa.combat_balance').player_changes_town_status(player, in_town)
+        require('maps.scrap_towny_ffa.combat_balance').player_changes_town_status()
     end
     local TownStatus = require 'maps.scrap_towny_ffa.town_status'
     if TownStatus.enabled() then
@@ -331,7 +333,6 @@ local function create_outlander_force(player)
     end
     require('maps.scrap_towny_ffa.combat_balance').init_player_weapon_damage(force)
     if ScenarioTable.mode('map_mode') == 'fixed' then
-        local MapLayout = require 'maps.scrap_towny_ffa.map_layout'
         MapLayout.reveal_strategic_resources(force)
     end
     return force
@@ -806,6 +807,7 @@ function Public.add_new_force(force_name)
     enable_deconstruct(permission_group)
     disable_artillery(force, permission_group)
     disable_spidertron(force, permission_group)
+    ScenarioTable.disable_game_mode_techs(force)
     disable_rockets(force)
     disable_nukes(force)
     disable_cluster_grenades(force)
@@ -855,7 +857,11 @@ local function kill_force(force_name, cause)
 
     local is_suicide = cause and force_name == cause.force.name
 
+    local town_players = {}
     for _, player in pairs(force.players) do
+        town_players[#town_players + 1] = player
+    end
+    for _, player in pairs(town_players) do
         this.spawn_point[player.index] = nil
         this.cooldowns_town_placement[player.index] = game.tick + 3600 * 5
         this.buffs[player.index] = {}
@@ -864,10 +870,11 @@ local function kill_force(force_name, cause)
         else
             this.requests[player.index] = 'kill-character'
         end
-        player.force = game.forces.player
-        Map.disable_world_map(player)
-        Public.set_player_color(player)
-        Public.give_key(player.index)
+        Public.set_player_to_outlander(player)
+    end
+    local permission_group = game.permissions.get_group(force_name)
+    if permission_group then
+        permission_group.destroy()
     end
     for _, e in pairs(surface.find_entities_filtered({ force = force_name })) do
         if e.valid then
@@ -898,6 +905,7 @@ local function kill_force(force_name, cause)
 
     game.merge_forces(force_name, 'neutral')
     this.town_centers[force_name] = nil
+    update_member_limit(game.forces.player)
     delete_chart_tag_for_all_forces(market)
 
     local message

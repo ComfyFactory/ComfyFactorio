@@ -342,21 +342,6 @@ local function on_chunk_generated(event)
 
 end
 
-local function on_chunk_charted(event)
-    local force = event.force
-    local this = ScenarioTable.get_table()
-    local surface = game.get_surface(this.active_surface_index)
-    if not surface or not surface.valid then
-        return
-    end
-    if force.valid then
-        if force == game.forces['player'] or force == game.forces['rogue'] then
-            force.clear_chart(surface)
-        end
-    end
-end
-
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
-Event.add(defines.events.on_chunk_charted, on_chunk_charted)
 Event.add(defines.events.on_player_mined_entity, on_player_mined_entity)
 Event.add(defines.events.on_entity_died, on_entity_died)

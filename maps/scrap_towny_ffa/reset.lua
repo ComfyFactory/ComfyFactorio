@@ -6,6 +6,7 @@ local Nauvis = require 'maps.scrap_towny_ffa.nauvis'
 local Team = require 'maps.scrap_towny_ffa.team'
 local Player = require 'maps.scrap_towny_ffa.player'
 local Info = require 'maps.scrap_towny_ffa.info'
+local MapLayout = require 'maps.scrap_towny_ffa.map_layout'
 local Color = require 'utils.color_presets'
 local table_insert = table.insert
 
@@ -356,7 +357,6 @@ Event.add(defines.events.on_rocket_launched, on_rocket_launched)
 local function reset_map_part_1()
     ScenarioTable.reset_table()
     if ScenarioTable.mode('map_mode') == 'fixed' then
-        local MapLayout = require 'maps.scrap_towny_ffa.map_layout'
         MapLayout.init()
     end
     game.reset_time_played()

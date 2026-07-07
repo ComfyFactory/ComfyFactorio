@@ -3,7 +3,6 @@ local Team = require "maps.scrap_towny_ffa.team"
 local Event = require "utils.event"
 local Spawn = require "maps.scrap_towny_ffa.spawn"
 local Info = require "maps.scrap_towny_ffa.info"
-local Gui = require "utils.gui"
 
 local Public = {}
 local max_ticks_between_spawns = 60 * 10
@@ -29,7 +28,6 @@ function Public.settings(player)
     }
 
     player.show_on_map = false
-
 end
 
 function Public.initialize(player)
@@ -48,12 +46,11 @@ function Public.initialize(player)
 
         player.force.research_all_technologies()
 
-        player.insert { name = "coin", count = "9900" }
+        player.insert { name = "coin", count = "9999" }
     end
 end
 
 function Public.spawn(player)
-
     local this = ScenarioTable.get_table()
 
     local surface = game.get_surface(this.active_surface_index)
@@ -116,7 +113,6 @@ function Public.requests(player)
 
     if this.requests[player.index] and this.requests[player.index] == "kill-character" then
         if player.character and player.character.valid then
-
             local inventories =
             {
                 player.get_inventory(defines.inventory.character_main),
@@ -156,36 +152,7 @@ function Public.increment()
     end
 end
 
-local removed_hud_ids =
-{
-    "towny_map_position",
-    "towny_evo_display",
-    "towny_game_mode",
-    "towny_research_balance",
-    "towny_damage_balance",
-}
-
-local function remove_retired_hud(player)
-    for _, name in pairs(removed_hud_ids) do
-        local element = player.gui.top[name]
-
-        if element and element.valid then
-            element.destroy()
-        end
-
-        if Gui.get_mod_gui_top_frame() then
-            element = Gui.get_button_flow(player)[name]
-
-            if element and element.valid then
-                element.destroy()
-            end
-        end
-    end
-end
-
 local function setup_player_hud(player)
-    remove_retired_hud(player)
-
     if
         ScenarioTable.mode("win_condition") == "survival" or
         (ScenarioTable.mode("win_condition") == "score" and ScenarioTable.enabled("rich_scoreboard"))
@@ -211,7 +178,6 @@ local function on_player_joined_game(event)
 
     Info.toggle_button(player)
 
-    remove_retired_hud(player)
     player.set_goal_description("")
     if
         ScenarioTable.enabled("hud_research_cost") or ScenarioTable.enabled("hud_damage") or
@@ -296,8 +262,24 @@ local function on_player_died(event)
     end
 end
 
+local function check_controller()
+    for _, player in pairs(game.connected_players) do
+        if player and player.valid and (player.force.name == 'player' or player.force.name == 'rogue') then
+            if player.controller_type == defines.controllers.remote then
+                player.zoom = 10
+                player.force.clear_chart(player.surface)
+                local char = player.character
+                if char and char ~= nil then
+                    player.teleport(char.position, char.surface)
+                end
+            end
+        end
+    end
+end
+
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
 Event.add(defines.events.on_player_respawned, on_player_respawned)
 Event.add(defines.events.on_player_died, on_player_died)
+Event.on_nth_tick(10, check_controller)
 
 return Public

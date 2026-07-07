@@ -6,6 +6,7 @@ local Gui = require 'utils.gui'
 local Team = require 'maps.scrap_towny_ffa.team'
 local mod_gui = require 'mod-gui'
 local CombatBalance = require 'maps.scrap_towny_ffa.combat_balance'
+local ScoreBoard = require 'maps.scrap_towny_ffa.score_board'
 
 local ResearchBalance
 if ScenarioTable.enabled('research_balance') then
@@ -244,7 +245,7 @@ local function on_gui_click(event)
     if frame.visible then
         frame.visible = false
     else
-        require('maps.scrap_towny_ffa.score_board').close_panel(player)
+        ScoreBoard.close_panel(player)
         populate_panel(player)
         frame.visible = true
     end

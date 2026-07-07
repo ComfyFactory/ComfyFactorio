@@ -11,7 +11,14 @@ local Gui = require 'utils.gui'
 
 local button_id = 'towny-score-button'
 local survival_mode = ScenarioTable.mode('win_condition') == 'survival'
-local survival_points_enabled = ScenarioTable.score('survival_points')
+
+local function survival_points_enabled()
+    return ScenarioTable.survival_points_enabled()
+end
+
+local function score_board_caption()
+    return survival_mode and 'Town survival' or 'Town leaderboard'
+end
 
 local survival_col_widths = { 52, 240, 96 }
 local survival_col_align = { 'center', 'left', 'right' }
@@ -63,7 +70,7 @@ function Public.add_score_button(player)
     if existing and existing.valid then
         existing.destroy()
     end
-    local caption = survival_mode and 'Survival' or 'Towns'
+    local caption = score_board_caption()
     local tooltip = survival_mode and 'Toggle town survival leaderboard' or 'Toggle town leaderboard'
     local button
     if Gui.get_mod_gui_top_frame() then
@@ -125,7 +132,7 @@ local function init_score_board(player)
     if saved_frame and saved_frame.valid then
         return
     end
-    local caption = survival_mode and 'Town survival' or 'Town leaderboard'
+    local caption = score_board_caption()
     local flow = mod_gui.get_frame_flow(player)
     local frame = flow.add { type = 'frame', style = mod_gui.frame_style, caption = caption, direction = 'vertical', name = 'towny_leaderboard_frame' }
     frame.style.vertically_stretchable = false
@@ -152,19 +159,20 @@ local function update_points_scoreboard()
             local inner_frame = frame.add { type = 'frame', style = 'inside_shallow_frame', direction = 'vertical' }
             local subheader = inner_frame.add { type = 'frame', style = 'subheader_frame' }
             subheader.style.horizontally_stretchable = true
-            local caption = 'Reach ' .. Score.score_to_win .. ' points to win!   Players online: ' .. #game.connected_players
-            if not survival_points_enabled then
-                caption = 'Reach ' .. Score.score_to_win .. ' research progress to win!   Players online: ' .. #game.connected_players
+            local game_mode_name = ScenarioTable.game_mode('name')
+            local caption = game_mode_name .. ' - Reach ' .. Score.score_to_win .. ' points to win!   Players online: ' .. #game.connected_players
+            if not survival_points_enabled() then
+                caption = game_mode_name .. ' - Reach ' .. Score.score_to_win .. ' research progress to win!   Players online: ' .. #game.connected_players
             end
             subheader.add { type = 'label', style = 'subheader_label', caption = caption }
 
-            local column_count = survival_points_enabled and 6 or 4
-            local col_widths = survival_points_enabled and points_col_widths or research_col_widths
-            local col_align = survival_points_enabled and points_col_align or research_col_align
+            local column_count = survival_points_enabled() and 6 or 4
+            local col_widths = survival_points_enabled() and points_col_widths or research_col_widths
+            local col_align = survival_points_enabled() and points_col_align or research_col_align
             local ranking_table = inner_frame.add { type = 'table', column_count = column_count, style = 'bordered_table' }
             ranking_table.style.margin = 4
             ranking_table.style.horizontally_stretchable = true
-            local header_captions = survival_points_enabled and { 'Rank', 'Town', 'League', 'Research', 'Survival', 'Score' }
+            local header_captions = survival_points_enabled() and { 'Rank', 'Town', 'League', 'Research', 'Survival', 'Score' }
                 or { 'Rank', 'Town', 'League', 'Research Progress' }
             for i = 1, column_count do
                 local header = add_table_label(ranking_table, i, header_captions[i], col_widths, col_align)
@@ -199,7 +207,7 @@ local function update_points_scoreboard()
                 end
                 add_table_label(ranking_table, 3, tostring(Score.get_town_league(town_center)), col_widths, col_align)
                 add_table_label(ranking_table, 4, Score.format_score(Score.research_score(town_center)), col_widths, col_align)
-                if survival_points_enabled then
+                if survival_points_enabled() then
                     add_table_label(ranking_table, 5, string.format('%.1fh', Score.survival_time_h(town_center)), col_widths, col_align)
                     add_table_label(ranking_table, 6, Score.format_score(town_total_scores[town_center]), col_widths, col_align)
                 end
@@ -210,7 +218,7 @@ local function update_points_scoreboard()
             add_table_label(ranking_table, 2, 'Outlanders (' .. outlander_online .. ')', col_widths, col_align)
             add_table_label(ranking_table, 3, '-', col_widths, col_align)
             add_table_label(ranking_table, 4, '-', col_widths, col_align)
-            if survival_points_enabled then
+            if survival_points_enabled() then
                 add_table_label(ranking_table, 5, '-', col_widths, col_align)
                 add_table_label(ranking_table, 6, '-', col_widths, col_align)
             end
@@ -236,11 +244,12 @@ local function update_survival_scoreboard()
                 subheader.style.horizontally_stretchable = true
                 subheader.style.vertical_align = 'center'
                 local days = this.required_time_to_win / 24
+                local game_mode_name = ScenarioTable.game_mode('name')
                 subheader.add
                 {
                     type = 'label',
                     style = 'subheader_label',
-                    caption = 'Survive for ' .. days .. ' days (' .. this.required_time_to_win .. 'h) to win!'
+                    caption = game_mode_name .. ' - Survive for ' .. days .. ' days (' .. this.required_time_to_win .. 'h) to win!'
                 }
                 local information_table = inner_frame.add { type = 'table', column_count = 3, style = 'bordered_table' }
                 information_table.style.margin = 4

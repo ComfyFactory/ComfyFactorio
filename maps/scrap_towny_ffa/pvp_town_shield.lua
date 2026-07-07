@@ -13,9 +13,13 @@ local offline_shield_enabled = ScenarioTable.enabled('pvp_offline_shield')
 local league_shield_enabled = ScenarioTable.enabled('pvp_league_shield')
 local afk_shield_enabled = ScenarioTable.enabled('pvp_afk_shield')
 
-Public.offline_shield_size = (ScenarioTable.league_balance_shield_size() - 1)
+local function offline_shield_size()
+    return ScenarioTable.league_balance_shield_size() - 1
+end
 
-local shield_radius = (ScenarioTable.league_balance_shield_size() - 1) / 2
+local function shield_radius()
+    return (ScenarioTable.league_balance_shield_size() - 1) / 2
+end
 
 function Public.get_town_control_range(town_center)
     return math.min(150 + town_center.evolution.worms * 140,
@@ -127,7 +131,7 @@ local function update_pvp_shields()
                                 " It will last up to " .. PvPShield.format_lifetime_str(remaining_offline_shield_time) .. ".", { 255, 255, 0 })
                         end
                         if not shield then
-                            PvPShield.add_shield(market.surface, market.force, market.position, Public.offline_shield_size,
+                            PvPShield.add_shield(market.surface, market.force, market.position, offline_shield_size(),
                                 game.tick + remaining_offline_shield_time, 0.5 * 60 * 60, PvPShield.SHIELD_TYPE.OFFLINE)
                         else
                             PvPShield.swap_shield_type(shield, PvPShield.SHIELD_TYPE.OFFLINE)
@@ -274,7 +278,7 @@ local function update_leagues()
 end
 
 local function get_shield_max_area(position)
-    return { { position.x - shield_radius, position.y - shield_radius }, { position.x + shield_radius, position.y + shield_radius } }
+    return { { position.x - shield_radius(), position.y - shield_radius() }, { position.x + shield_radius(), position.y + shield_radius() } }
 end
 
 local function all_players_near_center(town_center)

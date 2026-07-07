@@ -4,21 +4,36 @@ local math_max = math.max
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local Event = require 'utils.event'
 
-local age_score_factors = { 10.0, 2.4, 1.2 }
-local age_score_factor = age_score_factors[storage.game_mode]
-local research_evo_score_factors = { 150, 65, 65 }
-local research_evo_score_factor = ScenarioTable.score('research_evo_score_factor') or research_evo_score_factors[storage.game_mode]
-
-local survival_points_enabled = ScenarioTable.score('survival_points')
-
 local score_to_win = ScenarioTable.score('research_points_to_win')
 Public.score_to_win = score_to_win
 
-local max_research_score = survival_points_enabled and 60 or score_to_win
 local max_survival_time_score = 80
+local max_survival_time_score_lower_leagues = 30
+local l4_offline_min_period_hours = 2
+local l4_offline_min_period_ticks = l4_offline_min_period_hours * 60 * 60 * 60
+
+local function survival_points_enabled()
+    return ScenarioTable.survival_points_enabled()
+end
+
+local function max_research_score()
+    return survival_points_enabled() and 60 or score_to_win
+end
+
+local function age_score_factor()
+    return ScenarioTable.game_mode('age_score_factor')
+end
+
+local function research_evo_score_factor()
+    return ScenarioTable.score('research_evo_score_factor') or ScenarioTable.game_mode('research_evo_score_factor')
+end
+
+local function l4_score_only_offline()
+    return ScenarioTable.game_mode('l4_score_only_offline')
+end
 
 function Public.research_score(town_center)
-    return math.min(town_center.evolution.worms * research_evo_score_factor, max_research_score)
+    return math.min(town_center.evolution.worms * research_evo_score_factor(), max_research_score())
 end
 
 function Public.survival_time_h(town_center)
@@ -26,14 +41,14 @@ function Public.survival_time_h(town_center)
 end
 
 function Public.total_score(town_center)
-    if survival_points_enabled then
+    if survival_points_enabled() then
         return Public.research_score(town_center) + Public.survival_score(town_center)
     end
     return Public.research_score(town_center)
 end
 
 function Public.survival_score(town_center)
-    return math.min(Public.survival_time_h(town_center) * age_score_factor, max_survival_time_score)
+    return math.min(Public.survival_time_h(town_center) * age_score_factor(), max_survival_time_score)
 end
 
 local function format_score(score)
@@ -92,18 +107,61 @@ function Public.get_player_league(player)
     return league
 end
 
+local function update_scoring_last_online(this)
+    for _, town_center1 in pairs(this.town_centers) do
+        if #town_center1.market.force.connected_players > 0 then
+            town_center1.scoring_last_online = game.tick
+        end
+        for _, town_center2 in pairs(this.town_centers) do
+            local tc2_force = town_center2.market.force
+            if #tc2_force.connected_players > 0 and town_center1.market.force.get_friend(tc2_force) then
+                town_center1.scoring_last_online = game.tick
+            end
+        end
+    end
+end
+
+local function should_increment_survival_time(town_center, shield)
+    if not survival_points_enabled() then
+        return false
+    end
+
+    if l4_score_only_offline() then
+        if shield then
+            return false
+        end
+        if Public.get_town_league(town_center) >= 4
+            and game.tick - (town_center.scoring_last_online or 0) <= l4_offline_min_period_ticks then
+            return false
+        end
+        if Public.get_town_league(town_center) < 4
+            and Public.survival_score(town_center) >= max_survival_time_score_lower_leagues then
+            return false
+        end
+        return true
+    end
+
+    local force = town_center.market.force
+    return #force.connected_players > 0 and not town_center.marked_afk
+end
+
 local score_update_loop_interval = 60
 local function update_score()
     local this = ScenarioTable.get_table()
+
+    if survival_points_enabled() and l4_score_only_offline() then
+        update_scoring_last_online(this)
+    end
 
     local town_highest_score = 0
     local town_total_scores = {}
     for _, town_center in pairs(this.town_centers) do
         local market = town_center.market
         local force = market.force
+        local shield = this.pvp_shields and this.pvp_shields[force.name]
 
-        if survival_points_enabled and #force.connected_players > 0 and not town_center.marked_afk then
-            town_center.survival_time_ticks = town_center.survival_time_ticks + score_update_loop_interval
+        if should_increment_survival_time(town_center, shield) then
+            town_center.survival_time_ticks = (town_center.survival_time_ticks or 0) + score_update_loop_interval
         end
 
         town_total_scores[town_center] = Public.total_score(town_center)
@@ -119,6 +177,9 @@ local function update_score()
 
             storage.last_winner_name = town_with_player_names
             log("WINNER_STORE=\"" .. town_with_player_names .. "\"")
+            if ScenarioTable.enabled('persist_last_winner') then
+                ScenarioTable.persist_settings()
+            end
             if storage.auto_reset_enabled then
                 storage.game_end_sequence_start = game.tick + 600
             else
@@ -132,8 +193,8 @@ local function update_score()
             this.next_high_score_announcement = 70
         end
         if town_highest_score >= this.next_high_score_announcement then
-            local score_name = survival_points_enabled and " score." or " research progress."
-            local end_name = survival_points_enabled and " score" or " research progress"
+            local score_name = survival_points_enabled() and " score." or " research progress."
+            local end_name = survival_points_enabled() and " score" or " research progress"
             game.print("A town has reached " .. format_score(town_highest_score) .. score_name ..
                 " The game ends at " .. score_to_win .. end_name, { 255, 255, 0 })
             if town_highest_score >= 70 then

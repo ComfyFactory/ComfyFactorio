@@ -187,6 +187,7 @@ Public.format_rest_modifier = format_rest_modifier
 
 function Public.init_score_fields(town_center)
     town_center.survival_time_ticks = town_center.survival_time_ticks or 0
+    town_center.scoring_last_online = town_center.scoring_last_online or game.tick
     town_center.last_swarm = town_center.last_swarm or 0
     town_center.laser_turrets = town_center.laser_turrets or 0
     town_center.labs = town_center.labs or 0
@@ -270,7 +271,10 @@ local table_shuffle = table.shuffle_table
 local table_size = table.size
 local town_radius = 27
 local radius_between_towns = 120
-local ore_amount = 500 * (200 / 168.5)
+
+local function ore_amount()
+    return 1200 * ScenarioTable.game_mode('starter_ore_scale')
+end
 
 local colors = {}
 local c1 = 250
@@ -423,7 +427,7 @@ local function draw_town_spawn(player_name)
                 local p = { position.x + vector[1], position.y + vector[2] }
                 p = surface.find_non_colliding_position(ores[i], p, 64, 1)
                 if p then
-                    surface.create_entity({ name = ores[i], position = p, amount = ore_amount })
+                    surface.create_entity({ name = ores[i], position = p, amount = ore_amount() })
                 end
             end
         end
