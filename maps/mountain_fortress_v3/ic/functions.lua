@@ -732,7 +732,7 @@ local function construct_doors(car)
             e = surface.create_entity(
                 {
                     name = 'warp',
-                    position = { x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                    position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
                     force = 'neutral',
                     create_build_effect_smoke = false,
                     direction = defines.direction.west
@@ -742,7 +742,7 @@ local function construct_doors(car)
             e = surface.create_entity(
                 {
                     name = 'warp',
-                    position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                    position = { x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
                     force = 'neutral',
                     create_build_effect_smoke = false,
                     direction = defines.direction.east
