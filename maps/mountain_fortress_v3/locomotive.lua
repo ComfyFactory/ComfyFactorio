@@ -285,6 +285,10 @@ local function give_passive_xp(data)
                         Public.add_player_to_permission_group(player, 'near_locomotive')
                     end
 
+                    if not rpg[player.index] then
+                        goto pre_exit
+                    end
+
                     rpg[player.index].inside_aura = true
                     Modifiers.update_single_modifier(player, 'character_crafting_speed_modifier', 'aura', 1)
                     Modifiers.update_player_modifiers(player)

@@ -770,19 +770,27 @@ local function set_multi_command()
 
     local es_settings = Public.get_es('settings')
 
-    surface.set_multi_command(
-        {
-            command =
+    local force = es_settings.enabled and es_settings.force_name or 'enemy'
+
+    local ok, err = pcall(function ()
+        surface.set_multi_command(
             {
-                type = defines.command.attack,
-                target = target,
-                distraction = defines.distraction.none
-            },
-            unit_count = 256,
-            force = es_settings.enabled and es_settings.force_name or 'enemy',
-            unit_search_distance = 1024
-        }
-    )
+                command =
+                {
+                    type = defines.command.attack,
+                    target = target,
+                    distraction = defines.distraction.none
+                },
+                unit_count = 256,
+                force = force,
+                unit_search_distance = 1024
+            }
+        )
+    end)
+
+    if not ok then
+        Server.output_script_data('[WaveDefense] set_multi_command failed - surface: ' .. surface.name .. ' (index: ' .. surface_index .. ') force: ' .. force .. ' target: ' .. target.name .. ' x:' .. target.position.x .. ' y:' .. target.position.y .. ' error: ' .. tostring(err))
+    end
 end
 
 local function increase_max_active_unit_groups()
@@ -1512,6 +1520,8 @@ Event.on_nth_tick(30,
     function ()
         local tick = game.tick
 
+        if tick < 2000 then return end
+
         local t = tick % 2000
         local t2 = tick % 18000
 
@@ -1592,6 +1602,8 @@ Event.on_nth_tick(
 
         local tick_to_spawn_unit_groups = Public.get('tick_to_spawn_unit_groups')
         local tick = game.tick
+
+        if tick < 2000 then return end
         local will_not_spawn = tick % tick_to_spawn_unit_groups ~= 0
         if will_not_spawn then
             return

@@ -38,12 +38,11 @@ local this =
     -- new initializer for scenario management because the old one sucked hard
     current_task =
     {
-        state = 'pre_init_task',
+        state = 'clear_old_surface',
         surface_name = 'nauvis',
         starting_planet = 'fortress',
-        default_task = 'move_players',
+        default_task = 'clear_old_surface',
         show_messages = false,
-        step = 1
     },
     adjusted_zones =
     {
@@ -60,7 +59,6 @@ local this =
         disable_terrain = false
     },
     random_planet_enabled = true,
-    first_boot = true,
 }
 
 
@@ -863,10 +861,8 @@ function Public.set_stateful_settings(key, value)
 end
 
 function Public.set_task(task, surface_name)
-    surface_name = surface_name or 'init'
-    if task == 'move_players' and surface_name == 'init' then
-        require('maps.mountain_fortress_v3.surface').create_landing_surface()
-    end
+    surface_name = surface_name or 'nauvis'
+    this.current_task.done = false
     this.current_task.state = task
     this.current_task.surface_name = surface_name
 end

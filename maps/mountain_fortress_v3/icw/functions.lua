@@ -1032,6 +1032,33 @@ function Public.migrate_wagon(icw, source, target)
     Task.set_timeout_in_ticks(100, remove_non_migrated_doors_token, { icw = icw })
 end
 
+function Public.move_robots_with_player(player, position)
+    local area =
+    {
+        left_top = { x = player.position.x - 100, y = player.position.y - 100 },
+        right_bottom = { x = player.position.x + 100, y = player.position.y + 100 }
+    }
+
+    local robots = player.surface.find_entities_filtered({ area = area, type = { 'logistic-robot', 'construction-robot' } })
+    for _, robot in pairs(robots) do
+        if robot and robot.valid then
+            local net_point = robot.logistic_network
+            if net_point and net_point.storage_points then
+                for _, point in pairs(net_point.storage_points) do
+                    if point then
+                        if point.owner and point.owner.valid and point.owner.name == 'character' then
+                            local robot_owner = point.owner.player
+                            if robot_owner and robot_owner.valid and robot_owner.index == player.index then
+                                robot.teleport(position)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 function Public.use_cargo_wagon_door_with_entity(icw, player, door)
     local player_data = get_player_data(icw, player)
 
@@ -1094,8 +1121,10 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
             local p = surface.find_non_colliding_position('character', position, 128, 0.5)
             player.character.driving = false
             if p then
+                Public.move_robots_with_player(player, p)
                 player.teleport(p)
             else
+                Public.move_robots_with_player(player, position)
                 player.teleport(position)
             end
             player_data.surface = surface.index
@@ -1124,6 +1153,7 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
                 return
             end
             player.character.driving = false
+            Public.move_robots_with_player(player, surface_position)
             player.teleport(surface_position, surface)
             Public.kill_minimap(player)
             player_data.surface = surface.index
@@ -1150,11 +1180,13 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
                 return
             end
             if wagon.entity.type == 'locomotive' then
+                Public.move_robots_with_player(player, surface_position)
                 player.teleport(surface_position, surface)
                 player_data.state = 2
                 player.driving = false
                 Public.kill_minimap(player)
             else
+                Public.move_robots_with_player(player, surface_position)
                 player.teleport(surface_position, surface)
                 Public.kill_minimap(player)
             end
@@ -1174,8 +1206,10 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
             end
             local p = surface.find_non_colliding_position('character', position, 128, 0.5)
             if p then
+                Public.move_robots_with_player(player, p)
                 player.teleport(p, surface)
             else
+                Public.move_robots_with_player(player, position)
                 player.teleport(position, surface)
             end
             player_data.surface = surface.index

@@ -2811,6 +2811,11 @@ function Public.boost_difficulty()
     Public.set('difficulty_set', true)
 end
 
+function Public.set_wd_surface_index()
+    local active_surface_index = Public.get('active_surface_index')
+    WD.set('surface_index', active_surface_index)
+end
+
 function Public.set_spawn_position()
     local collapse_pos = Collapse.get_position()
     local locomotive = Public.get('locomotive')
@@ -2978,17 +2983,13 @@ function Public.on_player_joined_game(event)
     local surface = game.surfaces[active_surface_index or starting_planet]
 
     local current_task = Public.get('current_task')
-    if not current_task.done and not Public.get('first_boot') then
-        local init_surface = game.get_surface('init')
-        if init_surface and init_surface.valid then
-            surface = init_surface
-            Score.init_player_table(player, true)
-            Modifiers.reset_player_modifiers(player)
-            WD.destroy_wave_gui(player)
-            ICMinimap.kill_minimap(player)
-            Event.raise(Public.events.reset_map, { player_index = player.index })
-            Public.add_player_to_permission_group(player, 'init_island', true)
-        end
+    if not current_task.done then
+        Score.init_player_table(player, true)
+        Modifiers.reset_player_modifiers(player)
+        WD.destroy_wave_gui(player)
+        ICMinimap.kill_minimap(player)
+        Event.raise(Public.events.reset_map, { player_index = player.index })
+        Public.add_player_to_permission_group(player, 'init_island', true)
     end
 
     if player.online_time < 1 then

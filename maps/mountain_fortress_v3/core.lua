@@ -1,5 +1,6 @@
 local Public = require 'maps.mountain_fortress_v3.table'
 
+Public.tasks = require 'maps.mountain_fortress_v3.tasks'
 Public.season_highscore = require 'maps.mountain_fortress_v3.season_highscore'
 Public.stateful = require 'maps.mountain_fortress_v3.stateful.main'
 Public.balance = require 'maps.mountain_fortress_v3.balance'

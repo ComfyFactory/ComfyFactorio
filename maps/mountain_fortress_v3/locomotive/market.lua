@@ -2276,4 +2276,6 @@ Event.add(defines.events.on_gui_closed, gui_closed)
 
 Public.get_player_data = get_player_data
 
+Public.create_market = create_market
+
 return Public
