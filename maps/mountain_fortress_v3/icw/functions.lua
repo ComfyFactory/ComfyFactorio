@@ -1033,6 +1033,9 @@ function Public.migrate_wagon(icw, source, target)
 end
 
 function Public.move_robots_with_player(player, position)
+    if not storage.move_robots_with_players then
+       return
+    end
     local area =
     {
         left_top = { x = player.position.x - 100, y = player.position.y - 100 },
