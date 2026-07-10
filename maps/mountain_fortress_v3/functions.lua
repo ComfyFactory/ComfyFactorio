@@ -3040,8 +3040,6 @@ function Public.on_player_joined_game(event)
         end
     end
 
-
-
     local locomotive = Public.get('locomotive')
 
     if not locomotive or not locomotive.valid then

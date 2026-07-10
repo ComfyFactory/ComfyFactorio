@@ -887,6 +887,9 @@ local function clear_train_area_biters()
     local destroyed = 0
     local max_destroy = 500
     local icw_locomotive = Public.get('icw_locomotive')
+    if not icw_locomotive then
+        return
+    end
     local carriages = ICW.get('carriages')
     if icw_locomotive and carriages then
         for _, carriage in pairs(carriages) do

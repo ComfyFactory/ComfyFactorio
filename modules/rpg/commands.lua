@@ -8,6 +8,10 @@ local round = math.round
 local validate_args = function (data)
     local player = data.player
     local target = data.target
+    if not target or not target.valid then
+        Utils.print_to(player, 'Invalid target.')
+        return false
+    end
     local rpg_t = Public.get_value_from_player(target.index)
 
     if not target or not target.valid then

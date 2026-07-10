@@ -102,20 +102,20 @@ end
 local handlers = {}
 
 handlers["player"] = function (param)
-    local p = game.get_player(param)
+    local p = game.get_player(tostring(param))
     if not p then return nil, "Player was not found." end
     return p
 end
 
 handlers["player-online"] = function (param)
-    local p = game.get_player(param)
+    local p = game.get_player(tostring(param))
     if not p or not p.valid then return nil, "Player was not found." end
     if not p.connected then return nil, "Player is not online." end
     return p
 end
 
 handlers["player-admin"] = function (param)
-    local p = game.get_player(param)
+    local p = game.get_player(tostring(param))
     if not p or not p.valid then return nil, "Player was not found." end
     if not p.admin then return nil, "Player is not an admin." end
     return p
@@ -147,7 +147,7 @@ handlers["position"] = function (param)
 end
 
 handlers["server"] = function (param)
-    local p = game.get_player(param)
+    local p = game.get_player(tostring(param))
     if p and p.valid then
         return nil, "Not running from server."
     end
