@@ -58,6 +58,8 @@ function Public.reset()
         ['fluid-wagon'] = { left_top = { x = -40, y = 0 }, right_bottom = { x = 40, y = 100 } },
         ['locomotive'] = { left_top = { x = -40, y = 0 }, right_bottom = { x = 40, y = 100 } }
     }
+
+    this.move_robots_with_player_enabled = false
 end
 
 function Public.get(key)

@@ -1042,12 +1042,6 @@ local function update_data()
                 data.gather_time_label.caption = time_left
             end
 
-            if not stateful.selected_objectives or not next(stateful.selected_objectives) then
-                Server.output_script_data('No selected objectives - this is a bug!')
-                Server.stop_scenario()
-                return
-            end
-
             if data.random_objectives and next(data.random_objectives) then
                 for index = 1, #data.random_objectives do
                     local frame_data = data.random_objectives[index]
@@ -1263,7 +1257,8 @@ local function update_raw()
                 if Public.is_modded_pt2 and random_planet_enabled then
                     local current_planet = Public.get_stateful_settings('current_planet')
                     Public.set_stateful_settings('last_won_planet', current_planet)
-                    Public.set_stateful_settings('next_planet', Public.get_new_random_planet())
+                    local next_planet = Public.get_new_random_planet()
+                    Public.set_stateful_settings('next_planet', next_planet)
                 end
 
                 local reversed = Public.get_stateful_settings('reversed')

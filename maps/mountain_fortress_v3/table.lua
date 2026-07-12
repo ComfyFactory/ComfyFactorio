@@ -862,9 +862,9 @@ end
 
 function Public.set_task(task, surface_name)
     surface_name = surface_name or 'nauvis'
-    this.current_task.done = false
     this.current_task.state = task
     this.current_task.surface_name = surface_name
+    this.current_task.done = false
 end
 
 function Public.is_task_done()

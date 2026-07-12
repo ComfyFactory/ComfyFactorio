@@ -3018,6 +3018,12 @@ function Public.on_player_joined_game(event)
 
     ICW_Func.is_minimap_valid(player, surface)
 
+    if not surface or not surface.valid then
+        Server.output_script_data_error('No surface found for player ' .. player.name)
+        Server.output_script_data_error('current_task: ' .. serpent.block(current_task))
+        return
+    end
+
     if player.online_time < 1 then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then

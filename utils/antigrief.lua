@@ -101,6 +101,9 @@ local create_ghost_token =
 
             local ghost = event.ghost
             local position = event.position
+            if not ghost or not ghost.valid then
+                return
+            end
             ghost.clone({ position = position, force = player.force, surface = player.surface, create_build_effect_smoke = false })
             ghost.destroy()
 

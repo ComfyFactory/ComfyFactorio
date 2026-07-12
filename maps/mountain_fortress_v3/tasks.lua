@@ -54,6 +54,11 @@ function Public.clear_old_surface(current_task)
         game.delete_surface(old_surface.name)
         Public.set('active_surface_index', nil)
     end
+    local next_planet = Public.get_stateful_settings('next_planet')
+    if next_planet then
+        Public.set_stateful_settings('current_planet', next_planet)
+        Server.output_script_data('Setting current planet to next planet: ' .. next_planet)
+    end
     current_task.message = 'Cleared old fortress!'
     current_task.delay = game.tick + 5
     current_task.state = 'create_default_surface'

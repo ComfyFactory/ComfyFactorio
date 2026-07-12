@@ -1782,5 +1782,13 @@ Public.output_script_data = function (message)
     output_data(concat({ script_output_tag, ' [', module_name, '] ', message }))
 end
 
+function Public.output_script_data_error(message)
+    local info = debug.getinfo(2, 'S')
+    local source = info and info.source or ''
+    local matched = source:match('^@__level__/(.+)$')
+    local module_name = matched and matched:sub(1, -5) or 'unknown'
+
+    output_data(concat({ script_output_tag, '[ERROR] [', module_name, '] ', message }))
+end
 
 return Public
