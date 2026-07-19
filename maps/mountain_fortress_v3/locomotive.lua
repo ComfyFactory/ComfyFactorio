@@ -822,7 +822,7 @@ function Public.render_train_hp()
             filled = false,
             radius = upgrades.locomotive_aura_radius,
             only_in_alt_mode = true,
-            width = 5
+            width = 10
         }
     )
 end
