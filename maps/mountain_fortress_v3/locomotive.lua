@@ -789,7 +789,7 @@ function Public.render_train_hp()
             text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
             surface = surface,
             target = locomotive,
-            color = locomotive.color,
+            color = { 0, 0, 255 },
             scale = 1.40,
             font = 'default-game',
             alignment = 'center',
@@ -804,7 +804,7 @@ function Public.render_train_hp()
             text = 'Comfy Choo Choo',
             surface = surface,
             target = locomotive_cargo,
-            color = locomotive.color,
+            color = { 0, 0, 255 },
             scale = 1.80,
             font = 'default-game',
             alignment = 'center',
@@ -818,10 +818,11 @@ function Public.render_train_hp()
         {
             surface = surface,
             target = locomotive,
-            color = locomotive.color,
+            color = { 0, 0, 255 },
             filled = false,
             radius = upgrades.locomotive_aura_radius,
-            only_in_alt_mode = true
+            only_in_alt_mode = true,
+            width = 5
         }
     )
 end

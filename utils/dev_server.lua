@@ -76,6 +76,12 @@ local function get_shutdown_time_message()
     return message
 end
 
+local function get_shutdown_time_remaining()
+    local ticks_remaining = this.shutdown_in_ticks - game.tick
+    if ticks_remaining < 0 then ticks_remaining = 0 end
+    return ticks_remaining
+end
+
 local notify_players_token =
     Scheduler.register_function(
         'notify_players_token',
@@ -124,7 +130,7 @@ Event.add(ServerCommands.events.on_server_started, function ()
 
     if server_name_matches then
         this.dev_server = true
-        Server.output_script_data('Server is a developer server, shutting down in 24 hours...')
+        Server.output_script_data('Server is a developer server, shutting down in 4 hours...')
         local task = Scheduler.new(this.shutdown_in_ticks, shutdown_server_token)
         this.shutdown_task_uid = task._uid
 
@@ -225,6 +231,10 @@ Commands.new('change_interval_time', 'Changes how often the server will notify p
 
 function Public.is_dev_server()
     return this.dev_server
+end
+
+function Public.get_shutdown_time_remaining()
+    return get_shutdown_time_remaining()
 end
 
 return Public

@@ -266,6 +266,7 @@ function Public.locomotive_spawn(surface, position, reversed)
     this.locomotive.minable_flag = false
     this.locomotive_cargo.minable_flag = false
     this.locomotive_cargo.operable = true
+    this.locomotive_cargo.color = this.locomotive.color
 
     local locomotive = ICW.register_wagon(this.locomotive)
     if not locomotive then
@@ -300,6 +301,7 @@ function Public.locomotive_spawn(surface, position, reversed)
                 new_wagon.minable_flag = false
                 new_wagon.operable = true
                 inc = inc + 7
+                new_wagon.color = this.locomotive.color
                 new_position = { x = pos.x, y = pos.y + inc }
                 ICW.register_wagon(new_wagon)
             end
