@@ -118,6 +118,7 @@ end
 --require 'maps.spooky_forest'
 
 --![[Defeat the biters and unlock new areas]]--
+--require 'maps.spiral_troopers_mixed'
 --require 'maps.spiral_troopers'
 
 --![[A map where you cross a river and fight against the biters.]]--
