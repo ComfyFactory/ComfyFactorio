@@ -1642,7 +1642,8 @@ local function gui_click(event)
                     color = this.locomotive.color,
                     filled = false,
                     radius = this.upgrades.locomotive_aura_radius,
-                    only_in_alt_mode = fill_circle
+                    only_in_alt_mode = fill_circle,
+                    width = 10
                 }
         end
 

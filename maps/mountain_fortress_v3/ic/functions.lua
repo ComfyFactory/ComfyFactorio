@@ -716,23 +716,35 @@ local function construct_doors(car)
         local p = { x = x, y = area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) }
         if p.x < 0 then
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x, y = p.y } } }, true)
-            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 0.5, y = p.y } } }, true)
-            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 0.5, y = p.y - 0.5 } } }, true)
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 0.5, y = p.y - 1 } } }, true)
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 0.5, y = p.y - 1 } } }, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 0.5, y = p.y } } }, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 0.5, y = p.y - 0.5 } } }, true)
+
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 1, y = p.y - 1 } } }, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 1, y = p.y } } }, true)
+
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 2, y = p.y - 1 } } }, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 2, y = p.y } } }, true)
         else
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x, y = p.y } } }, true)
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 0.5, y = p.y } } }, true)
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 1, y = p.y } } }, true)
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x, y = p.y - 0.5 } } }, true)
             surface.set_tiles({ { name = main_tile_name, position = { x = p.x - 1, y = p.y - 0.5 } } }, true)
+
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 1, y = p.y - 1 } } }, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 1, y = p.y } } }, true)
+
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 2, y = p.y - 1 } } }, true)
+            surface.set_tiles({ { name = main_tile_name, position = { x = p.x + 2, y = p.y } } }, true)
         end
         local e
         if (x - area.left_top.x) < 0 then
             e = surface.create_entity(
                 {
                     name = 'warp',
-                    position = { x, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                    position = { x - 2.0, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
                     force = 'neutral',
                     create_build_effect_smoke = false,
                     direction = defines.direction.west
@@ -742,7 +754,7 @@ local function construct_doors(car)
             e = surface.create_entity(
                 {
                     name = 'warp',
-                    position = { x - 0.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
+                    position = { x + 1.5, area.left_top.y + ((area.right_bottom.y - area.left_top.y) * 0.5) },
                     force = 'neutral',
                     create_build_effect_smoke = false,
                     direction = defines.direction.east
