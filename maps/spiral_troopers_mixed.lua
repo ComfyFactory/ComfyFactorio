@@ -6,18 +6,35 @@ local Event = require 'utils.event'
 local DeferredGenerate = require 'utils.deferred_generate'
 local map_functions = require 'utils.tools.map_functions'
 local SpawnersContainBiters = require 'modules.spawners_contain_biters'
+local Poll = require 'utils.gui.poll'
+local SoftReset = require 'utils.functions.soft_reset'
+local Commands = require 'utils.commands'
+local Color = require 'utils.color_presets'
 require 'modules.dynamic_landfill'
 require 'modules.satellite_score'
 
-
-local RING_BASE_RADIUS = 3
-local RING_SPACING = 2
-local MAX_RING_LEVEL = 20
+local ring_base_radius = 3
+local ring_spacing = 2
+local max_ring_level = 20
+local loss_check_area =
+{
+    left_top = { x = -64, y = -64 },
+    right_bottom = { x = 96, y = 96 }
+}
+local starting_items =
+{
+    ['iron-plate'] = 32,
+    ['pistol'] = 1,
+    ['firearm-magazine'] = 64
+}
+local chart_radius = 460
+local reset_poll_duration = 120
+local reset_poll_cooldown = 54000
 local rock_raffle = { 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 local ore_rotation = { 'iron-ore', 'copper-ore', 'coal', 'stone' }
-local COAL_FREE_SPAWN_RADIUS = 96
-local COAL_BASE_AMOUNT = 50
-local COAL_DISTANCE_STEP = 1
+local coal_free_spawn_radius = 96
+local coal_base_amount = 50
+local coal_distance_step = 1
 local coal_floor_skip_tiles =
 {
     ['out-of-map'] = true,
@@ -54,7 +71,7 @@ local ore_build_allowed_types =
     ['loader'] = true,
     ['loader-1x1'] = true
 }
-local MAX_ORE_RICHNESS = 5000000
+local max_ore_richness = 5000000
 local spiral_cords =
 {
     { x = 0, y = -1 },
@@ -88,6 +105,38 @@ local entity_drop_amount =
 local ore_spill_raffle = { 'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'iron-ore', 'coal', 'coal', 'coal', 'copper-ore', 'copper-ore', 'stone', 'landfill' }
 
 local kabooms = { 'big-artillery-explosion', 'big-explosion', 'explosion' }
+
+local function get_surface_name()
+    return storage.spiral_surface_name or 'spiral_troopers'
+end
+
+local function get_surface()
+    return game.surfaces[get_surface_name()]
+end
+
+local function get_map_gen_settings()
+    return
+    {
+        property_expression_names =
+        {
+            ['tile:water:probability'] = -1000,
+            ['tile:deepwater:probability'] = -1000
+        },
+        cliff_settings = { cliff_elevation_interval = 50, cliff_elevation_0 = 50 },
+        autoplace_controls = {}
+    }
+end
+
+local function apply_force_settings(surface)
+    game.map_settings.enemy_evolution.destroy_factor = 0.0
+    game.map_settings.enemy_evolution.time_factor = 0.0001
+    game.map_settings.enemy_evolution.pollution_factor = 0.0
+    game.forces.player.set_spawn_position({ 0, 0 }, surface)
+    game.forces.player.technologies['artillery-shell-range-1'].enabled = false
+    game.forces.player.technologies['artillery-shell-speed-1'].enabled = false
+    game.forces.player.technologies['artillery'].enabled = false
+    game.forces.player.chart(surface, { { x = -chart_radius, y = -chart_radius }, { x = chart_radius, y = chart_radius } })
+end
 
 local mixed_ore_ratios =
 {
@@ -294,7 +343,7 @@ local function treasure_chest(position, surface)
 end
 
 local function level_finished()
-    local surface = game.surfaces['spiral_troopers']
+    local surface = get_surface()
     if not storage.spiral_troopers_beaten_level then
         storage.spiral_troopers_beaten_level = 1
     else
@@ -369,11 +418,11 @@ local function paint_coal_floor(surface, area)
         for y = 0, 31 do
             local pos = { x = math.floor(area.left_top.x + x) + 0.5, y = math.floor(area.left_top.y + y) + 0.5 }
             local distance_from_center = math.sqrt(pos.x * pos.x + pos.y * pos.y)
-            if distance_from_center > COAL_FREE_SPAWN_RADIUS then
+            if distance_from_center > coal_free_spawn_radius then
                 local tile = surface.get_tile(pos.x, pos.y)
                 if tile.valid and not coal_floor_skip_tiles[tile.name] then
                     if surface.count_entities_filtered({ position = pos, type = 'resource', limit = 1 }) == 0 then
-                        local amount = COAL_BASE_AMOUNT + math.floor((distance_from_center - COAL_FREE_SPAWN_RADIUS) * COAL_DISTANCE_STEP)
+                        local amount = coal_base_amount + math.floor((distance_from_center - coal_free_spawn_radius) * coal_distance_step)
                         surface.create_entity({ name = 'coal', position = pos, amount = amount })
                     end
                 end
@@ -394,7 +443,7 @@ local function enforce_banned_entities(entity, event)
     if event.player_index then
         local player = game.players[event.player_index]
         if player and player.valid then
-            player.print('Зелёные и синие сундуки строить нельзя.', { r = 1, g = 0.3, b = 0 })
+            player.print('Buffer chest and requester chest cannot be built.', { r = 1, g = 0.3, b = 0 })
         end
     end
     if is_ghost then
@@ -440,7 +489,7 @@ local function enforce_ore_build_restriction(entity, event)
     if event.player_index then
         local player = game.players[event.player_index]
         if player and player.valid then
-            player.print('Нельзя строить это на руде/угле - разрешены только буровые, конвейеры, трубы, столбы, рельсы и техника.', { r = 1, g = 0.3, b = 0 })
+            player.print('Cannot build this on ore/coal - only drills, belts, pipes, poles, rails and vehicles are allowed.', { r = 1, g = 0.3, b = 0 })
         end
     end
 
@@ -473,7 +522,7 @@ local function enforce_ore_build_restriction(entity, event)
 end
 
 local function get_furthest_chunk()
-    local surface = game.surfaces['spiral_troopers']
+    local surface = get_surface()
     local x = 1
     while true do
         if not surface.is_chunk_generated({ 0 + x, 0 }) then
@@ -524,14 +573,17 @@ end
 
 local function ore_richness_for_level(level)
     local richness = 400 * (5 ^ (level - 1))
-    if richness > MAX_ORE_RICHNESS then
-        richness = MAX_ORE_RICHNESS
+    if richness > max_ore_richness then
+        richness = max_ore_richness
     end
     return richness
 end
 
 local function grow_action_step(job)
-    local surface = game.surfaces['spiral_troopers']
+    if job.map_id ~= storage.spiral_map_id then
+        return false
+    end
+    local surface = get_surface()
     if not surface or not surface.valid then
         storage.spiral_growth_in_progress = false
         return false
@@ -743,7 +795,7 @@ local function start_grow_job()
         side_index = 4
     end
     local side_dir = spiral_cords[side_index]
-    local radius = RING_BASE_RADIUS + (level - 1) * RING_SPACING
+    local radius = ring_base_radius + (level - 1) * ring_spacing
     local checkpoint_chunk = { x = side_dir.x * radius, y = side_dir.y * radius }
     local reward_chunk = { x = side_dir.x * (radius - 1), y = side_dir.y * (radius - 1) }
     local wall_chunks = {}
@@ -762,7 +814,8 @@ local function start_grow_job()
         checkpoint_chunk = checkpoint_chunk,
         reward_chunk = reward_chunk,
         wall_chunks = wall_chunks,
-        entities = {}
+        entities = {},
+        map_id = storage.spiral_map_id or 0
     }
     storage.spiral_growth_in_progress = true
     DeferredGenerate.queue(grow_action_token, job, #wall_chunks + 5)
@@ -771,18 +824,18 @@ end
 
 
 local function try_grow_spiral()
-    local surface = game.surfaces['spiral_troopers']
+    local surface = get_surface()
     if not surface or storage.spiral_growth_in_progress then
         return
     end
-    if storage.spiral_troopers_level and storage.spiral_troopers_level >= MAX_RING_LEVEL then
+    if storage.spiral_troopers_level and storage.spiral_troopers_level >= max_ring_level then
         return
     end
     local fx, fy = get_furthest_chunk()
     local furthest = math.min(fx, fy)
     local current_radius = 0
     if storage.spiral_troopers_level then
-        current_radius = RING_BASE_RADIUS + (storage.spiral_troopers_level - 1) * RING_SPACING
+        current_radius = ring_base_radius + (storage.spiral_troopers_level - 1) * ring_spacing
     end
     if furthest <= current_radius then
         return
@@ -791,8 +844,8 @@ local function try_grow_spiral()
 end
 
 local function on_chunk_generated(event)
-    local surface = game.surfaces['spiral_troopers']
-    if event.surface.name ~= surface.name then
+    local surface = get_surface()
+    if not surface or event.surface.name ~= surface.name then
         return
     end
 
@@ -878,40 +931,21 @@ end
 local function on_player_joined_game(event)
     local player = game.players[event.player_index]
     if not storage.map_init_done then
-        local map_gen_settings = {}
-        map_gen_settings.property_expression_names =
-        {
-            ['tile:water:probability'] = -1000,
-            ['tile:deepwater:probability'] = -1000
-        }
-        map_gen_settings.cliff_settings = { cliff_elevation_interval = 50, cliff_elevation_0 = 50 }
-        map_gen_settings.autoplace_controls =
-        {
-        }
-
-        game.create_surface('spiral_troopers', map_gen_settings)
-
-        SpawnersContainBiters.add_surface('spiral_troopers')
-
-        game.map_settings.enemy_evolution.destroy_factor = 0.0
-        game.map_settings.enemy_evolution.time_factor = 0.0001
-        game.map_settings.enemy_evolution.pollution_factor = 0.0
-
-        game.forces['player'].set_spawn_position({ 0, 0 }, game.surfaces['spiral_troopers'])
-        game.forces['player'].technologies['artillery-shell-range-1'].enabled = false
-        game.forces['player'].technologies['artillery-shell-speed-1'].enabled = false
-        game.forces['player'].technologies['artillery'].enabled = false
-        local surface = game.surfaces['spiral_troopers']
-        local radius = 460
-        game.forces.player.chart(surface, { { x = -1 * radius, y = -1 * radius }, { x = radius, y = radius } })
+        local map_gen_settings = get_map_gen_settings()
+        local surface = game.create_surface('spiral_troopers', map_gen_settings)
+        storage.spiral_surface_name = surface.name
+        storage.spiral_map_id = (storage.spiral_map_id or 0) + 1
+        SpawnersContainBiters.add_surface(surface.name)
+        apply_force_settings(surface)
         storage.map_init_done = true
     end
-    local surface = game.surfaces['spiral_troopers']
+    local surface = get_surface()
+    local surface_name = get_surface_name()
     if player.online_time < 5 and surface.is_chunk_generated({ 0, 0 }) then
-        player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 2, 1), 'spiral_troopers')
+        player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 2, 1), surface_name)
     else
         if player.online_time < 5 then
-            player.teleport({ 0, 0 }, 'spiral_troopers')
+            player.teleport({ 0, 0 }, surface_name)
         end
     end
     if player.online_time < 10 then
@@ -923,7 +957,7 @@ end
 
 local function on_player_rotated_entity(event)
     if event.entity.name == 'burner-inserter' and event.entity.destructible == false then
-        game.surfaces['spiral_troopers'].create_entity { name = 'big-explosion', position = event.entity.position }
+        get_surface().create_entity { name = 'big-explosion', position = event.entity.position }
         event.entity.destroy()
         level_finished()
     end
@@ -987,7 +1021,7 @@ local function on_player_built_tile(event)
         if t.old_tile.name == 'water-green' then
             local tiles = {}
             table.insert(tiles, { name = 'water-green', position = t.position })
-            game.surfaces['spiral_troopers'].set_tiles(tiles, true)
+            get_surface().set_tiles(tiles, true)
         end
     end
 end
@@ -1002,7 +1036,7 @@ local function on_tick()
     if game.tick % 2 == 1 then
         if storage.checkpoint_barriers[storage.spiral_troopers_beaten_level][#storage.checkpoint_barriers[storage.spiral_troopers_beaten_level]].valid == true then
             local pos = storage.checkpoint_barriers[storage.spiral_troopers_beaten_level][#storage.checkpoint_barriers[storage.spiral_troopers_beaten_level]].position
-            local surface = game.surfaces['spiral_troopers']
+            local surface = get_surface()
             surface.create_entity { name = kabooms[math.random(1, #kabooms)], position = pos }
             local a =
             {
@@ -1028,8 +1062,185 @@ local function on_tick()
     end
 end
 
+local function area_has_player_buildings(surface)
+    local entities = surface.find_entities_filtered({ area = loss_check_area, force = 'player' })
+    for _, entity in pairs(entities) do
+        if entity.valid and entity.type ~= 'character' and entity.type ~= 'simple-entity' and entity.destructible then
+            return true
+        end
+    end
+    return false
+end
+
+local function area_has_enemies(surface)
+    return surface.count_entities_filtered({ area = loss_check_area, force = 'enemy', limit = 1 }) > 0
+end
+
+local function clear_spiral_storage()
+    storage.spiral_troopers_level = nil
+    storage.spiral_troopers_beaten_level = nil
+    storage.checkpoint_barriers = nil
+    storage.spiral_growth_in_progress = false
+    storage.spiral_troopers_spawn_ores = nil
+    storage.spiral_base_established = nil
+    storage.spiral_reset_poll_id = nil
+    storage.spiral_reset_poll_cooldown = nil
+    storage.map_init_done = nil
+end
+
+local function reset_map()
+    local old_surface = get_surface()
+    if not old_surface or not old_surface.valid then
+        return
+    end
+    clear_spiral_storage()
+    Poll.reset()
+    storage.spiral_map_id = (storage.spiral_map_id or 0) + 1
+    local new_surface = SoftReset.soft_reset_map(old_surface, get_map_gen_settings(), starting_items)
+    storage.spiral_surface_name = new_surface.name
+    SpawnersContainBiters.add_surface(new_surface.name)
+    apply_force_settings(new_surface)
+    storage.map_init_done = true
+end
+
+local function start_reset_poll()
+    if storage.spiral_reset_poll_id then
+        return false
+    end
+    if storage.spiral_reset_poll_cooldown and game.tick < storage.spiral_reset_poll_cooldown then
+        return false
+    end
+    local ok, id = Poll.poll(
+        {
+            question = 'Soft-reset the map?',
+            answers = { 'Yes, reset!', 'No, keep defending!' },
+            duration = reset_poll_duration,
+            custom_data = { spiral_reset_poll = true }
+        }
+    )
+    if ok then
+        storage.spiral_reset_poll_id = id
+        return true
+    end
+    return false
+end
+
+local function check_loss_condition()
+    local surface = get_surface()
+    if not surface or not surface.valid then
+        return
+    end
+    if not storage.map_init_done then
+        return
+    end
+    if not storage.spiral_troopers_beaten_level or storage.spiral_troopers_beaten_level <= 0 then
+        return
+    end
+    if storage.spiral_reset_poll_id then
+        return
+    end
+    if storage.spiral_reset_poll_cooldown and game.tick < storage.spiral_reset_poll_cooldown then
+        return
+    end
+    local has_buildings = area_has_player_buildings(surface)
+    if has_buildings then
+        storage.spiral_base_established = true
+        return
+    end
+    if not storage.spiral_base_established then
+        return
+    end
+
+    if not area_has_enemies(surface) then
+        return
+    end
+
+    start_reset_poll()
+end
+
+local function command_vote_to_reset(player)
+    local warn = Color.warning
+    local ok_color = Color.success
+    local surface = get_surface()
+    local failed = false
+
+    if not surface or not surface.valid then
+        player.print('Surface is not valid. Please contact a moderator.', { color = warn })
+        return false
+    end
+
+    if not storage.map_init_done then
+        player.print('Map is not initialized yet. Please contact a moderator.', { color = warn })
+        failed = true
+    end
+
+    local beaten = storage.spiral_troopers_beaten_level or 0
+    if beaten <= 0 then
+        player.print('Need at least one beaten checkpoint level (current: ' .. beaten .. ').', { color = warn })
+        failed = true
+    end
+
+    if storage.spiral_reset_poll_id then
+        player.print('A reset poll is already running.', { color = warn })
+        failed = true
+    end
+
+    if storage.spiral_reset_poll_cooldown and game.tick < storage.spiral_reset_poll_cooldown then
+        local remaining_minutes = math.ceil((storage.spiral_reset_poll_cooldown - game.tick) / 3600)
+        player.print('Reset poll is on cooldown (' .. remaining_minutes .. ' minute(s) remaining).', { color = warn })
+        failed = true
+    end
+
+    local has_buildings = area_has_player_buildings(surface)
+    if has_buildings then
+        storage.spiral_base_established = true
+        player.print('Player buildings are still present in the starting area.', { color = warn })
+        failed = true
+    elseif not storage.spiral_base_established then
+        player.print('A base was never established in the starting area.', { color = warn })
+        failed = true
+    end
+
+    if failed then
+        player.print('Reset poll conditions not met.', { color = warn })
+        return false
+    end
+
+    if start_reset_poll() then
+        player.print('Reset poll started.', { color = ok_color })
+        return true
+    end
+
+    player.print('Failed to start reset poll.', { color = warn })
+    return false
+end
+
+Commands.new('vote_to_reset', 'Check Spiral Troopers loss conditions and start a soft-reset poll if met.')
+    :callback(
+        function (player)
+            return command_vote_to_reset(player)
+        end
+    )
+
+local function on_poll_complete(event)
+    if not event.custom_data or not event.custom_data.spiral_reset_poll then
+        return
+    end
+    storage.spiral_reset_poll_id = nil
+    local winning_answer = event.winning_answer
+    if winning_answer and winning_answer.text == 'Yes, reset!' then
+        game.print('Spiral Troopers: reset vote passed. Soft-resetting map...', { r = 0.98, g = 0.66, b = 0.22 })
+        reset_map()
+        return
+    end
+    storage.spiral_reset_poll_cooldown = game.tick + reset_poll_cooldown
+    game.print('Spiral Troopers: reset vote failed. Keep defending whatever you have left!', { r = 0.98, g = 0.66, b = 0.22 })
+    game.print('Next reset vote in ' .. math.floor(reset_poll_cooldown / 60 / 60) .. ' hours.', { r = 0.98, g = 0.66, b = 0.22 })
+end
+
 Event.add(defines.events.on_tick, on_tick)
 Event.on_nth_tick(30, try_grow_spiral)
+Event.on_nth_tick(300, check_loss_condition)
 Event.add(defines.events.on_player_built_tile, on_player_built_tile)
 Event.add(defines.events.on_entity_died, on_entity_died)
 Event.add(defines.events.on_player_rotated_entity, on_player_rotated_entity)
@@ -1037,3 +1248,4 @@ Event.add(defines.events.on_robot_built_entity, on_robot_built_entity)
 Event.add(defines.events.on_built_entity, on_built_entity)
 Event.add(defines.events.on_chunk_generated, on_chunk_generated)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
+Event.add(ServerCommands.events.on_poll_complete, on_poll_complete)
