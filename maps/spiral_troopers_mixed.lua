@@ -30,6 +30,8 @@ local starting_items =
 local chart_radius = 460
 local reset_poll_duration = 120
 local reset_poll_cooldown = 54000
+local turret_reactivate_delay = 1800
+local turret_enemy_check_radius = 32
 local rock_raffle = { 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
 local ore_rotation = { 'iron-ore', 'copper-ore', 'coal', 'stone' }
 local coal_free_spawn_radius = 96
@@ -413,6 +415,12 @@ local function draw_mixed_ore_circle(center, main_ore, surface, radius, amount)
     end
 end
 
+local function place_oil_field(surface, center, amount)
+    local pos = { x = math.floor(center.x) + 0.5, y = math.floor(center.y) + 0.5 }
+    surface.create_entity({ name = 'crude-oil', position = pos, amount = amount })
+end
+
+
 local function paint_coal_floor(surface, area)
     for x = 0, 31 do
         for y = 0, 31 do
@@ -639,6 +647,7 @@ local function grow_action_step(job)
             for _, res in pairs(surface.find_entities_filtered({ area = water_area, type = 'resource' })) do
                 res.destroy()
             end
+            place_oil_field(surface, water_pos, ore_richness_for_level(level))
         end
         job.phase = 3
         job.next_tick = game.tick + 10
@@ -702,6 +711,8 @@ local function grow_action_step(job)
         if not ok_reward then
             log('spiral_troopers grow_level: reward room error at level ' .. tostring(level) .. ': ' .. tostring(err_reward))
         end
+        local checkpoint_water_center = { x = checkpoint_chunk.x * 32 + 16, y = checkpoint_chunk.y * 32 + 16 }
+        place_oil_field(surface, checkpoint_water_center, ore_richness_for_level(level))
         job.phase = 4
         job.next_tick = game.tick + 10
         return true
@@ -859,6 +870,7 @@ local function on_chunk_generated(event)
             local radius = 256
             game.forces.player.chart(surface, { { x = -1 * radius, y = -1 * radius }, { x = radius, y = radius } })
             storage.spiral_troopers_spawn_ores = true
+            place_oil_field(surface, { x = -20, y = -16 }, 30000)
         end
     end
 
@@ -953,6 +965,10 @@ local function on_player_joined_game(event)
         player.insert { name = 'pistol', count = 1 }
         player.insert { name = 'firearm-magazine', count = 64 }
     end
+
+    if player.physical_surface.name ~= surface.name then
+        player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 2, 1), surface.name)
+    end
 end
 
 local function on_player_rotated_entity(event)
@@ -963,7 +979,54 @@ local function on_player_rotated_entity(event)
     end
 end
 
-local disabled_entities = { "gun-turret", "laser-turret", "flamethrower-turret" }
+local disabled_entities =
+{
+    ['gun-turret'] = true,
+    ['laser-turret'] = true,
+    ['flamethrower-turret'] = true
+}
+
+local function turret_enemy_area(position)
+    return
+    {
+        left_top = { x = position.x - turret_enemy_check_radius, y = position.y - turret_enemy_check_radius },
+        right_bottom = { x = position.x + turret_enemy_check_radius, y = position.y + turret_enemy_check_radius }
+    }
+end
+
+local function track_disabled_turret(entity)
+    if not storage.spiral_disabled_turrets then
+        storage.spiral_disabled_turrets = {}
+    end
+    storage.spiral_disabled_turrets[entity.unit_number] =
+    {
+        entity = entity,
+        enemies_clear_tick = nil
+    }
+end
+
+local function check_disabled_turrets()
+    local turrets = storage.spiral_disabled_turrets
+    if not turrets then
+        return
+    end
+    for unit_number, data in pairs(turrets) do
+        local entity = data.entity
+        if not entity or not entity.valid then
+            turrets[unit_number] = nil
+        else
+            local enemy_count = entity.surface.count_entities_filtered({ force = 'enemy', area = turret_enemy_area(entity.position), limit = 1 })
+            if enemy_count > 0 then
+                data.enemies_clear_tick = nil
+            elseif not data.enemies_clear_tick then
+                data.enemies_clear_tick = game.tick
+            elseif game.tick - data.enemies_clear_tick >= turret_reactivate_delay then
+                entity.disabled_by_script = false
+                turrets[unit_number] = nil
+            end
+        end
+    end
+end
 
 local function on_built_entity(event)
     if enforce_banned_entities(event.entity, event) then
@@ -972,20 +1035,18 @@ local function on_built_entity(event)
     if enforce_ore_build_restriction(event.entity, event) then
         return
     end
-    for _, e in pairs(disabled_entities or {}) do
-        if e == event.entity.name then
-            local a =
-            {
-                left_top = { x = event.entity.position.x - 31, y = event.entity.position.y - 31 },
-                right_bottom = { x = event.entity.position.x + 32, y = event.entity.position.y + 32 }
-            }
-            local enemy_count = event.entity.surface.count_entities_filtered({ force = 'enemy', area = a, limit = 1 })
-            if enemy_count > 0 then
-                event.entity.disabled_by_script = true
-                if event.player_index then
-                    local player = game.players[event.player_index]
-                    player.print('The turret seems to be malfunctioning near those creatures.', { r = 0.75, g = 0.0, b = 0.0 })
-                end
+    local entity = event.entity
+    if not entity or not entity.valid or not disabled_entities[entity.name] then
+        return
+    end
+    local enemy_count = entity.surface.count_entities_filtered({ force = 'enemy', area = turret_enemy_area(entity.position), limit = 1 })
+    if enemy_count > 0 then
+        entity.disabled_by_script = true
+        track_disabled_turret(entity)
+        if event.player_index then
+            local player = game.players[event.player_index]
+            if player and player.valid then
+                player.print('The turret seems to be malfunctioning near those creatures. It will reactivate shortly after they leave.', { r = 0.75, g = 0.0, b = 0.0 })
             end
         end
     end
@@ -1085,6 +1146,7 @@ local function clear_spiral_storage()
     storage.spiral_base_established = nil
     storage.spiral_reset_poll_id = nil
     storage.spiral_reset_poll_cooldown = nil
+    storage.spiral_disabled_turrets = nil
     storage.map_init_done = nil
 end
 
@@ -1240,6 +1302,7 @@ end
 
 Event.add(defines.events.on_tick, on_tick)
 Event.on_nth_tick(30, try_grow_spiral)
+Event.on_nth_tick(60, check_disabled_turrets)
 Event.on_nth_tick(300, check_loss_condition)
 Event.add(defines.events.on_player_built_tile, on_player_built_tile)
 Event.add(defines.events.on_entity_died, on_entity_died)
