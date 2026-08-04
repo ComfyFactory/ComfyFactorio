@@ -417,6 +417,10 @@ local threat_values =
 
 local get_biter_initial_pool = function ()
     local this = FDT.get()
+    local surface = game.surfaces[this.active_surface_index]
+    if not surface or not surface.valid then
+        return
+    end
     local biter_pool
     if this.wave_count > 1750 then
         biter_pool =
@@ -453,7 +457,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.1 then
+    if game.forces.enemy.get_evolution_factor(surface.index) < 0.1 then
         biter_pool =
         {
             { name = 'small-biter', threat = threat_values.small_biter, weight = 3 },
@@ -461,7 +465,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.2 then
+    if game.forces.enemy.get_evolution_factor(surface.index) < 0.2 then
         biter_pool =
         {
             { name = 'small-biter', threat = threat_values.small_biter, weight = 10 },
@@ -471,7 +475,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.3 then
+    if game.forces.enemy.get_evolution_factor(surface.index) < 0.3 then
         biter_pool =
         {
             { name = 'small-biter', threat = threat_values.small_biter, weight = 18 },
@@ -482,7 +486,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.4 then
+    if game.forces.enemy.get_evolution_factor(surface.index) < 0.4 then
         biter_pool =
         {
             { name = 'small-biter', threat = threat_values.small_biter, weight = 2 },
@@ -494,7 +498,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.5 then
+    if game.forces.enemy.get_evolution_factor(surface.index) < 0.5 then
         biter_pool =
         {
             { name = 'small-biter', threat = threat_values.small_biter, weight = 2 },
@@ -506,7 +510,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.6 then
+    if game.forces.enemy.get_evolution_factor(surface.index) < 0.6 then
         biter_pool =
         {
             { name = 'medium-biter', threat = threat_values.medium_biter, weight = 4 },
@@ -516,7 +520,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.7 then
+    if game.forces.enemy.get_evolution_factor(surface.index) < 0.7 then
         biter_pool =
         {
             { name = 'behemoth-biter', threat = threat_values.small_biter, weight = 2 },
@@ -528,7 +532,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.get_evolution_factor('crab_defender') < 0.8 then
+    if game.forces.enemy.get_evolution_factor(surface.index) < 0.8 then
         biter_pool =
         {
             { name = 'behemoth-biter', threat = threat_values.small_biter, weight = 2 },
@@ -540,7 +544,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.get_evolution_factor('crab_defender') <= 0.9 then
+    if game.forces.enemy.get_evolution_factor(surface.index) <= 0.9 then
         biter_pool =
         {
             { name = 'big-biter', threat = threat_values.big_biter, weight = 12 },
@@ -550,7 +554,7 @@ local get_biter_initial_pool = function ()
         }
         return biter_pool
     end
-    if game.forces.enemy.get_evolution_factor('crab_defender') <= 1 then
+    if game.forces.enemy.get_evolution_factor(surface.index) <= 1 then
         biter_pool =
         {
             { name = 'big-biter', threat = threat_values.big_biter, weight = 4 },
@@ -848,7 +852,8 @@ local biter_attack_wave = function ()
     if evolution > 1 then
         evolution = 1
     end
-    game.forces.enemy.set_evolution_factor(evolution, 'crab_defender')
+
+    game.forces.enemy.set_evolution_factor(evolution, surface.index)
 
     local y_raffle = get_y_coord_raffle_table()
     local x_raffle = get_x_coord_raffle_table()

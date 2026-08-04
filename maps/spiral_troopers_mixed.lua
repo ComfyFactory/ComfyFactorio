@@ -416,6 +416,9 @@ local function draw_mixed_ore_circle(center, main_ore, surface, radius, amount)
 end
 
 local function place_oil_field(surface, center, amount)
+    if amount <= 1000 then
+        amount = math.random(500000, 1500000)
+    end
     local pos = { x = math.floor(center.x) + 0.5, y = math.floor(center.y) + 0.5 }
     surface.create_entity({ name = 'crude-oil', position = pos, amount = amount })
 end
@@ -580,7 +583,7 @@ local function ring_perimeter_chunks(radius)
 end
 
 local function ore_richness_for_level(level)
-    local richness = 400 * (5 ^ (level - 1))
+    local richness = 150000 * (5 ^ (level - 1))
     if richness > max_ore_richness then
         richness = max_ore_richness
     end
@@ -1250,16 +1253,6 @@ local function command_vote_to_reset(player)
     if storage.spiral_reset_poll_cooldown and game.tick < storage.spiral_reset_poll_cooldown then
         local remaining_minutes = math.ceil((storage.spiral_reset_poll_cooldown - game.tick) / 3600)
         player.print('Reset poll is on cooldown (' .. remaining_minutes .. ' minute(s) remaining).', { color = warn })
-        failed = true
-    end
-
-    local has_buildings = area_has_player_buildings(surface)
-    if has_buildings then
-        storage.spiral_base_established = true
-        player.print('Player buildings are still present in the starting area.', { color = warn })
-        failed = true
-    elseif not storage.spiral_base_established then
-        player.print('A base was never established in the starting area.', { color = warn })
         failed = true
     end
 
