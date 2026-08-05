@@ -54,6 +54,8 @@ function Public.print_to(player_ident, msg, color)
     local player = Public.validate_player(player_ident)
     color = color or Color.yellow
 
+    Server.output_script_data(prefix .. msg)
+
     if player then
         player.print(prefix .. msg, color)
     else

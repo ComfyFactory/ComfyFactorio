@@ -125,7 +125,27 @@ local function get_map_gen_settings()
             ['tile:deepwater:probability'] = -1000
         },
         cliff_settings = { cliff_elevation_interval = 50, cliff_elevation_0 = 50 },
-        autoplace_controls = {}
+        autoplace_controls =
+        {
+            ['coal'] = { frequency = 0, size = 0, richness = 0 },
+            ['stone'] = { frequency = 0, size = 0, richness = 0 },
+            ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['iron-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
+            ['crude-oil'] =
+            {
+                frequency = 1000,
+                size = 1
+            },
+            ['trees'] =
+            {
+                frequency = 4
+            },
+            ['enemy-base'] =
+            {
+                frequency = 0
+            }
+        }
     }
 end
 
@@ -139,6 +159,14 @@ local function apply_force_settings(surface)
     game.forces.player.technologies['artillery'].enabled = false
     game.forces.player.chart(surface, { { x = -chart_radius, y = -chart_radius }, { x = chart_radius, y = chart_radius } })
 end
+
+local mixed_ores =
+{
+    { name = 'iron-ore', weight = 25 },
+    { name = 'copper-ore', weight = 25 },
+    { name = 'stone', weight = 50 },
+    { name = 'coal', weight = 75 }
+}
 
 local mixed_ore_ratios =
 {
@@ -423,6 +451,24 @@ local function place_oil_field(surface, center, amount)
     surface.create_entity({ name = 'crude-oil', position = pos, amount = amount })
 end
 
+-- place mixed ores from the table list
+local function paint_mixed_ore_floor(surface, area)
+    for x = 0, 31 do
+        for y = 0, 31 do
+            local pos = { x = math.floor(area.left_top.x + x) + 0.5, y = math.floor(area.left_top.y + y) + 0.5 }
+            local distance_from_center = math.sqrt(pos.x * pos.x + pos.y * pos.y)
+            if distance_from_center > coal_free_spawn_radius then
+                local tile = surface.get_tile(pos.x, pos.y)
+                if tile.valid and not coal_floor_skip_tiles[tile.name] then
+                    if surface.count_entities_filtered({ position = pos, type = 'resource', limit = 1 }) == 0 then
+                        local amount = coal_base_amount + math.floor((distance_from_center - coal_free_spawn_radius) * coal_distance_step)
+                        surface.create_entity({ name = pick_weighted_ore(mixed_ores), position = pos, amount = amount })
+                    end
+                end
+            end
+        end
+    end
+end
 
 local function paint_coal_floor(surface, area)
     for x = 0, 31 do
@@ -769,6 +815,14 @@ local function grow_action_step(job)
         job.next_tick = game.tick + 10
         return true
     end
+    if phase == 6 then
+        local r = 550
+        game.forces.player.chart(surface, { { x = -r, y = -r }, { x = r, y = r } })
+        job.index = job.index + 1
+        job.next_tick = game.tick + 10
+        job.phase = 7
+        return true
+    end
 
     if not storage.checkpoint_barriers then
         storage.checkpoint_barriers = {}
@@ -939,8 +993,11 @@ local function on_chunk_generated(event)
             end
         end
     end
-
-    paint_coal_floor(surface, event.area)
+    if not storage.mixed_ores_paint then
+        paint_coal_floor(surface, event.area)
+    else
+        paint_mixed_ore_floor(surface, event.area)
+    end
 end
 
 local function on_player_joined_game(event)
@@ -1292,6 +1349,13 @@ local function on_poll_complete(event)
     game.print('Spiral Troopers: reset vote failed. Keep defending whatever you have left!', { r = 0.98, g = 0.66, b = 0.22 })
     game.print('Next reset vote in ' .. math.floor(reset_poll_cooldown / 60 / 60) .. ' hours.', { r = 0.98, g = 0.66, b = 0.22 })
 end
+
+Event.on_init(
+    function ()
+        storage.mixed_ores_paint = true
+        game.forces.player.lock_space_location('nauvis')
+    end
+)
 
 Event.add(defines.events.on_tick, on_tick)
 Event.on_nth_tick(30, try_grow_spiral)
