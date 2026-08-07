@@ -33,7 +33,7 @@ local reset_poll_cooldown = 54000
 local turret_reactivate_delay = 1800
 local turret_enemy_check_radius = 32
 local rock_raffle = { 'big-sand-rock', 'big-rock', 'big-rock', 'big-rock', 'huge-rock' }
-local ore_rotation = { 'iron-ore', 'copper-ore', 'coal', 'stone' }
+local ore_rotation = { 'iron-ore', 'copper-ore', 'coal', 'stone', 'uranium-ore' }
 local coal_free_spawn_radius = 96
 local coal_base_amount = 50
 local coal_distance_step = 1
@@ -61,7 +61,8 @@ local ore_build_allowed_types =
     ['pipe-to-ground'] = true,
     ['electric-pole'] = true,
     ['straight-rail'] = true,
-    ['curved-rail'] = true,
+    ['curved-rail-a'] = true,
+    ['curved-rail-b'] = true,
     ['rail-signal'] = true,
     ['rail-chain-signal'] = true,
     ['train-stop'] = true,
@@ -313,8 +314,6 @@ local function treasure_chest(position, surface)
         { { name = 'decider-combinator', count = math_random(25, 50) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
         { { name = 'power-switch', count = math_random(8, 16) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
         { { name = 'programmable-speaker', count = math_random(8, 16) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'green-wire', count = math_random(100, 200) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'red-wire', count = math_random(100, 200) }, weight = 1, evolution_min = 0.1, evolution_max = 1 },
         { { name = 'chemical-plant', count = math_random(2, 4) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
         { { name = 'burner-mining-drill', count = math_random(8, 16) }, weight = 3, evolution_min = 0.0, evolution_max = 0.2 },
         { { name = 'electric-mining-drill', count = math_random(4, 8) }, weight = 3, evolution_min = 0.2, evolution_max = 0.6 },
@@ -711,7 +710,7 @@ local function grow_action_step(job)
                     local pos = { x = reward_chunk.x * 32 + x, y = reward_chunk.y * 32 + y }
                     if x == 16 and y == 16 then
                         local ore = ore_rotation[side_index]
-                        if level % 12 == 0 then
+                        if level % 3 == 0 then
                             ore = 'uranium-ore'
                         end
                         draw_mixed_ore_circle(pos, ore, surface, 14, ore_richness_for_level(level))
@@ -1208,6 +1207,10 @@ local function clear_spiral_storage()
     storage.spiral_reset_poll_cooldown = nil
     storage.spiral_disabled_turrets = nil
     storage.map_init_done = nil
+
+    local force = game.forces.player
+    force.technologies['spidertron'].enabled = false
+    force.technologies['spidertron'].researched = false
 end
 
 local function reset_map()
