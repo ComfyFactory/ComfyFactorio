@@ -47,8 +47,8 @@ local coal_floor_skip_tiles =
 }
 local banned_entity_names =
 {
-    ['logistic-chest-buffer'] = true, -- green chest
-    ['logistic-chest-requester'] = true -- blue chest
+    ['buffer-chest'] = true,
+    ['requester-chest'] = true
 }
 
 local ore_build_allowed_types =
@@ -263,7 +263,7 @@ local function treasure_chest(position, surface)
         { { name = 'energy-shield-equipment', count = math_random(1, 2) }, weight = 2, evolution_min = 0.3, evolution_max = 0.8 },
         { { name = 'energy-shield-mk2-equipment', count = 1 }, weight = 2, evolution_min = 0.7, evolution_max = 1 },
         { { name = 'exoskeleton-equipment', count = 1 }, weight = 1, evolution_min = 0.3, evolution_max = 1 },
-        { { name = 'fusion-reactor-equipment', count = 1 }, weight = 1, evolution_min = 0.5, evolution_max = 1 },
+        { { name = 'fission-reactor-equipment', count = 1 }, weight = 1, evolution_min = 0.5, evolution_max = 1 },
         { { name = 'night-vision-equipment', count = 1 }, weight = 1, evolution_min = 0.3, evolution_max = 0.8 },
         { { name = 'personal-laser-defense-equipment', count = 1 }, weight = 2, evolution_min = 0.4, evolution_max = 1 },
         { { name = 'exoskeleton-equipment', count = 1 }, weight = 1, evolution_min = 0.3, evolution_max = 1 },
@@ -284,9 +284,8 @@ local function treasure_chest(position, surface)
         { { name = 'inserter', count = math_random(16, 32) }, weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
         { { name = 'long-handed-inserter', count = math_random(16, 32) }, weight = 3, evolution_min = 0.0, evolution_max = 0.4 },
         { { name = 'fast-inserter', count = math_random(16, 32) }, weight = 3, evolution_min = 0.1, evolution_max = 1 },
-        { { name = 'filter-inserter', count = math_random(16, 32) }, weight = 1, evolution_min = 0.2, evolution_max = 1 },
-        { { name = 'stack-filter-inserter', count = math_random(4, 8) }, weight = 1, evolution_min = 0.4, evolution_max = 1 },
-        { { name = 'stack-inserter', count = math_random(4, 8) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
+        { { name = 'bulk-inserter', count = math_random(4, 8) }, weight = 1, evolution_min = 0.4, evolution_max = 1 },
+        { { name = 'bulk-inserter', count = math_random(4, 8) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
         { { name = 'small-electric-pole', count = math_random(8, 16) }, weight = 3, evolution_min = 0.0, evolution_max = 0.3 },
         { { name = 'medium-electric-pole', count = math_random(8, 16) }, weight = 3, evolution_min = 0.2, evolution_max = 1 },
         { { name = 'big-electric-pole', count = math_random(8, 16) }, weight = 3, evolution_min = 0.3, evolution_max = 1 },
@@ -450,43 +449,6 @@ local function place_oil_field(surface, center, amount)
     surface.create_entity({ name = 'crude-oil', position = pos, amount = amount })
 end
 
--- place mixed ores from the table list
-local function paint_mixed_ore_floor(surface, area)
-    for x = 0, 31 do
-        for y = 0, 31 do
-            local pos = { x = math.floor(area.left_top.x + x) + 0.5, y = math.floor(area.left_top.y + y) + 0.5 }
-            local distance_from_center = math.sqrt(pos.x * pos.x + pos.y * pos.y)
-            if distance_from_center > coal_free_spawn_radius then
-                local tile = surface.get_tile(pos.x, pos.y)
-                if tile.valid and not coal_floor_skip_tiles[tile.name] then
-                    if surface.count_entities_filtered({ position = pos, type = 'resource', limit = 1 }) == 0 then
-                        local amount = coal_base_amount + math.floor((distance_from_center - coal_free_spawn_radius) * coal_distance_step)
-                        surface.create_entity({ name = pick_weighted_ore(mixed_ores), position = pos, amount = amount })
-                    end
-                end
-            end
-        end
-    end
-end
-
-local function paint_coal_floor(surface, area)
-    for x = 0, 31 do
-        for y = 0, 31 do
-            local pos = { x = math.floor(area.left_top.x + x) + 0.5, y = math.floor(area.left_top.y + y) + 0.5 }
-            local distance_from_center = math.sqrt(pos.x * pos.x + pos.y * pos.y)
-            if distance_from_center > coal_free_spawn_radius then
-                local tile = surface.get_tile(pos.x, pos.y)
-                if tile.valid and not coal_floor_skip_tiles[tile.name] then
-                    if surface.count_entities_filtered({ position = pos, type = 'resource', limit = 1 }) == 0 then
-                        local amount = coal_base_amount + math.floor((distance_from_center - coal_free_spawn_radius) * coal_distance_step)
-                        surface.create_entity({ name = 'coal', position = pos, amount = amount })
-                    end
-                end
-            end
-        end
-    end
-end
-
 local function enforce_banned_entities(entity, event)
     if not (entity and entity.valid) then
         return false
@@ -499,7 +461,7 @@ local function enforce_banned_entities(entity, event)
     if event.player_index then
         local player = game.players[event.player_index]
         if player and player.valid then
-            player.print('Buffer chest and requester chest cannot be built.', { r = 1, g = 0.3, b = 0 })
+            player.print('Buffer chest and requester chest cannot be built.', { color = { r = 1, g = 0.3, b = 0 } })
         end
     end
     if is_ghost then
@@ -545,7 +507,7 @@ local function enforce_ore_build_restriction(entity, event)
     if event.player_index then
         local player = game.players[event.player_index]
         if player and player.valid then
-            player.print('Cannot build this on ore/coal - only drills, belts, pipes, poles, rails and vehicles are allowed.', { r = 1, g = 0.3, b = 0 })
+            player.print('Cannot build this on ore/coal - only drills, belts, pipes, poles, rails and vehicles are allowed.', { color = { r = 1, g = 0.3, b = 0 } })
         end
     end
 
@@ -932,9 +894,11 @@ local function on_chunk_generated(event)
 
     local spawner_density_modifier = 100
     local worm_density_modifier = 1000
+    local worm_level = 5
     if storage.spiral_troopers_level then
         spawner_density_modifier = spawner_density_modifier - (storage.spiral_troopers_level * 10)
         worm_density_modifier = worm_density_modifier - (storage.spiral_troopers_level * 50)
+        worm_level = storage.spiral_troopers_level / 40
     end
     if spawner_density_modifier < 10 then
         spawner_density_modifier = 10
@@ -942,12 +906,23 @@ local function on_chunk_generated(event)
     if worm_density_modifier < 5 then
         worm_density_modifier = 5
     end
+    local worm_index = math.ceil(worm_level * 10)
+    if worm_index < 1 then
+        worm_index = 1
+    end
+    if worm_index > 10 then
+        worm_index = 10
+    end
+    local worm_names = worm_raffle[worm_index]
+    local left_top = event.area.left_top
+    local outer_chunk = left_top.x > 80 or left_top.x < -80 or left_top.y > 80 or left_top.y < -80
+    local mixed_ores_paint = storage.mixed_ores_paint
 
-    if event.area.left_top.x > 80 or event.area.left_top.x < -80 or event.area.left_top.y > 80 or event.area.left_top.y < -80 then
-        for x = 0, 31, 1 do
-            for y = 0, 31, 1 do
+    for x = 0, 31 do
+        for y = 0, 31 do
+            local pos = { x = left_top.x + x, y = left_top.y + y }
+            if outer_chunk then
                 if math.random(1, spawner_density_modifier) == 1 then
-                    local pos = { x = event.area.left_top.x + x, y = event.area.left_top.y + y }
                     if surface.can_place_entity({ name = 'spitter-spawner', position = pos }) then
                         if math.random(1, 3) == 1 then
                             surface.create_entity({ name = 'spitter-spawner', position = pos })
@@ -956,46 +931,34 @@ local function on_chunk_generated(event)
                         end
                     end
                 end
-            end
-        end
-        for x = 0, 31, 1 do
-            for y = 0, 31, 1 do
                 if math.random(1, worm_density_modifier) == 1 then
-                    local pos = { x = event.area.left_top.x + x, y = event.area.left_top.y + y }
-                    local level = 0.1
-                    if storage.spiral_troopers_level then
-                        level = storage.spiral_troopers_level / 40
-                    end
-                    local index = math.ceil(level * 10)
-                    if index < 1 then
-                        index = 1
-                    end
-                    if index > 10 then
-                        index = 10
-                    end
-                    local name = worm_raffle[index][math.random(1, #worm_raffle[index])]
+                    local name = worm_names[math.random(1, #worm_names)]
                     if surface.can_place_entity({ name = name, position = pos }) then
                         surface.create_entity({ name = name, position = pos })
                     end
                 end
+            elseif math.random(1, 10) == 1 then
+                if surface.can_place_entity({ name = 'tree-03', position = pos }) then
+                    surface.create_entity({ name = 'tree-03', position = pos })
+                end
             end
-        end
-    else
-        for x = 0, 31, 1 do
-            for y = 0, 31, 1 do
-                if math.random(1, 10) == 1 then
-                    local pos = { x = event.area.left_top.x + x, y = event.area.left_top.y + y }
-                    if surface.can_place_entity({ name = 'tree-03', position = pos }) then
-                        surface.create_entity({ name = 'tree-03', position = pos })
+
+            local ore_pos = { x = math.floor(pos.x) + 0.5, y = math.floor(pos.y) + 0.5 }
+            local distance_from_center = math.sqrt(ore_pos.x * ore_pos.x + ore_pos.y * ore_pos.y)
+            if distance_from_center > coal_free_spawn_radius then
+                local tile = surface.get_tile(ore_pos.x, ore_pos.y)
+                if tile.valid and not coal_floor_skip_tiles[tile.name] then
+                    if surface.count_entities_filtered({ position = ore_pos, type = 'resource', limit = 1 }) == 0 then
+                        local amount = coal_base_amount + math.floor((distance_from_center - coal_free_spawn_radius) * coal_distance_step)
+                        local ore_name = 'coal'
+                        if mixed_ores_paint then
+                            ore_name = pick_weighted_ore(mixed_ores)
+                        end
+                        surface.create_entity({ name = ore_name, position = ore_pos, amount = amount })
                     end
                 end
             end
         end
-    end
-    if not storage.mixed_ores_paint then
-        paint_coal_floor(surface, event.area)
-    else
-        paint_mixed_ore_floor(surface, event.area)
     end
 end
 
@@ -1105,7 +1068,7 @@ local function on_built_entity(event)
         if event.player_index then
             local player = game.players[event.player_index]
             if player and player.valid then
-                player.print('The turret seems to be malfunctioning near those creatures. It will reactivate shortly after they leave.', { r = 0.75, g = 0.0, b = 0.0 })
+                player.print('The turret seems to be malfunctioning near those creatures. It will reactivate shortly after they leave.', { color = { r = 0.75, g = 0.0, b = 0.0 } })
             end
         end
     end
@@ -1344,12 +1307,12 @@ local function on_poll_complete(event)
     storage.spiral_reset_poll_id = nil
     local winning_answer = event.winning_answer
     if winning_answer and winning_answer.text == 'Yes, reset!' then
-        game.print('Spiral Troopers: reset vote passed. Soft-resetting map...', { r = 0.98, g = 0.66, b = 0.22 })
+        game.print('Spiral Troopers: reset vote passed. Soft-resetting map...', { color = { r = 0.98, g = 0.66, b = 0.22 } })
         reset_map()
         return
     end
     storage.spiral_reset_poll_cooldown = game.tick + reset_poll_cooldown
-    game.print('Spiral Troopers: reset vote failed. Keep defending whatever you have left!', { r = 0.98, g = 0.66, b = 0.22 })
+    game.print('Spiral Troopers: reset vote failed. Keep defending whatever you have left!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
     game.print('Next reset vote in ' .. math.floor(reset_poll_cooldown / 60 / 60) .. ' hours.', { r = 0.98, g = 0.66, b = 0.22 })
 end
 
