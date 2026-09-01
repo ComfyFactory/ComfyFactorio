@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Collapse = require 'modules.collapse'
 local RPG = require 'modules.rpg.main'
 local WD = require 'modules.wave_defense.table'
@@ -14,7 +15,6 @@ local floor = math.floor
 local abs = math.abs
 local random = math.random
 local sub = string.sub
-local sqrt = math.sqrt
 local zone_settings = Public.zone_settings
 
 local disabled_controllers =
@@ -209,9 +209,9 @@ local breach_wall_enforced = function (player)
     local message = ({ 'breached_wall.warning_teleport_enforced', player.name })
     Alert.alert_all_players(40, message, nil, nil, nil, 'global')
     if adjusted_zones.reversed then
-        player.teleport({ position.x, position.y - 10 }, surface)
+        player.teleport(Orient.offset(position, 0, -10), surface)
     else
-        player.teleport({ position.x, position.y + 10 }, surface)
+        player.teleport(Orient.offset(position, 0, 10), surface)
     end
     Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'breached_wall', -0.85)
     Task.set_duration_task(15, 200, damage_indicator_token, { player_index = player.index })
@@ -252,19 +252,20 @@ local check_distance_between_player_and_locomotive = function (player)
     gap_between_locomotive.highest_pos = locomotive.position
     gap_between_locomotive = Public.get('gap_between_locomotive')
 
-    local p_y = abs(position.y)
+    local p_y = abs(Orient.progression(position))
     if p_y < 300 then
         return
     end
-    local t_y = abs(gap_between_locomotive.highest_pos.y)
+    local t_y = abs(Orient.progression(gap_between_locomotive.highest_pos))
 
     local locomotive_distance_too_far = p_y - t_y > gap_between_locomotive.neg_gap
 
     if locomotive_distance_too_far then
+        local dest_prog = t_y + gap_between_locomotive.neg_gap - 4
         if adjusted_zones.reversed then
-            player.teleport({ position.x, t_y + gap_between_locomotive.neg_gap - 4 }, surface)
+            player.teleport(Orient.world(Orient.lateral(position), dest_prog), surface)
         else
-            player.teleport({ position.x, (t_y + gap_between_locomotive.neg_gap - 4) * -1 }, surface)
+            player.teleport(Orient.world(Orient.lateral(position), dest_prog * -1), surface)
         end
 
         player.print(({ 'breached_wall.hinder' }), { color = Color.warning })
@@ -310,7 +311,7 @@ local compare_player_pos = function (player)
         return
     end
 
-    local zone = floor((abs(p.y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
+    local zone = floor((abs(Orient.progression(p) / zone_settings.zone_depth)) % adjusted_zones.size) + 1
     local rpg_t = RPG.get_value_from_player(index)
 
     local max_zone = RPG.get_value_from_player(index, 'max_zone')
@@ -406,8 +407,8 @@ local compare_player_and_train = function (player, entity)
     gap_between_zones.highest_pos = locomotive.position
     gap_between_zones = Public.get('gap_between_zones')
 
-    local c_y = abs(position.y)
-    local t_y = abs(gap_between_zones.highest_pos.y)
+    local c_y = abs(Orient.progression(position))
+    local t_y = abs(Orient.progression(gap_between_zones.highest_pos))
 
     local spidertron_warning_position = gap_between_zones.neg_gap + 50
     local locomotive_distance_too_far = c_y - t_y > spidertron_warning_position
@@ -469,7 +470,7 @@ local function distance(player)
 
     check_tiles(player)
 
-    local distance_to_center = floor(sqrt(p.y ^ 2))
+    local distance_to_center = floor(abs(Orient.progression(p)))
     local adjusted_zones = Public.get('adjusted_zones')
     if adjusted_zones.reversed then
         if distance_to_center < zone_settings.zone_depth * bonus + 32 then
@@ -617,15 +618,15 @@ local function on_player_changed_position(event)
 
     local position = player.physical_position
 
-    if not (position.x < Public.zone_settings.zone_width / 2 and position.x >= -Public.zone_settings.zone_width / 2) then
+    if not Orient.in_map_width(position) then
         return
     end
 
-    if position.y > -100 and position.y < -100 then
+    if Orient.progression(position) > -100 and Orient.progression(position) < -100 then
         return
     end
 
-    if position.y > 100 and position.y < 100 then
+    if Orient.progression(position) > 100 and Orient.progression(position) < 100 then
         return
     end
 

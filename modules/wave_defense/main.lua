@@ -26,15 +26,21 @@ end
 local function normalize_spawn_position()
     local collapse_spawn_position = Collapse.get_position()
     local inverted = Public.get('inverted')
-    if inverted then
-        local new_pos = { x = 0, y = collapse_spawn_position.y + 40 }
-        Public.set_spawn_position(new_pos)
-        return new_pos
+    local spawn_along_x = Public.get('spawn_along_x')
+    local new_pos
+    if spawn_along_x then
+        new_pos = { x = collapse_spawn_position.x, y = 0 }
+        if inverted then
+            new_pos.x = new_pos.x + 40
+        end
     else
-        local new_pos = { x = 0, y = collapse_spawn_position.y }
-        Public.set_spawn_position(new_pos)
-        return new_pos
+        new_pos = { x = 0, y = collapse_spawn_position.y }
+        if inverted then
+            new_pos.y = new_pos.y + 40
+        end
     end
+    Public.set_spawn_position(new_pos)
+    return new_pos
 end
 
 local function find_initial_spot(surface, position)
@@ -73,18 +79,6 @@ local function shuffle_distance(tbl, position)
         end
     end
     return tbl
-end
-
-local function is_position_near(pos_to_check, check_against)
-    local function inside(pos)
-        return pos.x >= pos_to_check.x and pos.y >= pos_to_check.y and pos.x <= pos_to_check.x and pos.y <= pos_to_check.y
-    end
-
-    if inside(check_against) then
-        return true
-    end
-
-    return false
 end
 
 local function remove_trees(entity)
@@ -485,6 +479,9 @@ local function get_active_unit_groups_count()
             if generated_units.unit_group_last_command[k] then
                 generated_units.unit_group_last_command[k] = nil
             end
+            if generated_units.group_path_cooldown then
+                generated_units.group_path_cooldown[k] = nil
+            end
         end
     end
     Public.debug_print('Active unit group count: ' .. count)
@@ -532,11 +529,19 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
     if Public.get('enable_random_spawn_positions') then
         local offset_x = random(1, 10)
         local offset_y = random(1, 10)
-        position =
-        {
-            x = (random(1, 3) == 1) and (-1 * (position.x + offset_x)) or (position.x + offset_x),
-            y = position.y + offset_y
-        }
+        if Public.get('spawn_along_x') then
+            position =
+            {
+                x = position.x + offset_x,
+                y = (random(1, 3) == 1) and (-1 * (position.y + offset_y)) or (position.y + offset_y)
+            }
+        else
+            position =
+            {
+                x = (random(1, 3) == 1) and (-1 * (position.x + offset_x)) or (position.x + offset_x),
+                y = position.y + offset_y
+            }
+        end
     end
 
     position = surface.find_non_colliding_position('steel-chest', position, 3, 1) or old_position
@@ -627,10 +632,18 @@ local function spawn_worm(surface, position, is_boss_worm)
     local enable_random_spawn_positions = Public.get('enable_random_spawn_positions')
 
     if enable_random_spawn_positions then
-        if random(1, 3) == 1 then
-            position = { x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10)) }
+        if Public.get('spawn_along_x') then
+            if random(1, 3) == 1 then
+                position = { x = (position.x + random(1, 10)), y = (-1 * (position.y + random(1, 10))) }
+            else
+                position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
+            end
         else
-            position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
+            if random(1, 3) == 1 then
+                position = { x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10)) }
+            else
+                position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
+            end
         end
     end
 
@@ -901,6 +914,7 @@ local function reform_group(group)
         end
         Public.debug_print('Creating new unit group, because old one was stuck.')
         generated_units.unit_groups[new_group.unique_id] = new_group
+        generated_units.unit_group_pos.positions[new_group.unique_id] = { position = { x = new_group.position.x, y = new_group.position.y }, index = 0 }
         local unit_groups_size = Public.get('unit_groups_size')
         Public.set('unit_groups_size', unit_groups_size + 1)
 
@@ -915,7 +929,10 @@ local function reform_group(group)
             if positions[group.unique_id] then
                 positions[group.unique_id] = nil
             end
-            table.remove(generated_units.unit_groups, group.unique_id)
+            generated_units.unit_groups[group.unique_id] = nil
+            if generated_units.group_path_cooldown then
+                generated_units.group_path_cooldown[group.unique_id] = nil
+            end
             local unit_groups_size = Public.get('unit_groups_size')
             Public.set('unit_groups_size', unit_groups_size - 1)
         end
@@ -959,7 +976,7 @@ local function get_side_targets(group)
                     commands[#commands + 1] =
                     {
                         type = defines.command.attack,
-                        destination = obstacles[v].position,
+                        target = obstacles[v],
                         distraction = defines.distraction.by_anything
                     }
                 end
@@ -991,7 +1008,7 @@ local function get_main_command(group)
 
     Public.debug_print('get_main_command - starting')
 
-    local target_position = target.position
+    local target_position = Public.get_attack_destination(group.surface, target.position)
     local distance_to_target = floor(sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
     local steps = floor(distance_to_target / step_length) + 1
     local vector =
@@ -1003,6 +1020,8 @@ local function get_main_command(group)
     Public.debug_print('get_commmands - to main target x' .. target_position.x .. ' y' .. target_position.y)
     Public.debug_print('get_commmands - distance_to_target:' .. distance_to_target .. ' steps:' .. steps)
     Public.debug_print('get_commmands - vector ' .. vector[1] .. '_' .. vector[2])
+
+    Public.add_approach_waypoints(commands, group, target_position)
 
     if Public.get('enable_side_target') then
         for _ = 1, steps, 1 do
@@ -1047,7 +1066,7 @@ local function get_main_command(group)
     {
         type = defines.command.attack_area,
         destination = { x = target_position.x, y = target_position.y },
-        radius = 8,
+        radius = 20,
         distraction = defines.distraction.by_anything
     }
 
@@ -1093,6 +1112,9 @@ local function command_to_main_target(group, bypass)
     end
 
     local commands = get_main_command(group)
+    if not commands then
+        return
+    end
 
     Public.debug_print('get_main_command - got commands')
 
@@ -1429,28 +1451,44 @@ local function check_group_positions()
     end
 
     for _, group in pairs(generated_units.unit_groups) do
-        if group.valid then
+        if type(group) ~= 'number' and group.valid then
             local ugp = generated_units.unit_group_pos.positions
             if group.state == defines.group_state.finished then
-                return command_to_main_target(group, true)
+                command_to_main_target(group, true)
             end
-            if ugp[group.unique_id] then
-                local success = is_position_near(group.position, ugp[group.unique_id].position)
-                if success then
-                    ugp[group.unique_id].index = ugp[group.unique_id].index + 1
-                    if ugp[group.unique_id].index >= 2 then
-                        command_to_main_target(group, true)
-                        fill_tiles(group, 30)
-                        remove_rocks(group)
-                        remove_trees(group)
-                        if valid(group) and ugp[group.unique_id].index >= 4 then
-                            generated_units.unit_group_pos.positions[group.unique_id] = nil
-                            reform_group(group)
+            if not valid(group) then
+                goto next_group
+            end
+            local id = group.unique_id
+            if not ugp[id] then
+                ugp[id] = { position = { x = group.position.x, y = group.position.y }, index = 0 }
+            end
+            if Public.is_group_stalled(ugp[id].position, group.position) then
+                ugp[id].index = ugp[id].index + 1
+                Public.debug_print('check_group_positions - stalled group ' .. id .. ' index ' .. ugp[id].index)
+                if ugp[id].index >= 2 then
+                    fill_tiles(group, 30)
+                    remove_rocks(group)
+                    remove_trees(group)
+                    command_to_main_target(group, true)
+                    if valid(group) then
+                        Public.begin_path_recovery(group)
+                    end
+                    if valid(group) and ugp[id] and ugp[id].index >= 4 then
+                        generated_units.unit_group_pos.positions[id] = nil
+                        Public.debug_print('check_group_positions - reforming group ' .. id)
+                        local new_group = reform_group(group)
+                        if new_group and new_group.valid then
+                            command_to_main_target(new_group, true)
                         end
                     end
                 end
+            else
+                ugp[id].position = { x = group.position.x, y = group.position.y }
+                ugp[id].index = 0
             end
         end
+        ::next_group::
     end
 end
 
@@ -1495,43 +1533,51 @@ else
     end
 end
 
-local tick_tasks =
-{
-    [30] = set_main_target,
-    [60] = set_enemy_evolution,
-    [90] = check_group_positions,
-    [120] = give_main_command_to_group,
-    [150] = log_threat,
-    [180] = Public.build_worm,
-    [210] = Public.build_nest,
-    [1600] = set_multi_command,
-}
-
-local tick_tasks_t2 =
-{
-    [1200] = give_side_commands_to_group,
-    [3600] = time_out_biters,
-    [7200] = refresh_active_unit_threat
-}
-
 Public.spawn_unit_group = spawn_unit_group
+
+Event.on_nth_tick(
+    500,
+    function ()
+        if game.tick < 2000 then
+            return
+        end
+        give_main_command_to_group()
+    end
+)
+
+Event.on_nth_tick(
+    2000,
+    function ()
+        if game.tick < 2000 then
+            return
+        end
+        set_main_target()
+        set_enemy_evolution()
+        check_group_positions()
+        log_threat()
+        Public.build_worm()
+        Public.build_nest()
+        set_multi_command()
+    end
+)
+
+Event.on_nth_tick(
+    18000,
+    function ()
+        if game.tick < 2000 then
+            return
+        end
+        give_side_commands_to_group()
+        time_out_biters()
+        refresh_active_unit_threat()
+    end
+)
 
 Event.on_nth_tick(30,
     function ()
         local tick = game.tick
 
         if tick < 2000 then return end
-
-        local t = tick % 2000
-        local t2 = tick % 18000
-
-        if tick_tasks[t] then
-            tick_tasks[t]()
-        end
-
-        if tick_tasks_t2[t2] then
-            tick_tasks_t2[t2]()
-        end
 
         local game_lost = Public.get('game_lost')
         if game_lost then

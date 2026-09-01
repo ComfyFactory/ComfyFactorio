@@ -12,6 +12,7 @@ local Core = require 'utils.core'
 local Discord = require 'utils.discord_handler'
 local Server = require 'utils.server'
 local Collapse = require 'modules.collapse'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local zone_settings = WPT.zone_settings
 
 local this = {}
@@ -1264,20 +1265,16 @@ Event.on_nth_tick(10000,
             this.invalid_containers = {}
         end
 
-        local adjusted_zones = WPT.get('adjusted_zones')
         local collapse_position = Collapse.get_position()
         local breached_wall = WPT.get('breached_wall')
 
-        local reverse_position = zone_settings.zone_depth * (breached_wall + 1)
+        local reverse_prog = zone_settings.zone_depth * (breached_wall + 1)
         local reversed = WPT.get_stateful_settings('reversed')
         if not reversed then
-            reverse_position = reverse_position * -1
+            reverse_prog = reverse_prog * -1
         end
 
-        local area = { { -320, collapse_position.y }, { 320, reverse_position } }
-        if adjusted_zones.reversed then
-            area = { { -320, collapse_position.y }, { 320, reverse_position } }
-        end
+        local area = Orient.aabb(-320, Orient.progression(collapse_position), 320, reverse_prog)
 
         local surface = game.get_surface(active_surface_index)
         if surface and surface.valid then
@@ -1574,14 +1571,6 @@ local function on_player_changed_position(event)
     local player = game.get_player(event.player_index)
     local data = this.linked_gui[player.name]
     if not data then
-        return
-    end
-
-    local position = player.physical_position
-
-    local zs = WPT.zone_settings
-
-    if (position.x < zs.zone_width / 2 and position.x >= -zs.zone_width / 2) then
         return
     end
 

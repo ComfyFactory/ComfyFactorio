@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Task = require 'utils.task_token'
 local WD = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
@@ -66,6 +67,43 @@ local function execute_callback_data(data, entity)
             }
             Task.set_timeout_in_ticks(200, dc, delayed_data)
         end
+    end
+end
+
+local function convert_position(pos)
+    if not pos then
+        return pos
+    end
+    return Orient.to_world(pos)
+end
+
+local function convert_generation_positions(data)
+    if not Orient.is_horizontal() then
+        return
+    end
+    for _, t in pairs(data.tiles) do
+        t.position = convert_position(t.position)
+    end
+    for _, t in pairs(data.hidden_tiles) do
+        t.position = convert_position(t.position)
+    end
+    for _, e in pairs(data.entities) do
+        e.position = convert_position(e.position)
+    end
+    for _, e in pairs(data.rocks) do
+        e.position = convert_position(e.position)
+    end
+    for _, e in pairs(data.buildings) do
+        e.position = convert_position(e.position)
+    end
+    for _, d in pairs(data.decoratives) do
+        d.position = convert_position(d.position)
+    end
+    for i, m in pairs(data.markets) do
+        data.markets[i] = convert_position(m)
+    end
+    for _, t in pairs(data.treasure) do
+        t.position = convert_position(t.position)
     end
 end
 
@@ -206,7 +244,7 @@ local function do_place_markets(data)
             limit = 1
         } == 0
     then
-        local market = Public.mountain_market(surface, pos, abs(pos.y) * 0.004)
+        local market = Public.mountain_market(surface, pos, abs(Orient.progression(pos)) * 0.004)
         market.destructible = false
         force.add_chart_tag(
             surface,
@@ -492,6 +530,7 @@ local function map_gen_action(data)
         data.y = y - data.top_y
         return true
     elseif state == 32 then
+        convert_generation_positions(data)
         do_place_tiles(data)
         data.y = 33
         return true
@@ -625,6 +664,7 @@ local function force_do_chunk(event)
         do_row(row, data, shape)
     end
 
+    convert_generation_positions(data)
     do_place_tiles(data)
     do_place_hidden_tiles(data)
     do_place_rocks(data)

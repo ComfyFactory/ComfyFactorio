@@ -3,6 +3,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Task = require 'utils.task_token'
 local Public = require 'modules.wave_defense.table'
+local Pathing = require 'modules.wave_defense.pathing'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Beams = require 'modules.render_beam'
 local Server = require 'utils.server'
@@ -1019,13 +1020,15 @@ function Public._esp:go_to_location_command()
         self:check_unit_group()
     end
 
+    local destination = Pathing.get_attack_destination(self.entity.surface, unit.position)
+
     local group_commands = {}
 
     group_commands[#group_commands + 1] =
     {
         type = defines.command.go_to_location,
         pathfind_flags = pf_flags,
-        destination = unit.position,
+        destination = destination,
         distraction = defines.distraction.by_enemy
     }
 
@@ -1052,13 +1055,15 @@ function Public._esp:attack_command()
         self:check_unit_group()
     end
 
+    local destination = Pathing.get_attack_destination(self.entity.surface, unit.position)
+
     local group_commands = {}
 
     group_commands[#group_commands + 1] =
     {
         type = defines.command.go_to_location,
         pathfind_flags = pf_flags,
-        destination = unit.position,
+        destination = destination,
         distraction = defines.distraction.by_enemy
     }
 
@@ -1087,20 +1092,22 @@ function Public._esp:attack_area_command()
         self:check_unit_group()
     end
 
+    local destination = Pathing.get_attack_destination(self.entity.surface, unit.position)
+
     local group_commands = {}
 
     group_commands[#group_commands + 1] =
     {
         type = defines.command.go_to_location,
         pathfind_flags = pf_flags,
-        destination = unit.position,
+        destination = destination,
         distraction = defines.distraction.by_enemy
     }
 
     group_commands[#group_commands + 1] =
     {
         type = defines.command.attack_area,
-        destination = { x = unit.position.x, y = unit.position.y },
+        destination = { x = destination.x, y = destination.y },
         radius = 30,
         distraction = defines.distraction.by_anything
     }

@@ -11,6 +11,7 @@ local SpamProtection = require 'utils.spam_protection'
 local Polls = require 'utils.gui.poll'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Core = require 'utils.core'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 
 local format_number = require 'util'.format_number
 
@@ -496,7 +497,7 @@ local function changed_surface(player)
         return
     end
 
-    if (player.physical_surface == main.surface and player.physical_position.x < 700) then
+    if (player.physical_surface == main.surface and not Orient.is_interior(player.physical_position)) then
         local minimap = player.gui.left.icw_main_frame
         if main_toggle_button and not main_toggle_button.visible then
             main_toggle_button.visible = true
@@ -559,7 +560,7 @@ local function changed_surface(player)
         end
 
         return
-    elseif (player.physical_surface == wagon_surface or player.physical_position.x > 700) then
+    elseif (player.physical_surface == wagon_surface or Orient.is_interior(player.physical_position)) then
         player.gui.top.mod_gui_top_frame.visible = true
         if main_toggle_button and main_toggle_button.visible then
             main_toggle_button.visible = false
@@ -721,7 +722,7 @@ local function on_gui_click(event)
         end
         local gui_data = get_player_gui_settings(player)
 
-        if (player.physical_surface ~= locomotive.surface or player.physical_position.x > 700) then
+        if (player.physical_surface ~= locomotive.surface or Orient.is_interior(player.physical_position)) then
             local minimap = player.gui.left.icw_main_frame
             if minimap and minimap.visible then
                 minimap.visible = false

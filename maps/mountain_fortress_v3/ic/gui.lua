@@ -33,6 +33,7 @@ local trust_player_name = Gui.uid_name()
 local drive_player_name = Gui.uid_name()
 local kick_player_name = Gui.uid_name()
 local destroy_surface_name = Gui.uid_name()
+local ignore_surface_conditions_name = Gui.uid_name()
 local discord_name = 'Mtn Fortress'
 
 local add_toolbar
@@ -400,6 +401,31 @@ local function draw_main_frame(player)
             caption = ({ 'ic.destroy_surface' }),
             name = destroy_surface_name
         })
+    local car = Functions.get_owner_car_object(player)
+    local ignore_surface_conditions_bought = car and car.ignore_surface_conditions
+    local prices = ICT.get('ignore_surface_conditions_prices')
+    if not prices then
+        prices =
+        {
+            ['car'] = 5000,
+            ['tank'] = 10000,
+            ['spidertron'] = 20000,
+            ['spider-vehicle'] = 20000
+        }
+        ICT.set('ignore_surface_conditions_prices', prices)
+    end
+    local price = 0
+    if car then
+        price = prices[car.name] or prices[car.type] or 0
+    end
+    local ignore_surface_conditions_frame = inside_table.add(
+        {
+            type = 'button',
+            caption = ignore_surface_conditions_bought and ({ 'ic.ignore_surface_conditions_bought' }) or ({ 'ic.buy_ignore_surface_conditions', price }),
+            name = ignore_surface_conditions_name,
+            tooltip = ({ 'ic.ignore_surface_conditions_tooltip' }),
+            enabled = car ~= false and not ignore_surface_conditions_bought
+        })
     local allow_anyone_to_enter =
         inside_table.add(
             {
@@ -499,6 +525,7 @@ local function draw_main_frame(player)
         add_player_frame = add_player_frame,
         transfer_car_frame = transfer_car_frame,
         destroy_surface_frame = destroy_surface_frame,
+        ignore_surface_conditions_frame = ignore_surface_conditions_frame,
         allow_anyone_to_enter = allow_anyone_to_enter,
         auto_upgrade = auto_upgrade,
         notify_on_driver_change = notify_on_driver_change,
@@ -673,6 +700,25 @@ Gui.on_click(
             draw_destroy_surface_name(frame)
         else
             player_frame.destroy()
+        end
+    end
+)
+
+Gui.on_click(
+    ignore_surface_conditions_name,
+    function (event)
+        local is_spamming = SpamProtection.is_spamming(event.player, nil, 'Ic Gui Ignore Surface Conditions')
+        if is_spamming then
+            return
+        end
+        local player = event.player
+        if not player or not player.valid or not player.character then
+            return
+        end
+
+        local purchased = Functions.purchase_ignore_surface_conditions(player)
+        if purchased and player.gui.screen[main_frame_name] then
+            toggle(player, true)
         end
     end
 )

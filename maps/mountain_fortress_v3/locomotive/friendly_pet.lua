@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 
 local random = math.random
 local biters
@@ -58,7 +59,7 @@ local function shoo(event)
     local player = game.players[event.player_index]
 
     if player and player.valid then
-        if (player.physical_surface.index ~= loco_surface.index or player.physical_position.x < 700) then
+        if (player.physical_surface.index ~= loco_surface.index or not Orient.is_interior(player.physical_position)) then
             return
         end
     end

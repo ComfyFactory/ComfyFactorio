@@ -62,6 +62,9 @@ local function spawn_biters(data)
     local position = data.position
     local entity_name = data.entity_name
     local h = floor(abs(position.y))
+    if Public.get('spawn_along_x') then
+        h = floor(abs(position.x))
+    end
 
     if not position then
         position = surface.find_non_colliding_position('small-biter', position, 10, 1)

@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local ICFunctions = require 'maps.mountain_fortress_v3.ic.functions'
 local Session = require 'utils.datastore.session_data'
@@ -155,7 +156,7 @@ local function is_inside_zone(data)
     local entity = data.entity
     local loco = data.locomotive.position
     local position = entity.position
-    local inside = ((position.y - loco.y) ^ 2) < zone_settings.zone_depth ^ 2
+    local inside = ((Orient.progression(position) - Orient.progression(loco)) ^ 2) < zone_settings.zone_depth ^ 2
 
     if inside then
         return true
@@ -275,7 +276,7 @@ local function give_passive_xp(data)
             local position = player.physical_position
             local inside = ((position.x - loco.x) ^ 2 + (position.y - loco.y) ^ 2) < upgrades.locomotive_aura_radius ^ 2
             if player.afk_time < 200 and not RPG.get_last_spell_cast(player) then
-                if inside or (player.physical_surface.index == loco_surface.index and not default_surface or position.x > 700) then
+                if inside or (player.physical_surface.index == loco_surface.index and not default_surface or Orient.is_interior(position)) then
                     if (player.physical_surface.index == loco_surface.index and not default_surface) then
                         Public.add_player_to_permission_group(player, 'limited')
                     elseif ICFunctions.get_player_surface(player) then
@@ -324,7 +325,7 @@ local function give_passive_xp(data)
                         end
                     end
                 end
-            elseif player.afk_time > 1800 and player.character and (player.physical_surface.index == loco_surface.index or player.physical_position.x > 700) and player.get_requester_point() then
+            elseif player.afk_time > 1800 and player.character and (player.physical_surface.index == loco_surface.index or Orient.is_interior(player.physical_position)) and player.get_requester_point() then
                 player.get_requester_point().enabled = false
             end
             ::pre_exit::
@@ -602,7 +603,7 @@ local function on_player_changed_surface(event)
 
     local locomotive_surface = Public.get('loco_surface')
 
-    if locomotive_surface and locomotive_surface.valid and (player.physical_surface.index == locomotive_surface.index or player.physical_position.x > 700) then
+    if locomotive_surface and locomotive_surface.valid and (player.physical_surface.index == locomotive_surface.index or Orient.is_interior(player.physical_position)) then
         return Public.add_player_to_permission_group(player, 'limited')
     elseif ICFunctions.get_player_surface(player) then
         return Public.add_player_to_permission_group(player, 'limited')
@@ -777,25 +778,14 @@ function Public.render_train_hp()
     end
 
     local health_text = Public.get('health_text')
-
     if health_text and health_text.valid then
         health_text.destroy()
     end
 
-    Public.set(
-        'health_text',
-        rendering.draw_text
-        {
-            text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
-            surface = surface,
-            target = locomotive,
-            color = { 0, 0, 255 },
-            scale = 1.40,
-            font = 'default-game',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
-    )
+    local caption = Public.get('caption')
+    if caption and caption.valid then
+        caption.destroy()
+    end
 
     Public.set(
         'caption',
@@ -803,11 +793,28 @@ function Public.render_train_hp()
         {
             text = 'Comfy Choo Choo',
             surface = surface,
-            target = locomotive_cargo,
+            target = { entity = locomotive, offset = { 0, -3.5 } },
             color = { 0, 0, 255 },
             scale = 1.80,
             font = 'default-game',
             alignment = 'center',
+            vertical_alignment = 'bottom',
+            scale_with_zoom = false
+        }
+    )
+
+    Public.set(
+        'health_text',
+        rendering.draw_text
+        {
+            text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
+            surface = surface,
+            target = { entity = locomotive, offset = { 0, -2.0 } },
+            color = { 0, 0, 255 },
+            scale = 1.40,
+            font = 'default-game',
+            alignment = 'center',
+            vertical_alignment = 'bottom',
             scale_with_zoom = false
         }
     )

@@ -1,5 +1,6 @@
 local Server = require 'utils.server'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Event = require 'utils.event'
 
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
@@ -31,19 +32,21 @@ local function teleport_players()
     local position
 
     if adjusted_zones.reversed then
-        game.forces.player.set_spawn_position({ -27, -25 }, surface)
+        local spawn = Orient.world(-27, -25)
+        game.forces.player.set_spawn_position(spawn, surface)
         position = game.forces.player.get_spawn_position(surface)
 
         if not position then
-            game.forces.player.set_spawn_position({ -27, -25 }, surface)
+            game.forces.player.set_spawn_position(spawn, surface)
             position = game.forces.player.get_spawn_position(surface)
         end
     else
-        game.forces.player.set_spawn_position({ -27, 25 }, surface)
+        local spawn = Orient.world(-27, 25)
+        game.forces.player.set_spawn_position(spawn, surface)
         position = game.forces.player.get_spawn_position(surface)
 
         if not position then
-            game.forces.player.set_spawn_position({ -27, 25 }, surface)
+            game.forces.player.set_spawn_position(spawn, surface)
             position = game.forces.player.get_spawn_position(surface)
         end
     end

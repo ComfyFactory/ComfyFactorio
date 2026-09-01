@@ -60,6 +60,7 @@ function Public.reset_wave_defense()
     this.boss_raffle = {}
     this.debug = false
     this.inverted = false
+    this.spawn_along_x = false
     this.debug_health = false
     this.disable_spawn_near_target = true
     this.log_wave_to_discord = true
@@ -145,7 +146,11 @@ function Public.reset_wave_defense()
             index = 0,
             positions = {}
         },
-        nests = {}
+        nests = {},
+        path_requests = {},
+        path_request_count = 0,
+        group_path_cooldown = {},
+        unreachable_goals = {}
     }
     this.threat_values =
     {
@@ -534,6 +539,10 @@ end
 -- @param <boolean>
 function Public.enable_inverted(boolean)
     this.inverted = boolean or false
+end
+
+function Public.set_spawn_along_x(boolean)
+    this.spawn_along_x = boolean or false
 end
 
 -- Event.on_nth_tick(30, Public.debug_module)

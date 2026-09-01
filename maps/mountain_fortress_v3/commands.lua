@@ -1,4 +1,5 @@
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Task = require 'utils.task_token'
 local Server = require 'utils.server'
 local Collapse = require 'modules.collapse'
@@ -277,6 +278,39 @@ Commands.new('mtn_reverse_map', 'Usable only for admins - reverses the map!')
             game.print(mapkeeper .. player.name .. ', has reverse the map and reset the game!',
                 { color = CommandColor })
             player.print('Map reversed.')
+        end
+    )
+
+Commands.new('mtn_set_direction', 'Usable only for admins - sets map direction (north/south/east/west)!')
+    :require_admin()
+    :require_validation()
+    :add_parameter('north/south/east/west', false, 'string')
+    :callback(
+        function (player, direction)
+            if not Orient.valid_directions[direction] then
+                player.print('Invalid direction. Use north, south, east or west.')
+                return
+            end
+            Public.set_stateful_settings('direction', direction)
+            Discord.send_notification(
+                {
+                    title = "Map direction",
+                    description = player.name .. ' set the map direction to ' .. direction .. '.',
+                    color = "success",
+                    fields =
+                    {
+                        {
+                            title = "Server",
+                            description = Public.discord_name,
+                            inline = "false"
+                        }
+                    }
+                })
+            local current_task = Public.get('current_task')
+            Public.set_task(current_task.default_task)
+            game.print(mapkeeper .. player.name .. ', has set the map direction to ' .. direction .. ' and reset the game!',
+                { color = CommandColor })
+            player.print('Map direction set to ' .. direction .. '.')
         end
     )
 

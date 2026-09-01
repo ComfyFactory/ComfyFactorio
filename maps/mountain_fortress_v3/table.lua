@@ -9,6 +9,7 @@ local Color = require 'utils.color_presets'
 
 local stateful_settings =
 {
+    direction = 'south',
     reversed = false,
     current_planet = 'fortress',
     darkness = false
@@ -55,6 +56,7 @@ local this =
         size = nil,
         shuffled_zones = nil,
         starting_zone = false,
+        direction = stateful_settings.direction or 'south',
         reversed = stateful_settings.reversed,
         disable_terrain = false
     },
@@ -474,8 +476,22 @@ Public.pickaxe_upgrades =
 Public.locomotive_warning_blueprint = [[
 0eNqNU1tu2zAQvMt+U4GfSa2rBAFBSWt5Eb5AUk5VQwfoQXqxnqRLOqFbxGirL2ofM7PD5QU6PaEPZBO0F6De2Qjt8wUijVbpHLPKILSAGvsUqG/QYhjnhjswHFWPsAggO+BXaNfLiwC0iRLhFab8zNJOpsPABeIDLhMlZVPTO9ORVckFEOBd5F5nMy/jNbvVw17A/H5iIm5LwWnZ4UmdiXu4MLIwKrp/PzP5TdWyLOKTmE0V44MbgzJGdRqb6FG94j0128N/qOkp9BMlybmhdh8pxCRvnqbZF0+LIKg6EjH/eHIxwRW9WATtKv8Yr0KxqYWf33+UgneqnDDI13G1oLDIs+KLlRSlp9SfoD0qHVFATM5Lr9VMdpTRTXaINUfMFybDqiQNhdW6hOX8yAbCnzwZpFP9qzw7PWX5fLk1ZtyQBxq163hiAUpr9ya907M/OTtXymuvfDdS4yC7ufpUapbcjOHTlCfGK4nbaDnkrDTK19i11WCMasyC4N4ibOsFRMNCm7rqrBf/vgdr3oM7iDvx72dzB/fLByoP3U3HIwb24lu2dlW//MTeKJT39bwWa7ER6xeOUULDfLfnzOayVwV+/7g57A6H/dN2v909bZblF9amX4U=]]
 
+local function sync_direction_settings()
+    local direction = stateful_settings.direction
+    if direction ~= 'north' and direction ~= 'south' and direction ~= 'east' and direction ~= 'west' then
+        if stateful_settings.reversed then
+            stateful_settings.direction = 'north'
+        else
+            stateful_settings.direction = 'south'
+        end
+        direction = stateful_settings.direction
+    end
+    stateful_settings.reversed = (direction == 'north' or direction == 'west')
+end
+
 function Public.reset_main_table()
     Server.output_script_data('Resetting Mtn main table')
+    sync_direction_settings()
     -- @start
     this.default_surface = false
     this.space_age = script.active_mods['space-age'] or false
@@ -741,6 +757,7 @@ function Public.reset_main_table()
         size = nil,
         shuffled_zones = nil,
         starting_zone = true,
+        direction = stateful_settings.direction or 'south',
         reversed = stateful_settings.reversed,
         disable_terrain = false
     }
@@ -856,6 +873,25 @@ end
 function Public.set_stateful_settings(key, value)
     if key and (value or value == false) then
         stateful_settings[key] = value
+        if key == 'reversed' then
+            local direction = stateful_settings.direction or 'south'
+            if value then
+                if direction == 'south' then
+                    stateful_settings.direction = 'north'
+                elseif direction == 'east' then
+                    stateful_settings.direction = 'west'
+                end
+            else
+                if direction == 'north' then
+                    stateful_settings.direction = 'south'
+                elseif direction == 'west' then
+                    stateful_settings.direction = 'east'
+                end
+            end
+            sync_direction_settings()
+        elseif key == 'direction' then
+            sync_direction_settings()
+        end
     end
     Public.save_stateful_settings()
 end
@@ -927,6 +963,7 @@ local apply_settings_token =
                     end
                     stateful_settings[k] = v
                 end
+                sync_direction_settings()
             end
 
             Server.output_script_data('Mtn Modded Part 2: ' .. tostring(Public.is_modded_pt2))

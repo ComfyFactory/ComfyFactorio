@@ -131,18 +131,19 @@ local function draw_chain(surface, count, ore, ore_entities, ore_positions)
         table.shuffle_table(vectors)
         for i = 1, 4, 1 do
             local p = { x = position.x + vectors[i][1], y = position.y + vectors[i][2] }
-            if surface.can_place_entity({ name = 'coal', position = p, amount = 1 }) then
-                if not ore_positions[p.x .. '_' .. p.y] then
-                    position.x = p.x
-                    position.y = p.y
-                    ore_positions[p.x .. '_' .. p.y] = true
-                    local name = ore
-                    if ore == 'mixed' then
-                        name = this.mixed_ores[random(1, #this.mixed_ores)]
-                    end
-                    ore_entities[#ore_entities + 1] = { name = name, position = p, amount = get_amount(position) }
-                    break
+            if not ore_positions[p.x .. '_' .. p.y]
+                and surface.can_place_entity({ name = 'coal', position = p, amount = 1 })
+                and surface.count_entities_filtered({ type = 'resource', position = p, limit = 1 }) == 0
+            then
+                position.x = p.x
+                position.y = p.y
+                ore_positions[p.x .. '_' .. p.y] = true
+                local name = ore
+                if ore == 'mixed' then
+                    name = this.mixed_ores[random(1, #this.mixed_ores)]
                 end
+                ore_entities[#ore_entities + 1] = { name = name, position = p, amount = get_amount(position) }
+                break
             end
         end
     end

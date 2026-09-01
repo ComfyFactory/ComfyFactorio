@@ -14,6 +14,7 @@ local Discord = require 'utils.discord'
 local format_number = require 'util'.format_number
 local Explosives = require 'modules.explosives'
 local StatefulFunctions = require 'maps.mountain_fortress_v3.stateful.functions'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
 local zone_settings = Public.zone_settings
@@ -184,7 +185,7 @@ local function notify_won_to_discord(buff)
         Server.to_discord_embed_parsed(text)
     end
 
-    Public.post_mvp_to_discord()
+    Public.save_round_mvps()
 
     Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord, nil, nil, nil, 'global')
     Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord, nil, nil, nil, 'global')
@@ -1261,12 +1262,10 @@ local function update_raw()
                     Public.set_stateful_settings('next_planet', next_planet)
                 end
 
-                local reversed = Public.get_stateful_settings('reversed')
-                if reversed then
-                    Public.set_stateful_settings('reversed', false)
-                else
-                    Public.set_stateful_settings('reversed', true)
-                end
+                local directions = { 'north', 'south', 'east', 'west' }
+                local next_direction = directions[random(1, #directions)]
+                Public.set_stateful_settings('direction', next_direction)
+                Server.output_script_data('Next map direction: ' .. next_direction)
 
                 local darkness = Public.get_stateful_settings('darkness')
                 if darkness then
@@ -1365,15 +1364,15 @@ local function update_raw()
         stateful.collection.gather_time_timer = tick + (10 * 3600)
         game.forces.enemy.set_evolution_factor(1, player.surface.name)
         play_achievement_unlocked()
-        local reverse_position = (zone_settings.zone_depth + 20) * (breached_wall + 1)
+        local reverse_prog = (zone_settings.zone_depth + 20) * (breached_wall + 1)
         local reversed = Public.get_stateful_settings('reversed')
         if not reversed then
-            reverse_position = reverse_position * -1
+            reverse_prog = reverse_prog * -1
         end
         Explosives.disable(true)
         WD.disable_spawning_biters(true)
         WD.set_track_bosses_only(false)
-        Collapse.set_reverse_position({ 0, reverse_position })
+        Collapse.set_reverse_position(Orient.world(0, reverse_prog))
         Collapse.set_reverse_direction()
         Collapse.reverse_start_now(true)
         Alert.alert_all_players(200, 'Reverse collapse has been initiated!', nil, nil, nil, 'global')

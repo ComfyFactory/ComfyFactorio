@@ -7,6 +7,7 @@ local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -1208,7 +1209,12 @@ function Public.create_room_surface(car)
     local unit_number = car.entity.unit_number
 
     if game.surfaces[car.surface_name] then
-        return game.surfaces[car.surface_name].index
+        local existing = game.surfaces[car.surface_name]
+        if car.ignore_surface_conditions or ServerCommands.is_dev_server() then
+            existing.ignore_surface_conditions = true
+            car.ignore_surface_conditions = true
+        end
+        return existing.index
     end
 
     local map_gen_settings =
@@ -1234,6 +1240,9 @@ function Public.create_room_surface(car)
     surface.force_generate_chunk_requests()
 
     if ServerCommands.is_dev_server() then
+        surface.ignore_surface_conditions = true
+        car.ignore_surface_conditions = true
+    elseif car.ignore_surface_conditions then
         surface.ignore_surface_conditions = true
     end
 
@@ -1359,7 +1368,7 @@ function Public.create_car(event)
         end
     end
 
-    if string.sub(ce.surface.name, 0, #map_name) ~= map_name or (default_surface and ce.position.x > 800) then
+    if string.sub(ce.surface.name, 0, #map_name) ~= map_name or (default_surface and Orient.is_interior(ce.position, 800)) then
         return player.print(module_tag .. 'Multi-surface is not supported at the moment.', { color = Color.warning })
     end
 
@@ -1643,6 +1652,48 @@ function Public.get_car(unit_number)
     end
 
     return cars[unit_number] or nil
+end
+
+function Public.purchase_ignore_surface_conditions(player)
+    local car = get_owner_car_object(player)
+    if not car then
+        return false
+    end
+    if car.ignore_surface_conditions then
+        return false
+    end
+
+    local prices = IC.get('ignore_surface_conditions_prices')
+    if not prices then
+        prices =
+        {
+            ['car'] = 5000,
+            ['tank'] = 10000,
+            ['spidertron'] = 20000,
+            ['spider-vehicle'] = 20000
+        }
+        IC.set('ignore_surface_conditions_prices', prices)
+    end
+    local price = prices[car.name] or prices[car.type]
+    if not price then
+        return false
+    end
+
+    if player.get_item_count('coin') < price then
+        player.print('[IC] Not enough coins!', { color = Color.warning })
+        return false
+    end
+
+    player.remove_item({ name = 'coin', count = price })
+    car.ignore_surface_conditions = true
+
+    local surface = game.surfaces[car.surface]
+    if surface and surface.valid then
+        surface.ignore_surface_conditions = true
+    end
+
+    player.print('[IC] Surface conditions are now ignored for this vehicle.', { color = Color.success })
+    return true
 end
 
 Public.get_trusted_system = get_trusted_system
