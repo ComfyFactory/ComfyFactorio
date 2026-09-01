@@ -167,10 +167,9 @@ function Module.convert_date(year, month, day)
         if d < 0 then
             b = -1
         end
-        return a * b * (math.abs(n) / math.abs(d))
+        return a * b * math.floor(math.abs(n) / math.abs(d))
     end
     local d
-
     if (year < 0) or (month < 1) or (month > 12) or (day < 1) or (day > 31) then
         return
     end
