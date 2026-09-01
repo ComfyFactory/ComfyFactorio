@@ -60,6 +60,13 @@ function Public.reset()
         ['spidertron'] = { left_top = { x = -40, y = 0 }, right_bottom = { x = 40, y = 60 } },
         ['spider-vehicle'] = { left_top = { x = -40, y = 0 }, right_bottom = { x = 40, y = 60 } }
     }
+    this.ignore_surface_conditions_prices =
+    {
+        ['car'] = 5000,
+        ['tank'] = 10000,
+        ['spidertron'] = 20000,
+        ['spider-vehicle'] = 20000
+    }
 end
 
 ---Fetches a value from the table.
