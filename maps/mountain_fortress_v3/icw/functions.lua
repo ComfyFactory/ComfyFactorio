@@ -9,6 +9,7 @@ local SpamProtection = require 'utils.spam_protection'
 local Core = require 'utils.core'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 local Compat = require 'utils.functions.factorio_compat'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 
 local deep_copy = table.deep_copy
 local random = math.random
@@ -125,10 +126,13 @@ local function get_offset(icw, surface, offset)
         x = 2030 + offset,
         y = 0
     }
+    if Orient.is_horizontal() then
+        position.y = 2000
+    end
 
     Task.set_timeout_in_ticks(10, chunk_reveal_token, { surface_index = surface.index })
 
-    for _, tile in pairs(surface.find_tiles_filtered({ area = { { position.x - 2, -2 }, { position.x + 2, 2 } } })) do
+    for _, tile in pairs(surface.find_tiles_filtered({ area = { { position.x - 2, position.y - 2 }, { position.x + 2, position.y + 2 } } })) do
         surface.set_tiles({ { name = out_of_map_tile, position = tile.position } }, true)
     end
 
@@ -472,6 +476,7 @@ function Public.hazardous_debris()
         for _ = 1, 16 * speed, 1 do
             local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
+            position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
             if get_tile.valid and get_tile.name == out_of_map_tile then
@@ -482,6 +487,7 @@ function Public.hazardous_debris()
         for _ = 1, 6 * speed, 1 do
             local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
+            position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
             if get_tile.valid and get_tile.name == out_of_map_tile then
@@ -492,6 +498,7 @@ function Public.hazardous_debris()
         for _ = 1, 4 * speed, 1 do
             local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
+            position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
             if get_tile.valid and get_tile.name == out_of_map_tile then
@@ -510,6 +517,7 @@ function Public.hazardous_debris()
         for _ = 1, 6 * speed, 1 do
             local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
+            position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
             if get_tile.valid and get_tile.name == out_of_map_tile then
@@ -528,6 +536,7 @@ function Public.hazardous_debris()
         for _ = 1, 16 * speed, 1 do
             local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
+            position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
             if get_tile.valid and get_tile.name == out_of_map_tile then
@@ -538,6 +547,7 @@ function Public.hazardous_debris()
         for _ = 1, 6 * speed, 1 do
             local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
+            position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
             if get_tile.valid and get_tile.name == out_of_map_tile then
@@ -548,6 +558,7 @@ function Public.hazardous_debris()
         for _ = 1, 4 * speed, 1 do
             local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
+            position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
             if get_tile.valid and get_tile.name == out_of_map_tile then
@@ -566,6 +577,7 @@ function Public.hazardous_debris()
         for _ = 1, 6 * speed, 1 do
             local position = deep_copy(fallout_debris[random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
+            position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
             local get_tile = surface.get_tile(p)
             if get_tile.valid and get_tile.name == out_of_map_tile then
@@ -830,7 +842,7 @@ function Public.set_wagon_tiles(wagon)
         end
     end
     for x = wagon.chunk_position.x - 3, wagon.chunk_position.x + 2, 1 do
-        for y = 1, 3, 1 do
+        for y = area.left_top.y + 1, area.left_top.y + 3, 1 do
             tiles[#tiles + 1] = { name = main_tile_name, position = { x, y } }
         end
         for y = area.right_bottom.y - 4, area.right_bottom.y - 2, 1 do
@@ -844,7 +856,7 @@ function Public.set_wagon_tiles(wagon)
 
     if wagon.entity.type == 'locomotive' then
         for x = wagon.chunk_position.x - 6, wagon.chunk_position.x + 5, 1 do
-            for y = 10, 12, 1 do
+            for y = area.left_top.y + 10, area.left_top.y + 12, 1 do
                 tiles[#tiles + 1] = { name = water_tile, position = { x, y } }
                 fishes[#fishes + 1] = { name = 'fish', position = { x, y } }
             end
@@ -870,7 +882,7 @@ function Public.create_wagon_room(icw, wagon)
         end
     end
     for x = wagon.chunk_position.x - 3, wagon.chunk_position.x + 2, 1 do
-        for y = 1, 3, 1 do
+        for y = area.left_top.y + 1, area.left_top.y + 3, 1 do
             tiles[#tiles + 1] = { name = main_tile_name, position = { x, y } }
         end
         for y = area.right_bottom.y - 4, area.right_bottom.y - 2, 1 do
@@ -884,7 +896,7 @@ function Public.create_wagon_room(icw, wagon)
 
     if wagon.entity.type == 'locomotive' then
         for x = wagon.chunk_position.x - 6, wagon.chunk_position.x + 5, 1 do
-            for y = 10, 12, 1 do
+            for y = area.left_top.y + 10, area.left_top.y + 12, 1 do
                 tiles[#tiles + 1] = { name = water_tile, position = { x, y } }
                 fishes[#fishes + 1] = { name = 'fish', position = { x, y } }
             end
@@ -952,10 +964,10 @@ function Public.create_wagon_room(icw, wagon)
             }
         )
 
-    if wagon.entity.type == 'cargo-wagon' then
-        local task = Task.get(add_chests_to_wagon_token)
-        task({ wagon = wagon, surface = surface })
-    end
+    -- if wagon.entity.type == 'cargo-wagon' then
+    local callback = Task.get(add_chests_to_wagon_token)
+    callback({ wagon = wagon, surface = surface })
+    -- end
 end
 
 function Public.create_wagon(icw, created_entity, quality_areas)
@@ -996,8 +1008,8 @@ function Public.create_wagon(icw, created_entity, quality_areas)
         unit_type = created_entity.type,
         area =
         {
-            left_top = { x = wagon_area.left_top.x + position.x, y = wagon_area.left_top.y },
-            right_bottom = { x = wagon_area.right_bottom.x + position.x, y = wagon_area.right_bottom.y }
+            left_top = { x = wagon_area.left_top.x + position.x, y = wagon_area.left_top.y + position.y },
+            right_bottom = { x = wagon_area.right_bottom.x + position.x, y = wagon_area.right_bottom.y + position.y }
         },
         doors = {}
     }
@@ -1376,7 +1388,15 @@ function Public.construct_train(icw, carriages)
         return
     end
 
-    local train = { surface = Public.create_room_surface(icw, unit_number), wagons = {}, top_y = 0 }
+    local wagon = icw.wagons[unit_number]
+    local top_y = 0
+    if wagon and wagon.chunk_position and wagon.chunk_position.y then
+        top_y = wagon.chunk_position.y
+    elseif icw.default_surface and Orient.is_horizontal() then
+        top_y = 2000
+    end
+
+    local train = { surface = Public.create_room_surface(icw, unit_number), wagons = {}, top_y = top_y }
     icw.trains[unit_number] = train
 
     if not icw.train_locomotives then
@@ -1393,8 +1413,6 @@ function Public.construct_train(icw, carriages)
     end
 
     local saved_carriages
-
-    local wagon = icw.wagons[unit_number]
     if wagon and wagon.new_chunk_position then
         saved_carriages = get_saved_carriages(icw, old_carriages)
         wagon.chunk_position = wagon.new_chunk_position
@@ -1511,7 +1529,7 @@ function Public.reconstruct_all_trains(reset_carriages)
 
                     local should_reverse = false
                     if connected_wagon and connected_wagon.valid and oldest_locomotive.valid then
-                        if oldest_locomotive.position.y > connected_wagon.position.y then
+                        if Orient.progression(oldest_locomotive.position) > Orient.progression(connected_wagon.position) then
                             if loco_index == 1 then
                                 should_reverse = true
                             end
@@ -1560,8 +1578,8 @@ function Public.reconstruct_all_trains(reset_carriages)
 
                     local destination_area =
                     {
-                        left_top = { x = entity_area.left_top.x + new_position.x, y = new_wagon.area.left_top.y },
-                        right_bottom = { x = entity_area.right_bottom.x + new_position.x, y = new_wagon.area.right_bottom.y }
+                        left_top = { x = entity_area.left_top.x + new_position.x, y = entity_area.left_top.y + new_position.y },
+                        right_bottom = { x = entity_area.right_bottom.x + new_position.x, y = entity_area.right_bottom.y + new_position.y }
                     }
 
                     if carriage_index then

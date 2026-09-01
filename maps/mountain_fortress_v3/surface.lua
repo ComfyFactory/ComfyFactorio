@@ -1,6 +1,7 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local zone_settings = Public.zone_settings
 
 local this =
@@ -38,7 +39,6 @@ function Public.create_surface(recreate)
     local map_gen_settings =
     {
         ['seed'] = math.random(10000, 99999),
-        ['width'] = zone_settings.zone_width,
         ['water'] = 0.001,
         ['starting_area'] = 1,
         ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
@@ -55,6 +55,13 @@ function Public.create_surface(recreate)
             ['tile:deep-water:probability'] = -10000
         }
     }
+
+    if Orient.is_horizontal() then
+        map_gen_settings.width = 0
+        map_gen_settings.height = zone_settings.zone_width
+    else
+        map_gen_settings.width = zone_settings.zone_width
+    end
 
     if Public.is_modded_pt2 then
         map_gen_settings.autoplace_settings.decorative = { treat_missing_as_default = false }
@@ -104,6 +111,7 @@ function Public.create_surface(recreate)
             local old_settings = game.surfaces[planet].map_gen_settings
             old_settings.seed = map_gen_settings.seed
             old_settings.width = map_gen_settings.width
+            old_settings.height = map_gen_settings.height
             game.surfaces[planet].map_gen_settings = old_settings
         end
     end

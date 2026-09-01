@@ -1,4 +1,5 @@
 local Public = require 'maps.mountain_fortress_v3.stateful.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Event = require 'utils.event'
 local WD = require 'modules.wave_defense.table'
 local Beam = require 'modules.render_beam'
@@ -90,7 +91,7 @@ Event.on_nth_tick(
                 local surface = game.surfaces[active_surface_index]
                 if surface and surface.valid then
                     for c in surface.get_chunks() do
-                        for _, entity in pairs(surface.find_entities_filtered({ force = 'enemy', area = { { c.x * 32, c.y * 32 }, { c.x * 32 + 32, c.y * 32 + 32 } }, type = { "unit", "turret", "unit-spawner", "spider-unit" } })) do
+                        for _, entity in pairs(surface.find_entities_filtered({ force = { 'enemy', 'aggressors', 'aggressors_frenzy' }, area = { { c.x * 32, c.y * 32 }, { c.x * 32 + 32, c.y * 32 + 32 } }, type = { "unit", "turret", "unit-spawner", "spider-unit", "segmented-unit" } })) do
                             if entity and entity.valid then
                                 entity.destroy()
                             end
@@ -157,8 +158,9 @@ Event.on_nth_tick(
                 return
             end
 
-            area[1].y = area[1].y + locomotive.position.y
-            area[2].y = area[2].y + locomotive.position.y
+            local loco_prog = Orient.progression(locomotive.position)
+            area[1] = Orient.world(area[1].x, area[1].y + loco_prog)
+            area[2] = Orient.world(area[2].x, area[2].y + loco_prog)
 
             WD.wave_defense_roll_boss_name()
 
@@ -185,6 +187,50 @@ Event.on_nth_tick(
             -- WD.place_custom_nest(locomotive.surface, area[1], 'aggressors_frenzy')
             Event.raise(ServerCommands.events.on_spawn_unit_group_simple, { fs = true, bypass = true, random_bosses = random_bosses, scale = scale, force = 'aggressors_frenzy' })
             Public.set_multi_command_final_battle()
+
+            local surface = locomotive.surface
+            if surface and surface.valid then
+                if not collection.worm_ring_placed then
+                    collection.worm_ring_placed = true
+                    local lp = locomotive.position
+                    WD.wave_defense_set_worm_raffle(WD.get('wave_number') or 1000)
+                    for _ = 1, 200 do
+                        local angle = random() * 2 * math.pi
+                        local radius = 100 + random(0, 160)
+                        local pos = { x = lp.x + math.cos(angle) * radius, y = lp.y + math.sin(angle) * radius }
+                        local nest = surface.find_non_colliding_position('small-worm-turret', pos, 16, 1)
+                        if nest then
+                            local worm = WD.wave_defense_roll_worm_name()
+                            if worm then
+                                surface.create_entity({ name = worm, position = nest, force = 'aggressors_frenzy' })
+                            end
+                        end
+                    end
+                end
+
+                if Public.is_modded_pt2 and random(1, 3) == 1 then
+                    local demolisher_limit = 1 + math.floor((rounds_survived or 0) / 8)
+                    if demolisher_limit > 5 then
+                        demolisher_limit = 5
+                    end
+                    if surface.count_entities_filtered({ name = { 'small-demolisher', 'medium-demolisher' }, limit = demolisher_limit }) < demolisher_limit then
+                        local demolisher_name = 'small-demolisher'
+                        if (rounds_survived or 0) >= 8 then
+                            if random(1, 4) ~= 1 then
+                                demolisher_name = 'medium-demolisher'
+                            end
+                        end
+                        local spawn_pos = area[1]
+                        if random(1, 2) == 1 then
+                            spawn_pos = area[2]
+                        end
+                        local demolisher_pos = surface.find_non_colliding_position(demolisher_name, spawn_pos, 32, 2)
+                        if demolisher_pos then
+                            surface.create_entity({ name = demolisher_name, position = demolisher_pos, force = 'aggressors_frenzy' })
+                        end
+                    end
+                end
+            end
             return
         end
 

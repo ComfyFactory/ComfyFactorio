@@ -2027,7 +2027,7 @@ local function on_player_changed_position(event)
 
     local position = player.physical_position
 
-    if (position.x < Public.zone_settings.zone_width / 2 and position.x >= -Public.zone_settings.zone_width / 2) then
+    if position.x < 700 then
         return
     end
 

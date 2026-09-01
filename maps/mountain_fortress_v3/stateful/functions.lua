@@ -1,4 +1,5 @@
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 local Stateful = require 'maps.mountain_fortress_v3.stateful.table'
@@ -307,7 +308,7 @@ function Public.reward_goal_completion()
         return
     end
 
-    local zone = math.floor((math.abs(locomotive.position.y / Public.zone_settings.zone_depth)) % adjusted_zones.size) + 1
+    local zone = math.floor((math.abs(Orient.progression(locomotive.position) / Public.zone_settings.zone_depth)) % adjusted_zones.size) + 1
 
     if math.random(1, 2) == 1 then
         local players = game.connected_players

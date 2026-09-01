@@ -1,5 +1,6 @@
 local LootRaffle = require 'maps.mountain_fortress_v3.loot_raffle'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local random = math.random
 local abs = math.abs
 local floor = math.floor
@@ -67,7 +68,7 @@ end
 
 function Public.add_loot(surface, position, chest, collision, zone)
     local loot_stats = Public.get('loot_stats') -- loot_stats.normal == 48
-    local budget = loot_stats.normal + abs(position.y) * 1.75
+    local budget = loot_stats.normal + abs(Orient.progression(position)) * 1.75
     budget = budget * random(25, 175) * 0.01
 
     if random(1, 128) == 1 then
@@ -141,7 +142,7 @@ end
 
 function Public.add_loot_rare(surface, position, chest, magic, zone)
     local loot_stats = Public.get('loot_stats') -- loot_stats.rare == 48
-    local budget = (magic * loot_stats.rare) + abs(position.y) * 1.75
+    local budget = (magic * loot_stats.rare) + abs(Orient.progression(position)) * 1.75
 
     if random(1, 128) == 1 then
         budget = budget * 6

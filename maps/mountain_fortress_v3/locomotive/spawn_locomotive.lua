@@ -1,4 +1,5 @@
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local Task = require 'utils.task_token'
 local MapFunctions = require 'utils.tools.map_functions'
@@ -168,7 +169,8 @@ function Public.locomotive_spawn(surface, position, reversed)
     local this = Public.get()
     local extra_wagons = Public.get_stateful('extra_wagons')
     local stateful = Public.get_stateful()
-
+    local rail_dir = Orient.rail_direction()
+    local loco_dir = Orient.loco_direction()
 
     if not extra_wagons then
         extra_wagons = 0
@@ -179,32 +181,23 @@ function Public.locomotive_spawn(surface, position, reversed)
     end
 
     if reversed then
-        position.y = position.y - (6 * extra_wagons)
-        for y = -6, 6, 2 do
-            surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
-        end
-        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', direction = defines.direction.south, quality = stateful.quality_trains })
-        if this.locomotive and this.locomotive.valid then
-            this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
-        end
+        local shifted = Orient.offset(position, 0, -(6 * extra_wagons))
+        position.x = shifted.x
+        position.y = shifted.y
+    end
 
-        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', direction = defines.direction.south, quality = stateful.quality_trains })
-        if this.locomotive_cargo and this.locomotive_cargo.valid then
-            this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
-        end
-    else
-        for y = -6, 6, 2 do
-            surface.create_entity({ name = 'straight-rail', position = { position.x, position.y + y }, force = 'player', direction = 0 })
-        end
-        this.locomotive = surface.create_entity({ name = 'locomotive', position = { position.x, position.y + -3 }, force = 'player', quality = stateful.quality_trains })
-        if this.locomotive and this.locomotive.valid then
-            this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
-        end
+    for d = -6, 6, 2 do
+        local rail_pos = Orient.offset(position, 0, d)
+        surface.create_entity({ name = 'straight-rail', position = rail_pos, force = 'player', direction = rail_dir })
+    end
+    this.locomotive = surface.create_entity({ name = 'locomotive', position = Orient.offset(position, 0, -3), force = 'player', direction = loco_dir, quality = stateful.quality_trains })
+    if this.locomotive and this.locomotive.valid then
+        this.locomotive.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 100 })
+    end
 
-        this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = { position.x, position.y + 3 }, force = 'player', quality = stateful.quality_trains })
-        if this.locomotive_cargo and this.locomotive_cargo.valid then
-            this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
-        end
+    this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = Orient.offset(position, 0, 3), force = 'player', direction = loco_dir, quality = stateful.quality_trains })
+    if this.locomotive_cargo and this.locomotive_cargo.valid then
+        this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
     end
 
     local winter_mode_locomotive = Public.wintery(this.locomotive, 5.5)
@@ -288,21 +281,28 @@ function Public.locomotive_spawn(surface, position, reversed)
 
         local pos = this.locomotive_cargo.position
 
-        local new_position = { x = pos.x, y = pos.y + inc }
-
-        for y = pos.y, new_position.y + (6 * extra_wagons), 2 do
-            surface.create_entity({ name = 'straight-rail', position = { new_position.x, y }, force = 'player', direction = 0 })
+        local new_position = Orient.offset(pos, 0, inc)
+        local end_pos = Orient.offset(pos, 0, inc + (6 * extra_wagons))
+        local start_prog = Orient.progression(pos)
+        local end_prog = Orient.progression(end_pos)
+        local step = 2
+        if end_prog < start_prog then
+            step = -2
+        end
+        for d = start_prog, end_prog, step do
+            local rail_pos = Orient.world(Orient.lateral(new_position), d)
+            surface.create_entity({ name = 'straight-rail', position = rail_pos, force = 'player', direction = rail_dir })
         end
 
         for _ = 1, extra_wagons do
             local wagon_name = random(1, 100) <= 30 and 'fluid-wagon' or 'cargo-wagon'
-            local new_wagon = surface.create_entity({ name = wagon_name, position = new_position, force = 'player', defines.direction.north, quality = stateful.quality_trains })
+            local new_wagon = surface.create_entity({ name = wagon_name, position = new_position, force = 'player', direction = loco_dir, quality = stateful.quality_trains })
             if new_wagon and new_wagon.valid then
                 new_wagon.minable_flag = false
                 new_wagon.operable = true
                 inc = inc + 7
                 new_wagon.color = this.locomotive.color
-                new_position = { x = pos.x, y = pos.y + inc }
+                new_position = Orient.offset(pos, 0, inc)
                 ICW.register_wagon(new_wagon)
             end
         end
@@ -316,7 +316,7 @@ function Public.locomotive_spawn(surface, position, reversed)
     Task.set_timeout_in_ticks(50, set_loco_cargo, data)
     Task.set_timeout_in_ticks(500, place_tiles_token, { surface = surface, position = position })
 
-    game.forces.player.set_spawn_position({ this.locomotive.position.x - 5, this.locomotive.position.y }, locomotive.surface)
+    game.forces.player.set_spawn_position(Orient.offset(this.locomotive.position, -5, 0), locomotive.surface)
 end
 
 Event.add(Public.events.on_locomotive_cargo_missing, function ()

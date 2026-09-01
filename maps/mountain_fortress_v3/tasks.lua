@@ -30,6 +30,7 @@ local SpawnersContainBiters = require 'modules.spawners_contain_biters'
 local Session = require 'utils.datastore.session_data'
 local RPG_Settings = require 'utils.datastore.rpg_data'
 local Core = require 'utils.core'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
@@ -204,7 +205,7 @@ function Public.pre_init_task(current_task)
     -- RPG.set_vitality_custom_callback(Public.vitality_custom_callback_token)
 
     WD.set('nest_building_density', 32)
-    WD.set('spawn_position', { x = 0, y = 84 })
+    WD.set('spawn_position', Orient.world(0, 84))
     WD.set('game_lost', true)
 
     for _, player in pairs(game.players) do
@@ -347,20 +348,26 @@ function Public.reset_map(current_task)
     Commands.restore_states()
 
     if this.adjusted_zones.reversed then
-        if not surface.is_chunk_generated({ x = -20, y = -22 }) then
-            surface.request_to_generate_chunks({ x = -20, y = -22 }, 1)
+        local chunk_pos = Orient.world(-20, -22)
+        if not surface.is_chunk_generated(chunk_pos) then
+            surface.request_to_generate_chunks(chunk_pos, 1)
             surface.force_generate_chunk_requests()
         end
-        game.forces.player.set_spawn_position({ x = -27, y = -25 }, surface)
-        WD.set_spawn_position({ x = -16, y = -80 })
-        WD.enable_inverted(true)
+        game.forces.player.set_spawn_position(Orient.world(-27, -25), surface)
+        WD.set_spawn_position(Orient.world(-16, -80))
+        if not Orient.is_horizontal() then
+            WD.enable_inverted(true)
+        else
+            WD.enable_inverted(false)
+        end
     else
-        if not surface.is_chunk_generated({ x = -20, y = 22 }) then
-            surface.request_to_generate_chunks({ x = -20, y = 22 }, 1)
+        local chunk_pos = Orient.world(-20, 22)
+        if not surface.is_chunk_generated(chunk_pos) then
+            surface.request_to_generate_chunks(chunk_pos, 1)
             surface.force_generate_chunk_requests()
         end
-        game.forces.player.set_spawn_position({ x = -27, y = 25 }, surface)
-        WD.set_spawn_position({ x = -16, y = 80 })
+        game.forces.player.set_spawn_position(Orient.world(-27, 25), surface)
+        WD.set_spawn_position(Orient.world(-16, 80))
         WD.enable_inverted(false)
     end
 
@@ -430,15 +437,15 @@ function Public.create_locomotive(current_task)
     if adjusted_zones.reversed then
         Explosives.check_growth_below_void(false)
         spawn_near_collapse.compare = abs(spawn_near_collapse.compare)
-        Collapse.set_position({ 0, -130 })
-        Collapse.set_direction('south')
-        Public.locomotive_spawn(surface, { x = -18, y = -25 }, adjusted_zones.reversed)
+        Collapse.set_position(Orient.world(0, -130))
+        Collapse.set_direction(Orient.collapse_direction())
+        Public.locomotive_spawn(surface, Orient.world(-18, -25), adjusted_zones.reversed)
     else
         Explosives.check_growth_below_void(true)
         spawn_near_collapse.compare = abs(spawn_near_collapse.compare) * -1
-        Collapse.set_position({ 0, 130 })
-        Collapse.set_direction('north')
-        Public.locomotive_spawn(surface, { x = -18, y = 25 }, adjusted_zones.reversed)
+        Collapse.set_position(Orient.world(0, 130))
+        Collapse.set_direction(Orient.collapse_direction())
+        Public.locomotive_spawn(surface, Orient.world(-18, 25), adjusted_zones.reversed)
     end
 
     Public.render_train_hp()
@@ -483,19 +490,21 @@ function Public.to_fortress(current_task)
     local position
 
     if adjusted_zones.reversed then
-        game.forces.player.set_spawn_position({ -27, -25 }, surface)
+        local spawn = Orient.world(-27, -25)
+        game.forces.player.set_spawn_position(spawn, surface)
         position = game.forces.player.get_spawn_position(surface)
 
         if not position then
-            game.forces.player.set_spawn_position({ -27, -25 }, surface)
+            game.forces.player.set_spawn_position(spawn, surface)
             position = game.forces.player.get_spawn_position(surface)
         end
     else
-        game.forces.player.set_spawn_position({ -27, 25 }, surface)
+        local spawn = Orient.world(-27, 25)
+        game.forces.player.set_spawn_position(spawn, surface)
         position = game.forces.player.get_spawn_position(surface)
 
         if not position then
-            game.forces.player.set_spawn_position({ -27, 25 }, surface)
+            game.forces.player.set_spawn_position(spawn, surface)
             position = game.forces.player.get_spawn_position(surface)
         end
     end

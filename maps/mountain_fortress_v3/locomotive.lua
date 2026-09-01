@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local ICFunctions = require 'maps.mountain_fortress_v3.ic.functions'
 local Session = require 'utils.datastore.session_data'
@@ -155,7 +156,7 @@ local function is_inside_zone(data)
     local entity = data.entity
     local loco = data.locomotive.position
     local position = entity.position
-    local inside = ((position.y - loco.y) ^ 2) < zone_settings.zone_depth ^ 2
+    local inside = ((Orient.progression(position) - Orient.progression(loco)) ^ 2) < zone_settings.zone_depth ^ 2
 
     if inside then
         return true
@@ -777,25 +778,14 @@ function Public.render_train_hp()
     end
 
     local health_text = Public.get('health_text')
-
     if health_text and health_text.valid then
         health_text.destroy()
     end
 
-    Public.set(
-        'health_text',
-        rendering.draw_text
-        {
-            text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
-            surface = surface,
-            target = locomotive,
-            color = { 0, 0, 255 },
-            scale = 1.40,
-            font = 'default-game',
-            alignment = 'center',
-            scale_with_zoom = false
-        }
-    )
+    local caption = Public.get('caption')
+    if caption and caption.valid then
+        caption.destroy()
+    end
 
     Public.set(
         'caption',
@@ -803,11 +793,28 @@ function Public.render_train_hp()
         {
             text = 'Comfy Choo Choo',
             surface = surface,
-            target = locomotive_cargo,
+            target = { entity = locomotive, offset = { 0, -3.5 } },
             color = { 0, 0, 255 },
             scale = 1.80,
             font = 'default-game',
             alignment = 'center',
+            vertical_alignment = 'bottom',
+            scale_with_zoom = false
+        }
+    )
+
+    Public.set(
+        'health_text',
+        rendering.draw_text
+        {
+            text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
+            surface = surface,
+            target = { entity = locomotive, offset = { 0, -2.0 } },
+            color = { 0, 0, 255 },
+            scale = 1.40,
+            font = 'default-game',
+            alignment = 'center',
+            vertical_alignment = 'bottom',
             scale_with_zoom = false
         }
     )

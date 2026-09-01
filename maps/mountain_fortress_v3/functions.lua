@@ -22,6 +22,7 @@ local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Score = require 'utils.gui.score'
 local Gui = require 'utils.gui'
 local FunctionColor = { r = 0.98, g = 0.66, b = 0.22 }
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 
 local zone_settings = Public.zone_settings
 local remove_boost_movement_speed_on_respawn
@@ -702,13 +703,19 @@ local function do_season_fix()
         current_season.destroy()
     end
 
+    local welcome_target = Orient.world(0, 10)
+    local season_dy = 4
+    if Public.get('soft_reset_counter') then
+        season_dy = 6
+    end
+
     Public.set(
         'current_season',
         rendering.draw_text
         {
             text = 'Season: ' .. Public.get_stateful('season'),
             surface = surface,
-            target = { -0, 12 },
+            target = { x = welcome_target.x, y = welcome_target.y + season_dy },
             color = { r = 0.98, g = 0.77, b = 0.22 },
             scale = 3,
             font = 'heading-1',
@@ -1224,12 +1231,12 @@ Public.refill_artillery_turret_callback =
                 artillery_data.artillery_turrets = artillery_turrets
 
                 local pos = turret.position
-                local x, y = pos.x, pos.y
+                local x, y = Orient.lateral(pos), Orient.progression(pos)
                 local adjusted_zones = Public.get('adjusted_zones')
                 if adjusted_zones.reversed then
-                    artillery_data.artillery_area = { { x - 112, y - 212 }, { x + 112, y } }
+                    artillery_data.artillery_area = Orient.aabb(x - 112, y - 212, x + 112, y)
                 else
-                    artillery_data.artillery_area = { { x - 112, y }, { x + 112, y + 212 } }
+                    artillery_data.artillery_area = Orient.aabb(x - 112, y, x + 112, y + 212)
                 end
                 artillery_data.last_fire_tick = 0
 
@@ -2379,22 +2386,11 @@ function Public.find_void_tiles_and_replace()
 
         local cp = Collapse.get_position()
         local rp = Collapse.get_reverse_position()
-
-        local area =
-        {
-            left_top = { x = (-zone_settings.zone_width / 2) + 10, y = rp.y },
-            right_bottom = { x = (zone_settings.zone_width / 2) - 10, y = cp.y }
-        }
-
-        local adjusted_zones = Public.get('adjusted_zones')
-
-        if adjusted_zones.reversed then
-            area =
-            {
-                left_top = { x = ((zone_settings.zone_width / 2) + 10) * -1, y = cp.y },
-                right_bottom = { x = math.abs((-zone_settings.zone_width / 2) - 10), y = rp.y },
-            }
+        if not cp or not rp then
+            return
         end
+
+        local area = Orient.named_aabb((-zone_settings.zone_width / 2) + 10, Orient.progression(rp), (zone_settings.zone_width / 2) - 10, Orient.progression(cp))
 
         local tiles = surface.find_tiles_filtered({ area = area, name = { 'out-of-map', 'water', 'deepwater', 'water-green', 'deepwater-green', 'void-tile', 'lava-hot' } })
         if tiles and #tiles > 0 then
@@ -2675,13 +2671,20 @@ function Public.render_direction(surface, reversed)
         text = 'Welcome to Mountain Fortress v3 - Space Age!'
     end
 
+    local welcome_target = Orient.world(0, 10)
+    local season_dy = 4
+    if counter then
+        season_dy = 6
+    end
+    local season_target = { x = welcome_target.x, y = welcome_target.y + season_dy }
+
     Public.set(
         'current_season',
         rendering.draw_text
         {
             text = 'Season: ' .. Public.get_stateful('season'),
             surface = surface,
-            target = { -0, 12 },
+            target = season_target,
             color = { r = 0.98, g = 0.77, b = 0.22 },
             scale = 3,
             font = 'heading-1',
@@ -2699,7 +2702,7 @@ function Public.render_direction(surface, reversed)
             {
                 text = text .. '\nRun: ' .. counter,
                 surface = surface,
-                target = { -0, 10 },
+                target = welcome_target,
                 color = FunctionColor,
                 scale = 3,
                 font = 'heading-1',
@@ -2711,7 +2714,7 @@ function Public.render_direction(surface, reversed)
             {
                 text = text,
                 surface = surface,
-                target = { -0, 10 },
+                target = welcome_target,
                 color = FunctionColor,
                 scale = 3,
                 font = 'heading-1',
@@ -2722,6 +2725,12 @@ function Public.render_direction(surface, reversed)
 
     local x_min = -zone_settings.zone_width / 2
     local x_max = zone_settings.zone_width / 2
+    local arrow = Orient.arrow_text()
+    local attack_pos = Orient.world(0, reversed and -70 or 70)
+    if Orient.is_horizontal() then
+        local mid = Orient.world(0, reversed and -40 or 40)
+        attack_pos = { x = mid.x, y = mid.y - 6 }
+    end
 
     if reversed then
         local inc = 0
@@ -2729,9 +2738,9 @@ function Public.render_direction(surface, reversed)
             Public.set('direction_' .. i,
                 rendering.draw_text
                 {
-                    text = '▲',
+                    text = arrow,
                     surface = surface,
-                    target = { -0, -20 - inc },
+                    target = Orient.world(0, -20 - inc),
                     color = FunctionColor,
                     scale = 3,
                     font = 'heading-1',
@@ -2744,23 +2753,25 @@ function Public.render_direction(surface, reversed)
             {
                 text = 'Biters will attack this area.',
                 surface = surface,
-                target = { -0, -70 },
+                target = attack_pos,
                 color = FunctionColor,
                 scale = 3,
                 font = 'heading-1',
                 alignment = 'center',
                 scale_with_zoom = false
             })
-        surface.create_entity({ name = 'electric-beam', position = { x_min, -74 }, source = { x_min, -74 }, target = { x_max, -74 } })
-        surface.create_entity({ name = 'electric-beam', position = { x_min, -74 }, source = { x_min, -74 }, target = { x_max, -74 } })
+        local beam_a = Orient.world(x_min, -74)
+        local beam_b = Orient.world(x_max, -74)
+        surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b })
+        surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b })
     else
         local inc = 0
         for i = 1, 5 do
             Public.set('direction_' .. i, rendering.draw_text
                 {
-                    text = '▼',
+                    text = arrow,
                     surface = surface,
-                    target = { -0, 20 + inc },
+                    target = Orient.world(0, 20 + inc),
                     color = FunctionColor,
                     scale = 3,
                     font = 'heading-1',
@@ -2773,15 +2784,17 @@ function Public.render_direction(surface, reversed)
             {
                 text = 'Biters will attack this area.',
                 surface = surface,
-                target = { -0, 70 },
+                target = attack_pos,
                 color = FunctionColor,
                 scale = 3,
                 font = 'heading-1',
                 alignment = 'center',
                 scale_with_zoom = false
             })
-        surface.create_entity({ name = 'electric-beam', position = { x_min, 74 }, source = { x_min, 74 }, target = { x_max, 74 } })
-        surface.create_entity({ name = 'electric-beam', position = { x_min, 74 }, source = { x_min, 74 }, target = { x_max, 74 } })
+        local beam_a = Orient.world(x_min, 74)
+        local beam_b = Orient.world(x_max, 74)
+        surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b })
+        surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b })
     end
 end
 
@@ -2884,9 +2897,9 @@ function Public.set_spawn_position()
 
         local locomotive_position = surface.find_non_colliding_position('steel-chest', sizeof, 128, 1)
         local distance_from = floor(math2d.position.distance(locomotive_position, locomotive.position))
-        local l_y = l.y
-        local t_y = locomotive_position.y
-        local c_y = collapse_pos.y
+        local l_y = Orient.progression(l)
+        local t_y = Orient.progression(locomotive_position)
+        local c_y = Orient.progression(collapse_pos)
         local adjusted_zones = Public.get('adjusted_zones')
 
         local compare_pos
@@ -2921,22 +2934,22 @@ function Public.set_spawn_position()
                         return
                     end
                     debug_str('distance_from was higher - spawning at locomotive_position')
-                    WD.set_spawn_position({ x = locomotive_position.x, y = collapse_pos.y - y_value_position })
+                    WD.set_spawn_position(Orient.offset(collapse_pos, Orient.lateral(locomotive_position), -y_value_position))
                 else
                     debug_str('distance_from was lower - spawning at locomotive_position')
-                    WD.set_spawn_position({ x = locomotive_position.x, y = collapse_pos.y - y_value_position })
+                    WD.set_spawn_position(Orient.offset(collapse_pos, Orient.lateral(locomotive_position), -y_value_position))
                 end
             else
                 if collapse_position then
                     debug_str('total_pos was higher - spawning at collapse_position')
-                    collapse_position = { x = collapse_position.x, y = collapse_position.y - y_value_position }
+                    collapse_position = Orient.offset(collapse_position, 0, -y_value_position)
                     WD.set_spawn_position(collapse_position)
                 end
             end
         else
             if collapse_position then
                 debug_str('total_pos was lower - spawning at collapse_position')
-                collapse_position = { x = collapse_position.x, y = collapse_position.y - y_value_position }
+                collapse_position = Orient.offset(collapse_position, 0, -y_value_position)
                 WD.set_spawn_position(collapse_position)
             end
         end
@@ -3055,9 +3068,9 @@ function Public.on_player_joined_game(event)
     local adjusted_zones = Public.get('adjusted_zones')
     local distance_from_train
     if adjusted_zones.reversed then
-        distance_from_train = player.physical_position.y < locomotive.position.y
+        distance_from_train = Orient.progression(player.physical_position) < Orient.progression(locomotive.position)
     else
-        distance_from_train = player.physical_position.y > locomotive.position.y
+        distance_from_train = Orient.progression(player.physical_position) > Orient.progression(locomotive.position)
     end
 
     if distance_from_train then
@@ -3315,7 +3328,11 @@ function Public.on_player_changed_position(event)
 
     local position = player.physical_position
 
-    if not (position.x < Public.zone_settings.zone_width / 2 and position.x >= -Public.zone_settings.zone_width / 2) then
+    if position.x > 700 then
+        return
+    end
+
+    if not Orient.in_map_width(position) then
         return
     end
 
@@ -3352,9 +3369,9 @@ function Public.on_player_changed_position(event)
     end
 
     if adjusted_zones.reversed then
-        if position.y < -74 and (position.x < Public.zone_settings.zone_width / 2 and position.x >= -Public.zone_settings.zone_width / 2) then
+        if Orient.progression(position) < -74 and Orient.in_map_width(position) then
             if player.character ~= nil then
-                player.character.teleport({ position.x, position.y + 1 }, surface)
+                player.character.teleport(Orient.offset(position, 0, 1), surface)
             end
             player.print(({ 'main.forcefield' }), { color = FunctionColor })
             if player.character then
@@ -3366,9 +3383,9 @@ function Public.on_player_changed_position(event)
             end
         end
     else
-        if position.y >= 74 and (position.x < Public.zone_settings.zone_width / 2 and position.x >= -Public.zone_settings.zone_width / 2) then
+        if Orient.progression(position) >= 74 and Orient.in_map_width(position) then
             if player.character ~= nil then
-                player.character.teleport({ position.x, position.y - 1 }, surface)
+                player.character.teleport(Orient.offset(position, 0, -1), surface)
             end
             player.print(({ 'main.forcefield' }), { color = FunctionColor })
             if player.character then

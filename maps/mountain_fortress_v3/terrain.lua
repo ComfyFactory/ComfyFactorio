@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local simplex_noise = require 'utils.math.simplex_noise'.d2
 local Biters = require 'modules.wave_defense.biter_rolls'
 
@@ -849,11 +850,11 @@ local function place_wagon(data, adjusted_zones)
         return
     end
 
-    local surface = data.surface
     local tiles = data.tiles
     local entities = data.entities
-    local top_y = data.top_y
+    local top_y = Orient.chunk_progression(data.top_x, data.top_y)
     local position = { x = data.x, y = top_y + random(4, 12) * 2 }
+    local world_position = Orient.to_world(position)
     local stateful = Public.get_stateful()
     local wagon_mineable =
     {
@@ -877,27 +878,30 @@ local function place_wagon(data, adjusted_zones)
         return
     end
 
-    local location
     local direction
 
     local r1 = random(2, 4) * 2
     local r2 = random(2, 4) * 2
+    local wx = world_position.x
+    local wy = world_position.y
+    local x1, y1, x2, y2
 
     if random(1, 2) == 1 then
-        location = surface.find_tiles_filtered({ area = { { position.x, position.y - r1 }, { position.x + 2, position.y + r2 } } })
         direction = 0
+        x1, y1, x2, y2 = wx, wy - r1, wx + 1, wy + r2
     else
-        location = surface.find_tiles_filtered({ area = { { position.x - r1, position.y }, { position.x + r2, position.y + 2 } } })
         direction = 4
+        x1, y1, x2, y2 = wx - r1, wy, wx + r2, wy + 1
     end
 
-    for _, tile in pairs(location) do
-        tiles[#tiles + 1] = { name = adjusted_zones.starting_tile, position = tile.position }
-        if tile.position.y % 1 == 0 and tile.position.x % 1 == 0 then
+    for x = x1, x2 do
+        for y = y1, y2 do
+            local lp = Orient.to_logical({ x = x, y = y })
+            tiles[#tiles + 1] = { name = adjusted_zones.starting_tile, position = lp }
             entities[#entities + 1] =
             {
                 name = 'straight-rail',
-                position = tile.position,
+                position = lp,
                 force = 'player',
                 direction = direction,
                 callback = rail_mineable
@@ -924,13 +928,7 @@ local function get_oil_amount(p)
 end
 
 local function spawn_turret(entities, p, probability)
-    local direction
-    local adjusted_zones = Public.get('adjusted_zones')
-    if adjusted_zones.reversed then
-        direction = defines.direction.north
-    else
-        direction = defines.direction.south
-    end
+    local direction = Orient.entity_direction()
 
     local turret = get_weighted_turret(probability)
 
@@ -959,7 +957,7 @@ local function wall(p, data, adjusted_zones)
     local alert_zone_1 = Public.get('alert_zone_1')
 
     local seed = data.seed
-    local y = data.yv
+    local y = Orient.in_chunk_progression(data.xv, data.yv) % 32
 
     local small_caves = seasonal_noise('small_caves', p, seed, seed)
     local cave_ponds = seasonal_noise('cave_rivers', p, seed, seed)
@@ -1007,7 +1005,7 @@ local function wall(p, data, adjusted_zones)
             surface.can_place_entity(
                 {
                     name = custom_stone_wall,
-                    position = p,
+                    position = Orient.to_world(p),
                     force = 'enemy'
                 }
             )
@@ -1036,9 +1034,11 @@ local function wall(p, data, adjusted_zones)
                             local x_max = zone_settings.zone_width / 2
 
                             if adjusted_zones.reversed then
-                                Public.set('zone1_beam1', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y + 30 }, source = { x_min, p.y + 30 }, target = { x_max, p.y + 30 } }))
-                                Public.set('zone1_beam2', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y + 30 }, source = { x_min, p.y + 30 }, target = { x_max, p.y + 30 } }))
-                                Public.set('zone1_beam3', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y + 30 }, source = { x_min, p.y + 30 }, target = { x_max, p.y + 30 } }))
+                                local beam_a = Orient.world(x_min, p.y + 30)
+                                local beam_b = Orient.world(x_max, p.y + 30)
+                                Public.set('zone1_beam1', surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b }))
+                                Public.set('zone1_beam2', surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b }))
+                                Public.set('zone1_beam3', surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b }))
                                 Public.set('alert_zone_1', true)
                                 if not enforce_wave_200_before_collapse then
                                     Public.set(
@@ -1047,7 +1047,7 @@ local function wall(p, data, adjusted_zones)
                                         {
                                             text = ({ 'breached_wall.warning' }),
                                             surface = surface,
-                                            target = { 0, p.y - 35 },
+                                            target = Orient.world(0, p.y - 35),
                                             color = { r = 255, g = 106, b = 0 },
                                             scale = 10,
                                             font = 'heading-1',
@@ -1061,7 +1061,7 @@ local function wall(p, data, adjusted_zones)
                                         {
                                             text = ({ 'breached_wall.warning' }),
                                             surface = surface,
-                                            target = { -180, p.y - 35 },
+                                            target = Orient.world(-180, p.y - 35),
                                             color = { r = 255, g = 106, b = 0 },
                                             scale = 10,
                                             font = 'heading-1',
@@ -1075,7 +1075,7 @@ local function wall(p, data, adjusted_zones)
                                         {
                                             text = ({ 'breached_wall.warning' }),
                                             surface = surface,
-                                            target = { 180, p.y - 35 },
+                                            target = Orient.world(180, p.y - 35),
                                             color = { r = 255, g = 106, b = 0 },
                                             scale = 10,
                                             font = 'heading-1',
@@ -1085,9 +1085,11 @@ local function wall(p, data, adjusted_zones)
                                     )
                                 end
                             else
-                                Public.set('zone1_beam1', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y }, source = { x_min, p.y }, target = { x_max, p.y } }))
-                                Public.set('zone1_beam2', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y }, source = { x_min, p.y }, target = { x_max, p.y } }))
-                                Public.set('zone1_beam3', surface.create_entity({ name = 'electric-beam', position = { x_min, p.y }, source = { x_min, p.y }, target = { x_max, p.y } }))
+                                local beam_a = Orient.world(x_min, p.y)
+                                local beam_b = Orient.world(x_max, p.y)
+                                Public.set('zone1_beam1', surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b }))
+                                Public.set('zone1_beam2', surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b }))
+                                Public.set('zone1_beam3', surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b }))
                                 Public.set('alert_zone_1', true)
                                 if not enforce_wave_200_before_collapse then
                                     Public.set(
@@ -1096,7 +1098,7 @@ local function wall(p, data, adjusted_zones)
                                         {
                                             text = ({ 'breached_wall.warning' }),
                                             surface = surface,
-                                            target = { 0, p.y + 35 },
+                                            target = Orient.world(0, p.y + 35),
                                             color = { r = 255, g = 106, b = 0 },
                                             scale = 10,
                                             font = 'heading-1',
@@ -1110,7 +1112,7 @@ local function wall(p, data, adjusted_zones)
                                         {
                                             text = ({ 'breached_wall.warning' }),
                                             surface = surface,
-                                            target = { -180, p.y + 35 },
+                                            target = Orient.world(-180, p.y + 35),
                                             color = { r = 255, g = 106, b = 0 },
                                             scale = 10,
                                             font = 'heading-1',
@@ -1124,7 +1126,7 @@ local function wall(p, data, adjusted_zones)
                                         {
                                             text = ({ 'breached_wall.warning' }),
                                             surface = surface,
-                                            target = { 180, p.y + 35 },
+                                            target = Orient.world(180, p.y + 35),
                                             color = { r = 255, g = 106, b = 0 },
                                             scale = 10,
                                             font = 'heading-1',
@@ -1155,7 +1157,7 @@ local function wall(p, data, adjusted_zones)
                 surface.can_place_entity(
                     {
                         name = 'medium-worm-turret',
-                        position = p,
+                        position = Orient.to_world(p),
                         force = 'enemy'
                     }
                 )
@@ -2096,15 +2098,18 @@ local function zone_gleba_1(x, y, data, _, adjusted_zones)
     local tiles = data.tiles
     local entities = data.entities
     local markets = data.markets
-    if not data.gleba_zone then
-        data.gleba_zone = true
-        return
-    end
-
+    data.gleba_zone = true
     local zone_data = adjusted_zones.gleba[data.index]
     if not zone_data then
-        error('No zone data found for index: ' .. data.index)
-        return
+        adjusted_zones.gleba[data.index] =
+        {
+            main_tile = gleba_tiles[random(1, size_of_gleba_tiles)],
+            secondary_tile = gleba_harvest_tiles[random(1, size_of_gleba_harvest_tiles)],
+            water_tile = gleba_water_tiles[random(1, size_of_gleba_water_tiles)],
+            tree_raffle = gleba_tree_raffle,
+            size_of_tree_raffle = size_of_gleba_tree_raffle
+        }
+        zone_data = adjusted_zones.gleba[data.index]
     end
 
     local small_caves = seasonal_noise('dungeons', p, seed, 333333)
@@ -2245,15 +2250,18 @@ local function zone_gleba_2(x, y, data, _, adjusted_zones)
     local tiles = data.tiles
     local entities = data.entities
     local markets = data.markets
-    if not data.gleba_zone then
-        data.gleba_zone = true
-        return
-    end
-
+    data.gleba_zone = true
     local zone_data = adjusted_zones.gleba[data.index]
     if not zone_data then
-        error('No zone data found for index: ' .. data.index)
-        return
+        adjusted_zones.gleba[data.index] =
+        {
+            main_tile = gleba_tiles[random(1, size_of_gleba_tiles)],
+            secondary_tile = gleba_harvest_tiles[random(1, size_of_gleba_harvest_tiles)],
+            water_tile = gleba_water_tiles[random(1, size_of_gleba_water_tiles)],
+            tree_raffle = gleba_tree_raffle,
+            size_of_tree_raffle = size_of_gleba_tree_raffle
+        }
+        zone_data = adjusted_zones.gleba[data.index]
     end
 
     local small_caves = seasonal_noise('dungeons', p, seed, 0)
@@ -5518,7 +5526,7 @@ local function shuffle_terrains(adjusted_zones, new_zone)
 end
 
 local function is_out_of_map(p)
-    if p.x < Public.zone_settings.zone_width / 2 and p.x >= -Public.zone_settings.zone_width / 2 then
+    if Orient.in_map_width(p) then
         return
     end
     return true
@@ -5575,7 +5583,7 @@ local function init_terrain(adjusted_zones)
 end
 
 local function process_bits(p, data, adjusted_zones)
-    local left_top_y = data.area.left_top.y
+    local left_top_y = Orient.progression(data.area.left_top)
 
     local index = floor((abs(left_top_y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
     data.index = index
@@ -5749,6 +5757,30 @@ local function process_bits(p, data, adjusted_zones)
 
     planet_callback(x, y, data)
     generate_zone(x, y, data, void_or_tile, adjusted_zones)
+
+    if is_modded_pt2 and data.index >= 3 then
+        if random(1, 30000) == 1 then
+            local world_p = Orient.to_world(p)
+            local surface = data.surface
+            if surface and surface.valid then
+                if surface.count_entities_filtered(
+                        {
+                            name = { 'small-demolisher', 'medium-demolisher' },
+                            area = { { world_p.x - 128, world_p.y - 128 }, { world_p.x + 128, world_p.y + 128 } },
+                            limit = 1
+                        }
+                    ) == 0 then
+                    local name = 'small-demolisher'
+                    if data.index >= 5 then
+                        if random(1, 4) ~= 1 then
+                            name = 'medium-demolisher'
+                        end
+                    end
+                    data.entities[#data.entities + 1] = { name = name, position = p, force = 'enemy', collision = true }
+                end
+            end
+        end
+    end
 end
 
 local function border_chunk(p, data, dec_tbl)
@@ -5758,16 +5790,20 @@ local function border_chunk(p, data, dec_tbl)
     local surface = data.surface
 
     local pos = p
+    local world_pos = Orient.to_world(pos)
 
     if random(1, ceil(abs(pos.y) + abs(pos.y)) + 64) == 1 then
         entities[#entities + 1] = { name = trees[random(1, #trees)], position = pos }
     end
 
-    game.forces.player.chart(surface, { { p.x - 32, p.y - 32 }, { p.x + 32, p.y + 32 } })
+    if not data.chunk_charted then
+        data.chunk_charted = true
+        game.forces.player.chart(surface, { { data.top_x, data.top_y }, { data.top_x + 31, data.top_y + 31 } })
+    end
 
     local noise = seasonal_noise('cave_rivers_2', pos, data.seed, 0)
     local index = floor(noise * 32) % 10 + 1
-    local tile = surface.get_tile(pos)
+    local tile = surface.get_tile(world_pos)
     local starting_planet = Public.get_planet()
     if tile and tile.valid and tile.name ~= 'black-refined-concrete' then
         if starting_planet == 'fulgora' then
@@ -5797,7 +5833,7 @@ local function border_chunk(p, data, dec_tbl)
 
     local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities(p)
 
-    if not is_out_of_map(pos) then
+    if not is_out_of_map(world_pos) then
         if random(1, ceil(abs(pos.y) + abs(pos.y)) + 32) == 1 then
             entities[#entities + 1] =
             {
@@ -5827,9 +5863,10 @@ local function biter_chunk(p, data)
     local entities = data.entities
     local tiles = data.tiles
     local pos = p
+    local world_pos = Orient.to_world(pos)
     local tile_positions = {}
 
-    tile_positions[#tile_positions + 1] = p
+    tile_positions[#tile_positions + 1] = world_pos
 
     local disable_spawners =
     {
@@ -5840,7 +5877,10 @@ local function biter_chunk(p, data)
         callback = Public.active_not_destructible_callback
     }
 
-    game.forces.player.chart(surface, { { p.x - 32, p.y - 32 }, { p.x + 32, p.y + 32 } })
+    if not data.chunk_charted then
+        data.chunk_charted = true
+        game.forces.player.chart(surface, { { data.top_x, data.top_y }, { data.top_x + 31, data.top_y + 31 } })
+    end
 
     if random(1, 128) == 1 then
         local position = surface.find_non_colliding_position('biter-spawner', tile_positions[random(1, #tile_positions)], 16, 2)
@@ -5848,7 +5888,7 @@ local function biter_chunk(p, data)
             entities[#entities + 1] =
             {
                 name = spawner_raffle[random(1, #spawner_raffle)],
-                position = position,
+                position = Orient.to_logical(position),
                 force = 'enemy',
                 callback = disable_spawners
             }
@@ -5861,7 +5901,7 @@ local function biter_chunk(p, data)
             entities[#entities + 1] =
             {
                 name = 'big-worm-turret',
-                position = position,
+                position = Orient.to_logical(position),
                 force = 'enemy',
                 callback = disable_worms
             }
@@ -5870,7 +5910,7 @@ local function biter_chunk(p, data)
 
     local noise = seasonal_noise('cave_rivers_2', pos, data.seed, 0)
     local index = floor(noise * 32) % 10 + 1
-    local tile = surface.get_tile(pos)
+    local tile = surface.get_tile(world_pos)
     local starting_planet = Public.get_planet()
     if tile and tile.valid and tile.name ~= 'black-refined-concrete' then
         if starting_planet == 'fulgora' then
@@ -5919,7 +5959,7 @@ local function get_decoratives()
 end
 
 function Public.heavy_functions(data)
-    local top_y = data.top_y
+    local top_y = Orient.chunk_progression(data.top_x, data.top_y)
     local surface = data.surface
     local starting_planet = Public.get_planet()
     if string.sub(surface.name, 0, #starting_planet) ~= starting_planet then
@@ -5929,10 +5969,16 @@ function Public.heavy_functions(data)
     local adjusted_zones = Public.get('adjusted_zones')
     data.reversed = adjusted_zones.reversed
 
-    local p = data.position
-    if is_out_of_map(p) then
-        return out_of_map(p, data)
+    local world_p = data.position
+    if is_out_of_map(world_p) then
+        return out_of_map(Orient.to_logical(world_p), data)
     end
+
+    data.position = Orient.to_logical(world_p)
+    data.x = data.position.x
+    data.y = data.position.y
+
+    local p = data.position
 
     local dec_tbl = get_decoratives()
 
@@ -6076,51 +6122,39 @@ Event.add(
         end
 
         if adjusted_zones.reversed then
-            if left_top.y == 128 and left_top.x == -128 then
+            if Orient.progression(left_top) == 128 and Orient.lateral(left_top) == -128 then
                 local locomotive = Public.get('locomotive')
                 if locomotive and locomotive.valid then
                     local position = locomotive.position
-                    for _, entity in pairs(surface.find_entities_filtered({ area = { { position.x - 5, position.y + 6 }, { position.x + 5, position.y - 10 } }, type = 'simple-entity' })) do
+                    local a = Orient.offset(position, -5, 6)
+                    local b = Orient.offset(position, 5, -10)
+                    local area_1 = { { math.min(a.x, b.x), math.min(a.y, b.y) }, { math.max(a.x, b.x), math.max(a.y, b.y) } }
+                    for _, entity in pairs(surface.find_entities_filtered({ area = area_1, type = 'simple-entity' })) do
                         entity.destroy()
                     end
                 end
             end
 
-            if left_top.y > 32 then
+            if Orient.progression(left_top) > 32 then
                 game.forces.player.chart(surface, { { left_top.x, left_top.y }, { left_top.x + 31, left_top.y + 31 } })
             end
-
-            -- local oom_tiles = {}
-
-            -- if left_top.y > 32 then
-            --     for k, v in pairs(loading_chunk_vectors) do
-            --         oom_tiles[k] = { name = out_of_map_tile, position = { left_top.x + v[1], left_top.y + v[2] } }
-            --     end
-            -- end
-            -- surface.set_tiles(oom_tiles, false)
         else
-            if left_top.y == -128 and left_top.x == -128 then
+            if Orient.progression(left_top) == -128 and Orient.lateral(left_top) == -128 then
                 local locomotive = Public.get('locomotive')
                 if locomotive and locomotive.valid then
                     local position = locomotive.position
-                    for _, entity in pairs(surface.find_entities_filtered({ area = { { position.x - 5, position.y - 6 }, { position.x + 5, position.y + 10 } }, type = 'simple-entity' })) do
+                    local a = Orient.offset(position, -5, -6)
+                    local b = Orient.offset(position, 5, 10)
+                    local area_1 = { { math.min(a.x, b.x), math.min(a.y, b.y) }, { math.max(a.x, b.x), math.max(a.y, b.y) } }
+                    for _, entity in pairs(surface.find_entities_filtered({ area = area_1, type = 'simple-entity' })) do
                         entity.destroy()
                     end
                 end
             end
 
-            if left_top.y < -32 then
+            if Orient.progression(left_top) < -32 then
                 game.forces.player.chart(surface, { { left_top.x, left_top.y }, { left_top.x + 31, left_top.y + 31 } })
             end
-
-            -- local oom_tiles = {}
-
-            -- if math.abs(left_top.y) > 128 then
-            --     for k, v in pairs(loading_chunk_vectors) do
-            --         oom_tiles[k] = { name = out_of_map_tile, position = { left_top.x + v[1], left_top.y + v[2] } }
-            --     end
-            -- end
-            -- surface.set_tiles(oom_tiles, false)
         end
     end
 )

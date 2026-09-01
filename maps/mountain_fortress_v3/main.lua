@@ -28,6 +28,7 @@ Alert.filters =
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
 local Public = require 'maps.mountain_fortress_v3.core'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Autostash = require 'modules.autostash'
 local PL = require 'utils.gui.player_list'
 local Server = require 'utils.server'
@@ -235,15 +236,15 @@ local compare_collapse_and_train = function ()
         return
     end
 
-    local c_y = abs(collapse_pos.y)
-    local t_y = abs(locomotive.position.y)
+    local c_y = abs(Orient.progression(collapse_pos))
+    local t_y = abs(Orient.progression(locomotive.position))
     local result = abs(c_y - t_y)
     local gap_between_zones = Public.get('gap_between_zones')
     local pre_final_battle = Public.get('pre_final_battle')
     if pre_final_battle then
         local reverse_collapse_pos = Collapse.get_reverse_position()
         if reverse_collapse_pos then
-            local r_c_y = abs(reverse_collapse_pos.y)
+            local r_c_y = abs(Orient.progression(reverse_collapse_pos))
             local reverse_result = abs(r_c_y - t_y)
             if reverse_result > 200 then
                 Collapse.reverse_start_now(true, false)

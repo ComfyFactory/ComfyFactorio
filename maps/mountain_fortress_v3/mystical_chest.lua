@@ -2,6 +2,7 @@ local Server = require 'utils.server'
 local Color = require 'utils.color_presets'
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local RPG = require 'modules.rpg.main'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
@@ -172,9 +173,9 @@ local function init_price_check(locomotive)
         size = adjusted_zones.size
     end
 
-    local zone = floor((abs(locomotive.position.y / zone_settings.zone_depth)) % size) + 1
+    local zone = floor((abs(Orient.progression(locomotive.position) / zone_settings.zone_depth)) % size) + 1
 
-    local roll = 48 + abs(locomotive.position.y) * 1.75
+    local roll = 48 + abs(Orient.progression(locomotive.position)) * 1.75
     roll = roll * random(25, 1337) * 0.01
     roll = roll * zone
 
@@ -449,7 +450,7 @@ local mc_random_rewards =
             if #markets > 0 then
                 for _, mrk in pairs(markets) do
                     if mrk and mrk.valid then
-                        Public.reroll_market(mrk, abs(mrk.position.y) * 0.004)
+                        Public.reroll_market(mrk, abs(Orient.progression(mrk.position)) * 0.004)
                     end
                 end
             end
@@ -959,7 +960,7 @@ local function on_gui_click(event)
                 return
             end
             local adjusted_zones = Public.get('adjusted_zones')
-            local zone = floor((abs(locomotive.position.y / zone_settings.zone_depth)) % adjusted_zones.size) + 1
+            local zone = floor((abs(Orient.progression(locomotive.position) / zone_settings.zone_depth)) % adjusted_zones.size) + 1
             local success, msg = mc_random_rewards[id].func(player, zone)
             if not success then
                 return player.print(msg, { color = Color.fail })

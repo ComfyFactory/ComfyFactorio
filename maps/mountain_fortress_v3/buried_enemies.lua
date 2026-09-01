@@ -1,5 +1,6 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Global = require 'utils.global'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local WD = require 'modules.wave_defense.table'
@@ -65,7 +66,7 @@ local function spawn_biters(data)
         return false
     end
     local position = data.position
-    local h = floor(abs(position.y))
+    local h = floor(abs(Orient.progression(position)))
 
     local max_biters = Public.get('biters')
 
