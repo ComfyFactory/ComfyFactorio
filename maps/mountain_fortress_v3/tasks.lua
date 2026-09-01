@@ -1,7 +1,6 @@
 local Public = require 'maps.mountain_fortress_v3.table'
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
-local Discord = require 'utils.discord'
 local IC = require 'maps.mountain_fortress_v3.ic.table'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Group = require 'utils.gui.group'
@@ -32,8 +31,6 @@ local RPG_Settings = require 'utils.datastore.rpg_data'
 local Core = require 'utils.core'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
 
-local send_ping_to_channel = Discord.channel_names.mtn_channel
-local role_to_mention = Discord.role_mentions.mtn_fortress
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
 local abs = math.abs
@@ -470,10 +467,6 @@ end
 
 function Public.announce_new_map(current_task)
     if Public.get('disable_startup_notification') then return end
-    local server_name = Server.check_server_name(Public.discord_name)
-    if server_name then
-        Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Mtn Fortress was just reset! **')
-    end
     local starting_planet = Public.get_planet()
     current_task.message = 'Announced new map!'
     current_task.state = 'to_fortress'

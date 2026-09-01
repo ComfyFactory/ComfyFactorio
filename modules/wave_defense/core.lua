@@ -24,4 +24,6 @@ Public.side_targets = Side_targets
 local Threat_events = require 'modules.wave_defense.threat_events'
 Public.threat_events = Threat_events
 
+require 'modules.wave_defense.pathing'
+
 return Public

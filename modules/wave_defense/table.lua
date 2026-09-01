@@ -146,7 +146,11 @@ function Public.reset_wave_defense()
             index = 0,
             positions = {}
         },
-        nests = {}
+        nests = {},
+        path_requests = {},
+        path_request_count = 0,
+        group_path_cooldown = {},
+        unreachable_goals = {}
     }
     this.threat_values =
     {

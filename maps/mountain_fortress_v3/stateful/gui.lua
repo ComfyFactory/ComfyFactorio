@@ -185,7 +185,7 @@ local function notify_won_to_discord(buff)
         Server.to_discord_embed_parsed(text)
     end
 
-    Public.post_mvp_to_discord()
+    Public.save_round_mvps()
 
     Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord, nil, nil, nil, 'global')
     Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord, nil, nil, nil, 'global')

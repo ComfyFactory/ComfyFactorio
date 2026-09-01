@@ -1527,56 +1527,11 @@ local function check_rpg_progression()
     end
 end
 
-local function post_mvp_to_discord(mvp)
+local function save_round_mvps(mvp)
     if not mvp then
         mvp = get_mvps('player')
     end
-
-    if mvp then
-        local server_name_matches = Server.check_server_name(Public.discord_name)
-        local message =
-        {
-            title = 'MVPs',
-            description = 'Player statistics is below',
-            color = 'success',
-            fields = {}
-        }
-        if mvp.killscore then
-            message.fields[#message.fields + 1] =
-            {
-                title = 'MVP Fighter:',
-                description = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!',
-                inline = 'false'
-            }
-        end
-        if mvp.built_entities then
-            message.fields[#message.fields + 1] =
-            {
-                title = 'MVP Builder:',
-                description = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!',
-                inline = 'false'
-            }
-        end
-        if mvp.mined_entities then
-            message.fields[#message.fields + 1] =
-            {
-                title = 'MVP Miners:',
-                description = mvp.mined_entities.name .. ' mined a total of ' .. mvp.mined_entities.score .. ' entities!',
-                inline = 'false'
-            }
-        end
-
-        local wave = WD.get_wave()
-        if wave >= 100 then
-            if server_name_matches then
-                Server.to_discord_named_parsed_embed(send_ping_to_channel, message)
-            else
-                Server.to_discord_embed_parsed(message)
-            end
-        else
-            Server.output_script_data('Wave is less than 100, not sending MVPs to discord.')
-        end
-    end
+    Public.save_mvp_round(mvp)
 end
 
 local function notify_game_lost_to_discord(mvp)
@@ -1787,7 +1742,7 @@ function Public.loco_died()
 
     if not Public.get('game_won') then
         notify_game_lost_to_discord(mvp)
-        post_mvp_to_discord(mvp)
+        save_round_mvps(mvp)
     end
 
     Core.iter_connected_players(function (player)
@@ -2057,7 +2012,7 @@ local on_player_or_robot_built_tile = function (event)
 end
 
 Public.get_random_weighted = get_random_weighted
-Public.post_mvp_to_discord = post_mvp_to_discord
+Public.save_round_mvps = save_round_mvps
 
 Event.add_event_filter(defines.events.on_entity_damaged, { filter = 'final-damage-amount', comparison = '>', value = 0 })
 Event.add(defines.events.on_entity_damaged, on_entity_damaged)

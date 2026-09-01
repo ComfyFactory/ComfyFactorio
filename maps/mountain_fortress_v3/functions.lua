@@ -2661,15 +2661,7 @@ end
 
 function Public.render_direction(surface, reversed)
     local counter = Public.get('soft_reset_counter')
-    local winter_mode = Public.get('winter_mode')
-    local text = 'Welcome to Mountain Fortress v3!'
-    if winter_mode then
-        text = 'Welcome to Wintery Mountain Fortress v3!'
-    end
-
-    if Public.get('space_age') then
-        text = 'Welcome to Mountain Fortress v3 - Space Age!'
-    end
+    local text = 'Welcome to Mountain Fortress!'
 
     local welcome_target = Orient.world(0, 10)
     local season_dy = 4
