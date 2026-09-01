@@ -212,9 +212,9 @@ local surface_validation_token =
                 return
             end
 
-            if (player.physical_position.x < 700) then
+            if not Orient.is_interior(player.physical_position) then
                 return true
-            elseif (player.physical_position.x > 700) then
+            else
                 return false
             end
         end
@@ -1611,7 +1611,7 @@ local function on_player_cursor_stack_changed(event)
         end
 
         -- if inside the locomotive, insert the stack back to the player inventory
-        if player.physical_position.x > 700 then
+        if Orient.is_interior(player.physical_position) then
             player.print('TNT cannot be used when inside the locomotive.', { color = Color.warning })
             player.insert(item)
             player.cursor_stack.clear()
@@ -3328,7 +3328,7 @@ function Public.on_player_changed_position(event)
 
     local position = player.physical_position
 
-    if position.x > 700 then
+    if Orient.is_interior(position) then
         return
     end
 

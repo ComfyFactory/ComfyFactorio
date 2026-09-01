@@ -12,6 +12,7 @@ local this =
         slow_explode = false,
         slow_explode_tick = 300,
         check_growth_below_void = false,
+        growth_axis = 'y',
         explosive_limit = 999,
         max_active_explosives = 5,
         valid_items =
@@ -89,19 +90,29 @@ local function check_y_pos(position)
     if not this.settings.check_growth_below_void then
         return false
     end
-    if not position or not position.y then
+    if not position then
         return false
     end
     local collapse_pos = Collapse.get_position()
+    if not collapse_pos then
+        return false
+    end
+
+    local axis = this.settings.growth_axis or 'y'
+    local p = position[axis]
+    local c = collapse_pos[axis]
+    if not p or not c then
+        return false
+    end
 
     local radius = 10
 
-    local dy = position.y - collapse_pos.y
-    if dy ^ 2 < radius ^ 2 then
+    local d = p - c
+    if d ^ 2 < radius ^ 2 then
         return true
     end
 
-    if position.y >= collapse_pos.y then
+    if p >= c then
         return true
     else
         return false
@@ -533,6 +544,14 @@ end
 
 function Public.check_growth_below_void(value)
     this.settings.check_growth_below_void = value or false
+end
+
+function Public.set_growth_axis(axis)
+    if axis == 'x' or axis == 'y' then
+        this.settings.growth_axis = axis
+        return
+    end
+    this.settings.growth_axis = 'y'
 end
 
 function Public.slow_explode(value)

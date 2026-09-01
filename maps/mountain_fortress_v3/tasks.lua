@@ -371,6 +371,9 @@ function Public.reset_map(current_task)
         WD.enable_inverted(false)
     end
 
+    WD.set_spawn_along_x(Orient.is_horizontal())
+    Explosives.set_growth_axis(Orient.is_horizontal() and 'x' or 'y')
+
     if this.space_age then
         surface.destroy_decoratives({ name = "brown-cup", invert = true })
         surface.destroy_decoratives({ name = "small-sand-rock", invert = true })

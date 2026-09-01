@@ -26,15 +26,21 @@ end
 local function normalize_spawn_position()
     local collapse_spawn_position = Collapse.get_position()
     local inverted = Public.get('inverted')
-    if inverted then
-        local new_pos = { x = 0, y = collapse_spawn_position.y + 40 }
-        Public.set_spawn_position(new_pos)
-        return new_pos
+    local spawn_along_x = Public.get('spawn_along_x')
+    local new_pos
+    if spawn_along_x then
+        new_pos = { x = collapse_spawn_position.x, y = 0 }
+        if inverted then
+            new_pos.x = new_pos.x + 40
+        end
     else
-        local new_pos = { x = 0, y = collapse_spawn_position.y }
-        Public.set_spawn_position(new_pos)
-        return new_pos
+        new_pos = { x = 0, y = collapse_spawn_position.y }
+        if inverted then
+            new_pos.y = new_pos.y + 40
+        end
     end
+    Public.set_spawn_position(new_pos)
+    return new_pos
 end
 
 local function find_initial_spot(surface, position)
@@ -532,11 +538,19 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
     if Public.get('enable_random_spawn_positions') then
         local offset_x = random(1, 10)
         local offset_y = random(1, 10)
-        position =
-        {
-            x = (random(1, 3) == 1) and (-1 * (position.x + offset_x)) or (position.x + offset_x),
-            y = position.y + offset_y
-        }
+        if Public.get('spawn_along_x') then
+            position =
+            {
+                x = position.x + offset_x,
+                y = (random(1, 3) == 1) and (-1 * (position.y + offset_y)) or (position.y + offset_y)
+            }
+        else
+            position =
+            {
+                x = (random(1, 3) == 1) and (-1 * (position.x + offset_x)) or (position.x + offset_x),
+                y = position.y + offset_y
+            }
+        end
     end
 
     position = surface.find_non_colliding_position('steel-chest', position, 3, 1) or old_position
@@ -627,10 +641,18 @@ local function spawn_worm(surface, position, is_boss_worm)
     local enable_random_spawn_positions = Public.get('enable_random_spawn_positions')
 
     if enable_random_spawn_positions then
-        if random(1, 3) == 1 then
-            position = { x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10)) }
+        if Public.get('spawn_along_x') then
+            if random(1, 3) == 1 then
+                position = { x = (position.x + random(1, 10)), y = (-1 * (position.y + random(1, 10))) }
+            else
+                position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
+            end
         else
-            position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
+            if random(1, 3) == 1 then
+                position = { x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10)) }
+            else
+                position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
+            end
         end
     end
 

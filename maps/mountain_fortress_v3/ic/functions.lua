@@ -7,6 +7,7 @@ local IC = require 'maps.mountain_fortress_v3.ic.table'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -1359,7 +1360,7 @@ function Public.create_car(event)
         end
     end
 
-    if string.sub(ce.surface.name, 0, #map_name) ~= map_name or (default_surface and ce.position.x > 800) then
+    if string.sub(ce.surface.name, 0, #map_name) ~= map_name or (default_surface and Orient.is_interior(ce.position, 800)) then
         return player.print(module_tag .. 'Multi-surface is not supported at the moment.', { color = Color.warning })
     end
 

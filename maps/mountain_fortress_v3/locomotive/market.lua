@@ -11,6 +11,7 @@ local Alert = require 'utils.alert'
 local Math2D = require 'math2d'
 local SpamProtection = require 'utils.spam_protection'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 
 local format_number = require 'util'.format_number
 
@@ -2027,7 +2028,7 @@ local function on_player_changed_position(event)
 
     local position = player.physical_position
 
-    if position.x < 700 then
+    if not Orient.is_interior(position) then
         return
     end
 

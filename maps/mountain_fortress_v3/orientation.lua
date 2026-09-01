@@ -178,6 +178,19 @@ function Orient.in_map_width(pos)
     return lat < half and lat >= -half
 end
 
+function Orient.is_interior(pos, threshold)
+    if not pos then
+        return false
+    end
+    local t = threshold or 700
+    local x = pos.x or pos[1]
+    local y = pos.y or pos[2]
+    if Orient.is_horizontal() then
+        return y ~= nil and y > t
+    end
+    return x ~= nil and x > t
+end
+
 function Orient.zone_index(pos, size)
     return math.floor((math.abs(Orient.progression(pos) / Public.zone_settings.zone_depth)) % size) + 1
 end

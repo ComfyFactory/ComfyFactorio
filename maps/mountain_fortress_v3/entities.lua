@@ -14,6 +14,7 @@ local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
 local RPG_Progression = require 'utils.datastore.rpg_prestige_data'
 local WD = require 'modules.wave_defense.table'
+local Orient = require 'maps.mountain_fortress_v3.orientation'
 local StatData = require 'utils.datastore.statistics'
 StatData.add_normalize('coins', 'Coins collected'):set_tooltip('The amount of coins the player has collected through mining/killed enemies.')
 
@@ -339,7 +340,7 @@ local function protect_entities(data)
         return
     end
 
-    if entity.position.x > 1000 then
+    if Orient.is_interior(entity.position, 1000) then
         entity.health = entity.health + dmg
         return
     end

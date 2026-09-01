@@ -917,6 +917,11 @@ function Public.create_wagon_room(icw, wagon)
         surface.map_gen_settings = mgs
     end
 
+    -- if wagon.entity.type == 'cargo-wagon' then
+    local callback = Task.get(add_chests_to_wagon_token)
+    callback({ wagon = wagon, surface = surface })
+    -- end
+
     if wagon.entity.type == 'fluid-wagon' then
         local height = area.right_bottom.y - area.left_top.y
         local positions =
@@ -963,11 +968,6 @@ function Public.create_wagon_room(icw, wagon)
                 only_in_alt_mode = false
             }
         )
-
-    -- if wagon.entity.type == 'cargo-wagon' then
-    local callback = Task.get(add_chests_to_wagon_token)
-    callback({ wagon = wagon, surface = surface })
-    -- end
 end
 
 function Public.create_wagon(icw, created_entity, quality_areas)
@@ -1129,7 +1129,7 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
     end
 
     if icw.default_surface then
-        if player.physical_position.x < 800 then
+        if not Orient.is_interior(player.physical_position, 800) then
             local surface = wagon.surface
             if not (surface and surface.valid) then
                 return
@@ -1172,7 +1172,7 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
                 return
             end
             if not surface_position then
-                surface.request_to_generate_chunks({ -20, 22 }, 1)
+                surface.request_to_generate_chunks(Orient.world(-20, 22), 1)
                 if player.character and player.character.valid and player.character.driving then
                     if wagon.surface == player.physical_surface then
                         player.character.driving = false
@@ -1199,7 +1199,7 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
                 return
             end
             if not surface_position then
-                surface.request_to_generate_chunks({ -20, 22 }, 1)
+                surface.request_to_generate_chunks(Orient.world(-20, 22), 1)
                 if player.character and player.character.valid and player.character.driving then
                     if wagon.surface == player.physical_surface then
                         player.character.driving = false
