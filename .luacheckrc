@@ -207,7 +207,8 @@ stds.factorio =
                         'compare',
                         'deepcopy',
                         'deep_copy',
-                        'add_all'
+                        'add_all',
+                        'fast_remove'
                     }
                 }
             }
@@ -219,7 +220,8 @@ stds.factorio =
                 'compare',
                 'deepcopy',
                 'deep_copy',
-                'add_all'
+                'add_all',
+                'fast_remove'
             }
         }
     }
