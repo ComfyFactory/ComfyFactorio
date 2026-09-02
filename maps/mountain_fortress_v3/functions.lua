@@ -24,7 +24,6 @@ local Gui = require 'utils.gui'
 local FunctionColor = { r = 0.98, g = 0.66, b = 0.22 }
 local Orient = require 'maps.mountain_fortress_v3.orientation'
 
-local zone_settings = Public.zone_settings
 local remove_boost_movement_speed_on_respawn
 local de = defines.events
 local is_modded = Public.is_modded
@@ -2390,7 +2389,7 @@ function Public.find_void_tiles_and_replace()
             return
         end
 
-        local area = Orient.named_aabb((-zone_settings.zone_width / 2) + 10, Orient.progression(rp), (zone_settings.zone_width / 2) - 10, Orient.progression(cp))
+        local area = Orient.named_aabb((-Orient.zone_width() / 2) + 10, Orient.progression(rp), (Orient.zone_width() / 2) - 10, Orient.progression(cp))
 
         local tiles = surface.find_tiles_filtered({ area = area, name = { 'out-of-map', 'water', 'deepwater', 'water-green', 'deepwater-green', 'void-tile', 'lava-hot' } })
         if tiles and #tiles > 0 then
@@ -2715,12 +2714,12 @@ function Public.render_direction(surface, reversed)
             })
     end
 
-    local x_min = -zone_settings.zone_width / 2
-    local x_max = zone_settings.zone_width / 2
+    local x_min = -Orient.zone_width() / 2
+    local x_max = Orient.zone_width() / 2
     local arrow = Orient.arrow_text()
-    local attack_pos = Orient.world(0, reversed and -70 or 70)
+    local attack_pos = Orient.world(0, reversed and Orient.spawn_len(-70) or Orient.spawn_len(70))
     if Orient.is_horizontal() then
-        local mid = Orient.world(0, reversed and -40 or 40)
+        local mid = Orient.world(0, reversed and Orient.spawn_len(-40) or Orient.spawn_len(40))
         attack_pos = { x = mid.x, y = mid.y - 6 }
     end
 
@@ -2732,14 +2731,14 @@ function Public.render_direction(surface, reversed)
                 {
                     text = arrow,
                     surface = surface,
-                    target = Orient.world(0, -20 - inc),
+                    target = Orient.world(0, Orient.spawn_len(-20) - inc),
                     color = FunctionColor,
                     scale = 3,
                     font = 'heading-1',
                     alignment = 'center',
                     scale_with_zoom = false
                 })
-            inc = inc + 10
+            inc = inc + Orient.spawn_len(10)
         end
         Public.set('direction_attack', rendering.draw_text
             {
@@ -2752,8 +2751,8 @@ function Public.render_direction(surface, reversed)
                 alignment = 'center',
                 scale_with_zoom = false
             })
-        local beam_a = Orient.world(x_min, -74)
-        local beam_b = Orient.world(x_max, -74)
+        local beam_a = Orient.world(x_min, Orient.spawn_len(-74))
+        local beam_b = Orient.world(x_max, Orient.spawn_len(-74))
         surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b })
         surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b })
     else
@@ -2763,14 +2762,14 @@ function Public.render_direction(surface, reversed)
                 {
                     text = arrow,
                     surface = surface,
-                    target = Orient.world(0, 20 + inc),
+                    target = Orient.world(0, Orient.spawn_len(20) + inc),
                     color = FunctionColor,
                     scale = 3,
                     font = 'heading-1',
                     alignment = 'center',
                     scale_with_zoom = false
                 })
-            inc = inc + 10
+            inc = inc + Orient.spawn_len(10)
         end
         Public.set('direction_attack', rendering.draw_text
             {
@@ -2783,8 +2782,8 @@ function Public.render_direction(surface, reversed)
                 alignment = 'center',
                 scale_with_zoom = false
             })
-        local beam_a = Orient.world(x_min, 74)
-        local beam_b = Orient.world(x_max, 74)
+        local beam_a = Orient.world(x_min, Orient.spawn_len(74))
+        local beam_b = Orient.world(x_max, Orient.spawn_len(74))
         surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b })
         surface.create_entity({ name = 'electric-beam', position = beam_a, source = beam_a, target = beam_b })
     end
@@ -3361,7 +3360,7 @@ function Public.on_player_changed_position(event)
     end
 
     if adjusted_zones.reversed then
-        if Orient.progression(position) < -74 and Orient.in_map_width(position) then
+        if Orient.progression(position) < Orient.spawn_len(-74) and Orient.in_map_width(position) then
             if player.character ~= nil then
                 player.character.teleport(Orient.offset(position, 0, 1), surface)
             end
@@ -3375,7 +3374,7 @@ function Public.on_player_changed_position(event)
             end
         end
     else
-        if Orient.progression(position) >= 74 and Orient.in_map_width(position) then
+        if Orient.progression(position) >= Orient.spawn_len(74) and Orient.in_map_width(position) then
             if player.character ~= nil then
                 player.character.teleport(Orient.offset(position, 0, -1), surface)
             end

@@ -202,7 +202,7 @@ function Public.pre_init_task(current_task)
     -- RPG.set_vitality_custom_callback(Public.vitality_custom_callback_token)
 
     WD.set('nest_building_density', 32)
-    WD.set('spawn_position', Orient.world(0, 84))
+    WD.set('spawn_position', Orient.world(0, Orient.spawn_len(84)))
     WD.set('game_lost', true)
 
     for _, player in pairs(game.players) do
@@ -320,7 +320,7 @@ function Public.reset_map(current_task)
     Score.reset_tbl()
 
     Difficulty.reset_difficulty_poll({ closing_timeout = game.tick + 36000 })
-    Collapse.set_max_line_size(620, true)
+    Collapse.set_max_line_size(Orient.zone_width() + 110, true)
     Collapse.set_speed(8)
     Collapse.set_amount(1)
     Collapse.set_force_mode(false)
@@ -351,7 +351,7 @@ function Public.reset_map(current_task)
             surface.force_generate_chunk_requests()
         end
         game.forces.player.set_spawn_position(Orient.world(-27, -25), surface)
-        WD.set_spawn_position(Orient.world(-16, -80))
+        WD.set_spawn_position(Orient.world(-16, Orient.spawn_len(-80)))
         if not Orient.is_horizontal() then
             WD.enable_inverted(true)
         else
@@ -364,7 +364,7 @@ function Public.reset_map(current_task)
             surface.force_generate_chunk_requests()
         end
         game.forces.player.set_spawn_position(Orient.world(-27, 25), surface)
-        WD.set_spawn_position(Orient.world(-16, 80))
+        WD.set_spawn_position(Orient.world(-16, Orient.spawn_len(80)))
         WD.enable_inverted(false)
     end
 
@@ -437,13 +437,13 @@ function Public.create_locomotive(current_task)
     if adjusted_zones.reversed then
         Explosives.check_growth_below_void(false)
         spawn_near_collapse.compare = abs(spawn_near_collapse.compare)
-        Collapse.set_position(Orient.world(0, -130))
+        Collapse.set_position(Orient.world(0, Orient.spawn_len(-130)))
         Collapse.set_direction(Orient.collapse_direction())
         Public.locomotive_spawn(surface, Orient.world(-18, -25), adjusted_zones.reversed)
     else
         Explosives.check_growth_below_void(true)
         spawn_near_collapse.compare = abs(spawn_near_collapse.compare) * -1
-        Collapse.set_position(Orient.world(0, 130))
+        Collapse.set_position(Orient.world(0, Orient.spawn_len(130)))
         Collapse.set_direction(Orient.collapse_direction())
         Public.locomotive_spawn(surface, Orient.world(-18, 25), adjusted_zones.reversed)
     end

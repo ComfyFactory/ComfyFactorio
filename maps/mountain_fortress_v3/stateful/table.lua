@@ -1589,7 +1589,8 @@ local function grant_non_limit_reached_buff_permanent()
     local starting_items = Public.get_func('starting_items')
     local techs = Public.get_func('techs')
 
-    for index, data in pairs(all_buffs) do
+    local keepers = {}
+    for _, data in pairs(all_buffs) do
         local should_remove = false
 
         if not Public.is_modded_pt2 and data.dlc then
@@ -1639,20 +1640,20 @@ local function grant_non_limit_reached_buff_permanent()
             should_remove = true
         end
 
-        if should_remove then
-            all_buffs[index] = nil
+        if not should_remove then
+            keepers[#keepers + 1] = data
         end
     end
 
-    for _ = 1, 5 do
-        shuffle(all_buffs)
-    end
-
-    if not all_buffs[1] then
+    if not keepers[1] then
         return Public.get_random_buff(nil, true)
     end
 
-    return copy_buff_with_display(all_buffs[1])
+    for _ = 1, 5 do
+        shuffle(keepers)
+    end
+
+    return copy_buff_with_display(keepers[1])
 end
 
 local function apply_startup_settings(settings)

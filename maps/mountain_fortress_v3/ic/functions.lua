@@ -1035,7 +1035,7 @@ function Public.kill_car(entity)
         renders[owner.name] = nil
     end
 
-    local gps_tag = '[gps=' .. entity_position.x .. ',' .. entity_position.y .. ',' .. entity_surface.name .. ']'
+    local gps_tag = string.format('[gps=%.1f,%.1f,%s]', entity_position.x, entity_position.y, entity_surface.name)
 
     game.print(module_tag .. owner.name .. messages[math.random(1, #messages)] .. ' ' .. gps_tag)
 

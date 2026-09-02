@@ -2,7 +2,6 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
-local zone_settings = Public.zone_settings
 
 local this =
 {
@@ -56,11 +55,12 @@ function Public.create_surface(recreate)
         }
     }
 
+    local corridor = Orient.zone_width()
     if Orient.is_horizontal() then
         map_gen_settings.width = 0
-        map_gen_settings.height = zone_settings.zone_width
+        map_gen_settings.height = corridor
     else
-        map_gen_settings.width = zone_settings.zone_width
+        map_gen_settings.width = corridor
     end
 
     if Public.is_modded_pt2 then

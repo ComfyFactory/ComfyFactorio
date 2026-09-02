@@ -802,8 +802,8 @@ local function place_wagon(data, adjusted_zones)
         return
     end
 
-    local x_min = (-zone_settings.zone_width / 2) + 10
-    local x_max = (zone_settings.zone_width / 2) - 10
+    local x_min = (-Orient.zone_width() / 2) + 10
+    local x_max = (Orient.zone_width() / 2) - 10
 
     if data.x < x_min then
         return
@@ -1030,8 +1030,8 @@ local function wall(p, data, adjusted_zones)
                         }
 
                         if not alert_zone_1 and data.y >= -zone_settings.zone_depth then
-                            local x_min = -zone_settings.zone_width / 2
-                            local x_max = zone_settings.zone_width / 2
+                            local x_min = -Orient.zone_width() / 2
+                            local x_max = Orient.zone_width() / 2
 
                             if adjusted_zones.reversed then
                                 local beam_a = Orient.world(x_min, p.y + 30)
@@ -1061,7 +1061,7 @@ local function wall(p, data, adjusted_zones)
                                         {
                                             text = ({ 'breached_wall.warning' }),
                                             surface = surface,
-                                            target = Orient.world(-180, p.y - 35),
+                                            target = Orient.world(-Orient.spawn_len(180), p.y - 35),
                                             color = { r = 255, g = 106, b = 0 },
                                             scale = 10,
                                             font = 'heading-1',
@@ -1075,7 +1075,7 @@ local function wall(p, data, adjusted_zones)
                                         {
                                             text = ({ 'breached_wall.warning' }),
                                             surface = surface,
-                                            target = Orient.world(180, p.y - 35),
+                                            target = Orient.world(Orient.spawn_len(180), p.y - 35),
                                             color = { r = 255, g = 106, b = 0 },
                                             scale = 10,
                                             font = 'heading-1',
@@ -1112,7 +1112,7 @@ local function wall(p, data, adjusted_zones)
                                         {
                                             text = ({ 'breached_wall.warning' }),
                                             surface = surface,
-                                            target = Orient.world(-180, p.y + 35),
+                                            target = Orient.world(-Orient.spawn_len(180), p.y + 35),
                                             color = { r = 255, g = 106, b = 0 },
                                             scale = 10,
                                             font = 'heading-1',
@@ -1126,7 +1126,7 @@ local function wall(p, data, adjusted_zones)
                                         {
                                             text = ({ 'breached_wall.warning' }),
                                             surface = surface,
-                                            target = Orient.world(180, p.y + 35),
+                                            target = Orient.world(Orient.spawn_len(180), p.y + 35),
                                             color = { r = 255, g = 106, b = 0 },
                                             scale = 10,
                                             font = 'heading-1',
@@ -5766,7 +5766,7 @@ local function process_bits(p, data, adjusted_zones)
                 if surface.count_entities_filtered(
                         {
                             name = { 'small-demolisher', 'medium-demolisher' },
-                            area = { { world_p.x - 128, world_p.y - 128 }, { world_p.x + 128, world_p.y + 128 } },
+                            area = { { world_p.x - 256, world_p.y - 256 }, { world_p.x + 256, world_p.y + 256 } },
                             limit = 1
                         }
                     ) == 0 then
@@ -5796,10 +5796,7 @@ local function border_chunk(p, data, dec_tbl)
         entities[#entities + 1] = { name = trees[random(1, #trees)], position = pos }
     end
 
-    if not data.chunk_charted then
-        data.chunk_charted = true
-        game.forces.player.chart(surface, { { data.top_x, data.top_y }, { data.top_x + 31, data.top_y + 31 } })
-    end
+    game.forces.player.chart(surface, { { world_pos.x - 32, world_pos.y - 32 }, { world_pos.x + 32, world_pos.y + 32 } })
 
     local noise = seasonal_noise('cave_rivers_2', pos, data.seed, 0)
     local index = floor(noise * 32) % 10 + 1
@@ -5877,10 +5874,7 @@ local function biter_chunk(p, data)
         callback = Public.active_not_destructible_callback
     }
 
-    if not data.chunk_charted then
-        data.chunk_charted = true
-        game.forces.player.chart(surface, { { data.top_x, data.top_y }, { data.top_x + 31, data.top_y + 31 } })
-    end
+    game.forces.player.chart(surface, { { world_pos.x - 32, world_pos.y - 32 }, { world_pos.x + 32, world_pos.y + 32 } })
 
     if random(1, 128) == 1 then
         local position = surface.find_non_colliding_position('biter-spawner', tile_positions[random(1, #tile_positions)], 16, 2)
@@ -6012,11 +6006,11 @@ function Public.heavy_functions(data)
             return process_bits(p, data, adjusted_zones)
         end
 
-        if top_y < -150 then
+        if top_y < Orient.spawn_len(-150) then
             return out_of_map(p, data)
         end
 
-        if top_y < -100 then
+        if top_y < Orient.spawn_len(-100) then
             return biter_chunk(p, data)
         end
 
@@ -6032,11 +6026,11 @@ function Public.heavy_functions(data)
             return process_bits(p, data, adjusted_zones)
         end
 
-        if top_y > 120 then
+        if top_y > Orient.spawn_len(120) then
             return out_of_map(p, data)
         end
 
-        if top_y > 75 then
+        if top_y > Orient.spawn_len(75) then
             return biter_chunk(p, data)
         end
 

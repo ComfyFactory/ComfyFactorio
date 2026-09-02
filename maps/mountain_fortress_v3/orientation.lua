@@ -172,9 +172,24 @@ function Orient.arrow_text()
     return arrow_text[Orient.get_direction()] or '▼'
 end
 
+function Orient.zone_width()
+    local w = Public.zone_settings.zone_width
+    if not Orient.is_horizontal() then
+        return w
+    end
+    return math.floor(w * 16 / 9 / 32 + 0.5) * 32
+end
+
+function Orient.spawn_len(n)
+    if not Orient.is_horizontal() then
+        return n
+    end
+    return math.floor(n * 16 / 9 + 0.5)
+end
+
 function Orient.in_map_width(pos)
     local lat = Orient.lateral(pos)
-    local half = Public.zone_settings.zone_width / 2
+    local half = Orient.zone_width() / 2
     return lat < half and lat >= -half
 end
 

@@ -1274,7 +1274,8 @@ Event.on_nth_tick(10000,
             reverse_prog = reverse_prog * -1
         end
 
-        local area = Orient.aabb(-320, Orient.progression(collapse_position), 320, reverse_prog)
+        local half = Orient.zone_width() / 2
+        local area = Orient.aabb(-half, Orient.progression(collapse_position), half, reverse_prog)
 
         local surface = game.get_surface(active_surface_index)
         if surface and surface.valid then

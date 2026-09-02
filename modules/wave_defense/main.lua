@@ -201,7 +201,7 @@ local function get_spawn_pos(spawner)
         if valid_position then
             local x = valid_position.x
             local y = valid_position.y
-            game.print('[gps=' .. x .. ',' .. y .. ',' .. surface.name .. ']')
+            game.print(string.format('[gps=%.1f,%.1f,%s]', x, y, surface.name))
         end
     end
 
@@ -308,27 +308,25 @@ local function get_random_close_spawner()
     local target = Public.get('target')
     local get_random_close_spawner_attempts = Public.get('get_random_close_spawner_attempts')
     local center = target.position
+    local compacted = {}
+    for _, nest in pairs(generated_units.nests) do
+        if nest and nest.valid then
+            compacted[#compacted + 1] = nest
+        end
+    end
+    generated_units.nests = compacted
+    if not compacted[1] then
+        return false
+    end
     local spawner
-    local retries = 0
     for _ = 1, get_random_close_spawner_attempts, 1 do
-        ::retry::
-        if #generated_units.nests < 1 then
-            return false
-        end
-        local k = random(1, #generated_units.nests)
-        local spawner_2 = generated_units.nests[k]
-        if not spawner_2 or not spawner_2.valid then
-            generated_units.nests[k] = nil
-            retries = retries + 1
-            if retries == 5 then
-                break
-            end
-            goto retry
-        end
-        if not spawner or (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
-            spawner = spawner_2
-            if spawner and spawner.position then
-                Public.debug_print('get_random_close_spawner - Found at x' .. spawner.position.x .. ' y' .. spawner.position.y)
+        local spawner_2 = compacted[random(1, #compacted)]
+        if spawner_2 and spawner_2.valid then
+            if not spawner or (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
+                spawner = spawner_2
+                if spawner and spawner.position then
+                    Public.debug_print('get_random_close_spawner - Found at x' .. spawner.position.x .. ' y' .. spawner.position.y)
+                end
             end
         end
     end
