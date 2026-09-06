@@ -3028,6 +3028,16 @@ function Public.on_player_joined_game(event)
         return
     end
 
+    if current_task.done then
+        -- This has to exist until the desync is fixed...
+        if not players[player.index] then
+            players[player.index] = {}
+        end
+        if not players[player.index].got_start_kit then
+            Public.equip_players(player, Public.get_func('starting_items'), false)
+        end
+    end
+
     if player.online_time < 1 then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
@@ -3679,6 +3689,10 @@ function Public.equip_players(player, starting_items, recreate)
     end
     player.clear_items_inside()
     if player.connected then
+        if not players[player.index] then
+            players[player.index] = {}
+        end
+        players[player.index].got_start_kit = true
         if not player.character then
             player.set_controller({ type = defines.controllers.god })
             player.create_character()

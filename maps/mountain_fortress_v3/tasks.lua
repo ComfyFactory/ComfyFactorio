@@ -35,6 +35,25 @@ local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
 local abs = math.abs
 
+local planet_discovery_techs =
+{
+    'planet-discovery-fortress',
+    'planet-discovery-gleba',
+    'planet-discovery-vulcanus',
+    'planet-discovery-fulgora',
+    'planet-discovery-aquilo'
+}
+
+local research_planet_discovery_token =
+    Task.register(
+        function (event)
+            local tech = game.forces.player.technologies[event.name]
+            if tech and not tech.researched then
+                tech.researched = true
+            end
+        end
+    )
+
 local init_bonus_drill_force = function ()
     local bonus_drill = game.forces.bonus_drill
     local player = game.forces.player
@@ -298,12 +317,9 @@ function Public.reset_map(current_task)
 
 
     surface.ignore_surface_conditions = true
-    force.technologies['planet-discovery-fortress'].researched = true
-    force.technologies['planet-discovery-gleba'].researched = true
-    force.technologies['planet-discovery-vulcanus'].researched = true
-    force.technologies['planet-discovery-fulgora'].researched = true
-    force.technologies['planet-discovery-aquilo'].researched = true
-    -- force.recipes['lightning-rod'].enabled = true -- how else will players deal with lightning?
+    for i = 1, #planet_discovery_techs do
+        Task.set_timeout_in_ticks(180 + (i - 1) * 60, research_planet_discovery_token, { name = planet_discovery_techs[i] })
+    end
 
     -- surface.brightness_visual_weights = { 0.7, 0.7, 0.7 }
 
