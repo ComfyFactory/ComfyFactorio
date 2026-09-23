@@ -197,7 +197,7 @@ function Public.place_lobby_jetty_and_boats()
 	-- for y = -3.5, 3.5 do
 	-- 	local e = surface.create_entity{name = 'stone-wall', position = {x = -68.5, y = y}, force = 'environment'}
 	-- 	e.destructible = false
-	-- 	e.minable = false
+	-- 	e.minable_flag = false
 	-- 	e.rotatable = false
 	-- 	e.operable = false
 	-- end
@@ -207,7 +207,7 @@ function Public.place_lobby_jetty_and_boats()
 	for _, e in pairs(entities) do
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 		end
 	end

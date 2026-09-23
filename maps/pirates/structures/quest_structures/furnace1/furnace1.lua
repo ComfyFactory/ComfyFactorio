@@ -38,7 +38,7 @@ function Public.create_step1_entities()
 			force = 'environment',
 		})
 		if e and e.valid then
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.operable = false
 			e.destructible = false
@@ -53,7 +53,7 @@ function Public.create_step1_entities()
 			force = 'environment',
 		})
 		if e and e.valid then
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.operable = false
 			e.destructible = false
@@ -68,7 +68,7 @@ function Public.create_step1_entities()
 			force = 'environment',
 		})
 		if e and e.valid then
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.operable = false
 			e.destructible = false
@@ -96,7 +96,7 @@ function Public.create_step2_entities()
 		force = memory.ancient_friendly_force_name,
 	})
 	if quest_structure_data.market and quest_structure_data.market.valid then
-		quest_structure_data.market.minable = false
+		quest_structure_data.market.minable_flag = false
 		quest_structure_data.market.rotatable = false
 		quest_structure_data.market.destructible = false
 
@@ -180,7 +180,7 @@ function Public.create_step2_entities()
 			force = memory.ancient_friendly_force_name,
 		})
 		if e and e.valid then
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.destructible = false
 

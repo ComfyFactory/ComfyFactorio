@@ -32,14 +32,14 @@ function Public.configure_structure_entities(special_name, components)
 			for _, e in pairs(c.built_entities) do
 				if e and e.valid then
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 				end
 			end
 		elseif type == 'static_destructible' then
 			for _, e in pairs(c.built_entities) do
 				if e and e.valid then
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 				end
 			end
@@ -51,7 +51,7 @@ function Public.configure_structure_entities(special_name, components)
 			for _, e in pairs(c.built_entities) do
 				if e and e.valid then
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					e.operable = false
 				end
@@ -59,7 +59,7 @@ function Public.configure_structure_entities(special_name, components)
 		elseif type == 'entities' or type == 'entities_grid' then
 			for _, e in pairs(c.built_entities) do
 				if e and e.valid then
-					e.minable = false
+					e.minable_flag = false
 					-- e.rotatable = false -- don't see why it shouldn't be rotatable
 					e.destructible = false
 				end
@@ -67,7 +67,7 @@ function Public.configure_structure_entities(special_name, components)
 		elseif type == 'entities_randomlyplaced' or type == 'entities_randomlyplaced_border' then
 			for _, e in pairs(c.built_entities) do
 				if e and e.valid then
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 				end
 			end
@@ -103,7 +103,7 @@ function Public.configure_structure_entities(special_name, components)
 						inv.insert(l)
 					end
 				elseif e.name == 'centrifuge' then
-					local inv = e.get_inventory(defines.inventory.assembling_machine_input)
+					local inv = e.get_inventory(defines.inventory.crafter_input)
 					e.set_recipe('kovarex-enrichment-process')
 					inv.insert({ name = 'uranium-235', count = 20 })
 					-- Hack when porting to 2.0, since we can't use unresearched recipes anymore:
@@ -165,7 +165,7 @@ function Public.configure_structure_entities(special_name, components)
 
 						e.operable = false
 					elseif e.type == 'resource' then
-						e.minable = true
+						e.minable_flag = true
 					end
 				end
 

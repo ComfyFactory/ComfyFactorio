@@ -125,13 +125,6 @@ end
 
 local functions =
 {
-    ['spectator_switch'] = function (event)
-        if event.element.switch_state == 'left' then
-            game.get_player(event.player_index).spectator = true
-        else
-            game.get_player(event.player_index).spectator = false
-        end
-    end,
     ['auto_hotbar_switch'] = function (event)
         if event.element.switch_state == 'left' then
             storage.auto_hotbar_enabled[event.player_index] = true
@@ -252,14 +245,6 @@ local function build_config_gui(data)
     label.style.horizontal_align = 'left'
     label.style.vertical_align = 'bottom'
     label.style.font_color = { 0.55, 0.55, 0.99 }
-
-    scroll_pane.add({ type = 'line' })
-
-    switch_state = 'right'
-    if player.spectator then
-        switch_state = 'left'
-    end
-    add_switch(scroll_pane, switch_state, 'spectator_switch', { 'gui.spectator_mode' }, { 'gui-description.spectator_mode' })
 
     scroll_pane.add({ type = 'line' })
 

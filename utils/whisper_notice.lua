@@ -61,7 +61,7 @@ local function draw_notice_frame(player)
     main_frame.auto_center = true
 
     if player.character ~= nil then
-        player.character.active = false
+        player.character.disabled_by_script = true
     end
 
     local content_flow = inside_table.add {type = 'flow', direction = 'horizontal'}
@@ -176,7 +176,7 @@ Gui.on_click(
         end
 
         if player.character ~= nil then
-            player.character.active = true
+            player.character.disabled_by_script = false
         end
         local date = Server.get_current_date_with_time()
         set_data(whisper_dataset, player.name, {accepted = true, date = date})

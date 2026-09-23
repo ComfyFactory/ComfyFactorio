@@ -226,7 +226,7 @@ function Public.upgrade_chests(boat, new_chest)
 	for _, p in pairs(ps) do
 		local es = surface.find_entities_filtered({ name = 'wooden-chest', position = p, radius = 0.05 })
 		if es and #es == 1 then
-			es[1].minable = true
+			es[1].minable_flag = true
 			es[1].destructible = true
 			es[1].rotatable = true
 		end
@@ -237,7 +237,7 @@ function Public.upgrade_chests(boat, new_chest)
 			spill = false,
 			force = boat.force_name,
 		})
-		e2.minable = false
+		e2.minable_flag = false
 		e2.destructible = false
 		e2.rotatable = false
 	end
@@ -289,16 +289,16 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				if e and e.valid then
 					if etype == 'static_inoperable' then
 						e.destructible = false
-						e.minable = false
+						e.minable_flag = false
 						e.rotatable = false
 						e.operable = false
 					elseif etype == 'static' then
 						e.destructible = false
-						e.minable = false
+						e.minable_flag = false
 						e.rotatable = false
 					elseif etype == 'inaccessible' then
 						e.destructible = false
-						e.minable = false
+						e.minable_flag = false
 						e.rotatable = false
 						e.operable = false
 						e.force = 'environment'
@@ -324,7 +324,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				})
 				if e and e.valid then
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					e.operable = false
 					e.electric_buffer_size = boat.EEIelectric_buffer_size
@@ -349,7 +349,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				})
 				if e and e.valid then
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					if i == 1 then
 						boat.upstairs_pole = e
@@ -376,7 +376,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				})
 				if e and e.valid then
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = true
 
 					boat.upstairs_fluid_storages[i] = e
@@ -394,7 +394,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 					create_build_effect_smoke = false,
 				})
 				if e and e.valid then
-					e.minable = false
+					e.minable_flag = false
 					if p.y > 0 then
 						e.direction = defines.direction.south
 					end
@@ -422,11 +422,11 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 					})
 				if wall1 and wall2 and wall3 and wall1.valid and wall2.valid and wall3.valid then
 					wall1.destructible = false
-					wall1.minable = false
+					wall1.minable_flag = false
 					wall2.destructible = false
-					wall2.minable = false
+					wall2.minable_flag = false
 					wall3.destructible = false
-					wall3.minable = false
+					wall3.minable_flag = false
 				end
 			end
 		end
@@ -444,7 +444,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 					e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
 					e.color = { 148, 106, 52 }
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					e.operable = false
 				end
@@ -464,7 +464,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
 				e.color = { 148, 106, 52 }
 				e.destructible = false
-				e.minable = false
+				e.minable_flag = false
 				e.rotatable = false
 				e.operable = false
 			end
@@ -484,7 +484,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				})
 				if ee and ee.valid then
 					ee.destructible = false
-					ee.minable = false
+					ee.minable_flag = false
 					ee.rotatable = false
 					if p.y < 0 then
 						boat.decksteeringchests.left = ee
@@ -532,7 +532,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 		-- 	if e and e.valid then
 		-- 		e.destructible = false
 		-- 		e.operable = false
-		-- 		e.minable = false
+		-- 		e.minable_flag = false
 		-- 		e.rotatable = false
 		-- 		boat.questrewardchest = e
 		-- 	end
@@ -562,7 +562,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 				})
 				if e and e.valid then
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					e.operable = false
 					e.linked_belt_type = b.type
@@ -598,7 +598,7 @@ function Public.place_boat(boat, floor_tile, place_entities_bool, correct_tiles,
 		})
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			boat.market = e
 		end
@@ -866,7 +866,7 @@ end
 -- 	-- 		local p2 = surface.find_non_colliding_position('assembling-machine-1', p, 2, 0.1, true)
 -- 	-- 		local e = surface.create_entity{name = 'wooden-chest', position = p2, force = memory.force_name, create_build_effect_smoke = false}
 -- 	-- 		e.destructible = false
--- 	-- 		e.minable = false
+-- 	-- 		e.minable_flag = false
 -- 	-- 		e.rotatable = false
 -- 	-- 	end
 -- 	-- end
@@ -876,7 +876,7 @@ end
 -- 		if p then
 -- 			local e = surface.create_entity{name = 'wooden-chest', position = p, force = memory.force_name, create_build_effect_smoke = false}
 -- 			e.destructible = false
--- 			e.minable = false
+-- 			e.minable_flag = false
 -- 			e.rotatable = false
 -- 			if contents[i] then
 -- 				local inventory = e.get_inventory(defines.inventory.chest)
@@ -1232,6 +1232,7 @@ local function process_entity_on_boat(
 	unique_entities_list,
 	wire_connections_matrix,
 	fluid_entity_tracking,
+	saved_fluids,
 	e
 )
 	if e and e.valid and (not Utils.contains(unique_entities_list, e)) then
@@ -1242,18 +1243,6 @@ local function process_entity_on_boat(
 		for _, player in pairs(game.connected_players) do
 			if player.opened == e then
 				table.insert(players_with_gui_open, player)
-			end
-		end
-
-		-- Save fluidbox contents before any processing. TODO: Prevent pipes from draining, currently they drain slowly.
-		local saved_fluids
-		if fluid_entity_tracking and name ~= 'pipe' and name ~= 'pipe-to-ground' and e.fluidbox and #e.fluidbox > 0 then
-			for fi = 1, #e.fluidbox do
-				local fluid = e.fluidbox[fi]
-				if fluid and fluid.amount and fluid.amount > 0 then
-					if not saved_fluids then saved_fluids = {} end
-					saved_fluids[fi] = { name = fluid.name, amount = fluid.amount, temperature = fluid.temperature }
-				end
 			end
 		end
 
@@ -1850,10 +1839,25 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 		end
 	end
 
-	-- Track entities with fluid through processing for later restoration.
-	-- During same-surface clone+destroy, fluid gets redistributed between the
-	-- clone and original while they briefly coexist on the same fluid network.
-	-- We save exact amounts before processing and restore them afterward.
+	-- Snapshot fluid contents of every entity before any are moved. A clone carries its share of its
+	-- fluid segment, but destroying the original leaves that share behind in the rest of the segment,
+	-- so fluid is duplicated as the boat moves. The exact segment totals are restored afterwards.
+	local saved_fluids_by_index = {}
+	for i = 1, #entities_on_boat do
+		local e = entities_on_boat[i]
+		if e and e.valid and e.fluids_count > 0 then
+			for fi = 1, e.fluids_count do
+				local fluid = e.get_fluid(fi)
+				if fluid and fluid.amount and fluid.amount > 0 then
+					if not saved_fluids_by_index[i] then
+						saved_fluids_by_index[i] = {}
+					end
+					saved_fluids_by_index[i][fi] =
+						{ name = fluid.name, amount = fluid.amount, temperature = fluid.temperature }
+				end
+			end
+		end
+	end
 	local fluid_entity_tracking = {}
 
 	local wire_connections_matrix = {}
@@ -1873,23 +1877,42 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 			unique_entities_list,
 			wire_connections_matrix,
 			fluid_entity_tracking,
+			saved_fluids_by_index[i],
 			e
 		)
 	end
 
-	-- Restore saved fluidbox contents to moved entities
-	if #fluid_entity_tracking > 0 then
-		for _, entry in ipairs(fluid_entity_tracking) do
-			local e = entry.entity
-			if e and e.valid then
-				for fi = 1, #e.fluidbox do
-					if entry.fluids[fi] then
-						e.fluidbox[fi] = entry.fluids[fi]
+	-- Restore saved fluid contents to moved entities. Fluidboxes that share a segment are summed and set
+	-- on the segment as a whole, since setting an individual fluidbox only sets its share of the segment.
+	local segments = {}
+	for _, entry in ipairs(fluid_entity_tracking) do
+		local e = entry.entity
+		if e and e.valid then
+			for fi = 1, e.fluids_count do
+				local fluid = entry.fluids[fi]
+				if fluid then
+					if e.has_fluid_segment(fi) then
+						local id = e.get_fluid_segment_id(fi)
+						local segment = segments[id]
+						if not segment then
+							segment = { entity = e, index = fi, name = fluid.name, amount = 0, heat = 0 }
+							segments[id] = segment
+						end
+						segment.amount = segment.amount + fluid.amount
+						segment.heat = segment.heat + fluid.amount * fluid.temperature
+					else
+						e.set_fluid(fi, fluid)
 					end
 				end
-
 			end
 		end
+	end
+	for _, segment in pairs(segments) do
+		segment.entity.set_fluid_segment_fluid(segment.index, {
+			name = segment.name,
+			amount = segment.amount,
+			temperature = segment.heat / segment.amount,
+		})
 	end
 
 	if first_rail_found_p then

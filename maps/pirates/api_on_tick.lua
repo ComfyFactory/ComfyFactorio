@@ -184,12 +184,12 @@ function Public.apply_restrictions_to_machines(tick_interval)
 
 		for _, machine in ipairs(crafters) do
 			if machine and machine.valid then
-				machine.active = not memory.crafters_disabled
+				machine.disabled_by_script = memory.crafters_disabled
 			end
 		end
 		for _, machine in ipairs(power_machines) do
 			if machine and machine.valid then
-				machine.active = not memory.crafters_disabled
+				machine.disabled_by_script = memory.crafters_disabled
 			end
 		end
 	end
@@ -1548,7 +1548,7 @@ function Public.silo_insta_update()
 
 						if dynamic_data.rocket_silo_charged_bools and not dynamic_data.rocket_silo_charged_bools[i] then
 							dynamic_data.rocket_silo_charged_bools[i] = true
-							local inv = silo.get_inventory(defines.inventory.assembling_machine_input)
+							local inv = silo.get_inventory(defines.inventory.crafter_input)
 							inv.insert({ name = "processing-unit", count = 10 })
 							inv.insert({ name = "low-density-structure", count = 10 })
 							inv.insert({ name = "rocket-fuel", count = 10 })
@@ -1746,12 +1746,12 @@ local function equalise_fluid_storage_pair(storage1, storage2)
 		return
 	end
 
-	local source_fluid = storage1.fluidbox[1]
+	local source_fluid = storage1.get_fluid(1)
 	if not source_fluid then
 		return
 	end
 
-	local target_fluid = storage2.fluidbox[1]
+	local target_fluid = storage2.get_fluid(1)
 	local source_fluid_amount = source_fluid.amount
 
 	local amount
@@ -1768,7 +1768,7 @@ local function equalise_fluid_storage_pair(storage1, storage2)
 	local inserted_amount =
 		storage2.insert_fluid({ name = source_fluid.name, amount = amount, temperature = source_fluid.temperature })
 	if inserted_amount > 0 then
-		storage1.remove_fluid({ name = source_fluid.name, amount = inserted_amount })
+		storage1.extract_fluid({ name = source_fluid.name, amount = inserted_amount })
 	end
 end
 

@@ -496,7 +496,7 @@ commands.add_command("modi", { "pirates.cmd_explain_dev" }, function(cmd)
 		for _, e in pairs(entities) do
 			if e and e.valid then
 				-- e.force = memory.force
-				e.minable = true
+				e.minable_flag = true
 				e.destructible = true
 				e.rotatable = true
 			end

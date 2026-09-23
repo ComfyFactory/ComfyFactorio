@@ -666,9 +666,9 @@ local function auto_stash(player, event)
 
     local hotbar_items = {}
     for i = 1, 100, 1 do
-        local prototype = player.get_quick_bar_slot(i)
-        if prototype then
-            hotbar_items[prototype.name] = true
+        local slot = player.get_quick_bar_slot(math.floor((i - 1) / 10) + 1, (i - 1) % 10 + 1)
+        if slot and slot.type == 'filter' then
+            hotbar_items[slot.filter.name] = true
         end
     end
 
@@ -821,7 +821,7 @@ local function do_whitelist()
             local r = items[k].name
             this.whitelist[r] = true
         end
-        if items[k] and items[k].fuel_category and items[k].fuel_value then
+        if items[k] and items[k].fuel_categories and items[k].fuel_value then
             local r = items[k].name
             this.furnace_fuel[r] = 0
         end

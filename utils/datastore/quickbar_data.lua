@@ -132,7 +132,7 @@ local fetch_quickbar =
             if value then
                 for i, slot in pairs(value) do
                     if slot and slot ~= '' then
-                        player.set_quick_bar_slot(i, slot)
+                        player.set_quick_bar_slot(math.floor((i - 1) / 10) + 1, (i - 1) % 10 + 1, slot)
                     end
                 end
             end
@@ -188,9 +188,9 @@ function Public.save_quickbar(player)
     local slots = {}
 
     for i = 1, 100 do
-        local slot = player.get_quick_bar_slot(i)
-        if slot ~= nil and not ignored_items[slot.name] then
-            slots[i] = { name = slot.name, quality = slot.quality or "normal" }
+        local slot = player.get_quick_bar_slot(math.floor((i - 1) / 10) + 1, (i - 1) % 10 + 1)
+        if slot and slot.type == 'filter' and not ignored_items[slot.filter.name] then
+            slots[i] = { name = slot.filter.name, quality = slot.filter.quality or "normal" }
         end
     end
     if next(slots) then

@@ -342,7 +342,7 @@ function Public.upgrade_chests(new_chest) --the fast replace doesn't work well o
 		local p2 = { x = p.x + memory.overworldx, y = p.y + memory.overworldy }
 		local es = surface.find_entities_filtered({ name = 'wooden-chest', position = p2, radius = 0.05 })
 		if es and #es == 1 then
-			es[1].minable = true
+			es[1].minable_flag = true
 			es[1].destructible = true
 			es[1].rotatable = true
 			-- es[1].operable = true
@@ -353,7 +353,7 @@ function Public.upgrade_chests(new_chest) --the fast replace doesn't work well o
 				spill = false,
 				force = boat.force_name,
 			})
-			e2.minable = false
+			e2.minable_flag = false
 			e2.destructible = false
 			e2.rotatable = false
 			-- e2.operable = false
@@ -403,7 +403,7 @@ function Public.crowsnest_surface_delayed_init()
 		})
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 		end
 	end
@@ -416,7 +416,7 @@ function Public.crowsnest_surface_delayed_init()
 		})
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			if not memory.boat.crows_nest_steering_chests then
 				memory.boat.crows_nest_steering_chests = {}
@@ -434,7 +434,7 @@ function Public.crowsnest_surface_delayed_init()
 		if e and e.valid then
 			e.get_inventory(defines.inventory.fuel).insert({ name = 'wood', count = 16 })
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.operable = false
 		end

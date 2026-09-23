@@ -24,7 +24,7 @@ local Classes = require('maps.pirates.roles.classes')
 local Token = require('utils.token')
 local Task = require('utils.task')
 local SurfacesCommon = require('maps.pirates.surfaces.common')
-local ServerCommands = require('utils.created_events')
+local ServerCommands = require('utils.server_commands')
 
 local Public = {}
 local enum = {

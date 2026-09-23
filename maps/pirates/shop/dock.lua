@@ -280,7 +280,7 @@ function Public.create_dock_markets(surface, p)
 
 	e = surface.create_entity({ name = 'market', position = { x = p.x - 22, y = p.y - 1 }, force = 'environment' })
 	if e and e.valid then
-		e.minable = false
+		e.minable_flag = false
 		e.rotatable = false
 		e.destructible = false
 
@@ -311,7 +311,7 @@ function Public.create_dock_markets(surface, p)
 
 	e = surface.create_entity({ name = 'market', position = { x = p.x - 7, y = p.y }, force = 'environment' })
 	if e and e.valid then
-		e.minable = false
+		e.minable_flag = false
 		e.rotatable = false
 		e.destructible = false
 
@@ -338,7 +338,7 @@ function Public.create_dock_markets(surface, p)
 
 	e = surface.create_entity({ name = 'market', position = { x = p.x, y = p.y - 1 }, force = 'environment' })
 	if e and e.valid then
-		e.minable = false
+		e.minable_flag = false
 		e.rotatable = false
 		e.destructible = false
 
@@ -388,7 +388,7 @@ function Public.create_dock_markets(surface, p)
 
 	e = surface.create_entity({ name = 'market', position = { x = p.x + 7, y = p.y }, force = 'environment' })
 	if e and e.valid then
-		e.minable = false
+		e.minable_flag = false
 		e.rotatable = false
 		e.destructible = false
 

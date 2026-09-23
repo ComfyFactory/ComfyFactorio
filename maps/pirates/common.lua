@@ -759,7 +759,7 @@ function Public.surface_place_random_obstacle_boxes(
 					})
 					memory.hold_surface_destroyable_wooden_chests[e.unit_number] = e
 					e.destructible = false
-					e.minable = false
+					e.minable_flag = false
 					e.rotatable = false
 					if contents[placed] and j == 1 then
 						local inventory = e.get_inventory(defines.inventory.chest)
@@ -1232,7 +1232,7 @@ function Public.build_small_loco(surface, pos, force, color)
 	for _, e in pairs(es) do
 		if e and e.valid then
 			e.destructible = false
-			e.minable = false
+			e.minable_flag = false
 			e.rotatable = false
 			e.operable = false
 		end
@@ -1847,7 +1847,6 @@ function Public.init_game_settings(technology_price_multiplier)
 	game.map_settings.pollution.min_to_show_per_chunk = 10
 	game.map_settings.pollution.min_pollution_to_damage_trees = 20
 	game.map_settings.pollution.pollution_per_tree_damage = 0.2
-	game.map_settings.pollution.max_pollution_to_restore_trees = 0.04
 	game.map_settings.pollution.pollution_restored_per_tree_damage = 0.01
 	game.map_settings.pollution.pollution_with_max_forest_damage = 80
 	game.map_settings.pollution.ageing = 0.1
