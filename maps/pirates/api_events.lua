@@ -1972,7 +1972,7 @@ function Public.player_entered_vehicle(player, vehicle)
 
 	if vehicle.name == "car" then
 		-- A way to make player driven vehicles work
-		if vehicle.minable then
+		if vehicle.minable_flag then
 			return
 		end
 

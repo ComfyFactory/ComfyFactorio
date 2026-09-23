@@ -15,7 +15,7 @@ local SpamProtection = require('utils.spam_protection')
 local Utils = require('maps.pirates.utils_local')
 local CoreData = require('maps.pirates.coredata')
 local Common = require('maps.pirates.common')
-local ServerCommands = require('utils.created_events')
+local ServerCommands = require('utils.server_commands')
 
 local module_name = Gui.uid_name()
 -- local module_name = 'Highscore'
