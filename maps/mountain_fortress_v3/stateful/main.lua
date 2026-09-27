@@ -215,7 +215,7 @@ Event.on_nth_tick(
                     end
                     if surface.count_entities_filtered({ name = { 'small-demolisher', 'medium-demolisher' }, limit = demolisher_limit }) < demolisher_limit then
                         local demolisher_name = 'small-demolisher'
-                        if (rounds_survived or 0) >= 8 then
+                        if (WD.get('wave_number') or 0) >= 800 then
                             if random(1, 4) ~= 1 then
                                 demolisher_name = 'medium-demolisher'
                             end
