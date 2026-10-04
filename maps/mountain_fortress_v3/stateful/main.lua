@@ -208,8 +208,22 @@ Event.on_nth_tick(
                     end
                 end
 
-                if Public.is_modded_pt2 and random(1, 3) == 1 then
+                local player_count = #game.connected_players
+                local spawn_roll = 3
+                if player_count <= 5 then
+                    spawn_roll = 6
+                elseif player_count <= 10 then
+                    spawn_roll = 4
+                end
+                if Public.is_modded_pt2 and random(1, spawn_roll) == 1 then
                     local demolisher_limit = 1 + math.floor((rounds_survived or 0) / 8)
+                    local player_cap = math.ceil(player_count / 5)
+                    if player_cap < 1 then
+                        player_cap = 1
+                    end
+                    if demolisher_limit > player_cap then
+                        demolisher_limit = player_cap
+                    end
                     if demolisher_limit > 5 then
                         demolisher_limit = 5
                     end

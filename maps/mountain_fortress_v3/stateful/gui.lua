@@ -10,7 +10,6 @@ local Task = require 'utils.task_token'
 local Core = require 'utils.core'
 local Server = require 'utils.server'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
-local Discord = require 'utils.discord'
 local format_number = require 'util'.format_number
 local Explosives = require 'modules.explosives'
 local StatefulFunctions = require 'maps.mountain_fortress_v3.stateful.functions'
@@ -18,7 +17,6 @@ local Orient = require 'maps.mountain_fortress_v3.orientation'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 
 local zone_settings = Public.zone_settings
-local send_ping_to_channel = Discord.channel_names.mtn_channel
 local main_button_name = Gui.uid_name()
 local main_frame_name = Gui.uid_name()
 local boss_frame_name = Gui.uid_name()
@@ -180,8 +178,6 @@ local function notify_won_to_discord(buff)
         }
     }
     if server_name_matches then
-        Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
-    else
         Server.to_discord_embed_parsed(text)
     end
 

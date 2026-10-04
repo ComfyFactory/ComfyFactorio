@@ -2475,6 +2475,13 @@ local function compute_collapse_amount(context)
         amount = context.difficulty.highest
     end
 
+    if Orient.is_horizontal() then
+        amount = floor(amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
+        if amount < 1 then
+            amount = 1
+        end
+    end
+
     return amount
 end
 

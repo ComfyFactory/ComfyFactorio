@@ -249,7 +249,11 @@ local compare_collapse_and_train = function ()
             if reverse_result > 200 then
                 Collapse.reverse_start_now(true, false)
                 Collapse.set_speed(1)
-                Collapse.set_amount(40)
+                local reverse_amount = 40
+                if Orient.is_horizontal() then
+                    reverse_amount = math.floor(reverse_amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
+                end
+                Collapse.set_amount(reverse_amount)
             else
                 if Collapse.has_reverse_collapse_started() then
                     Collapse.reverse_start_now(false, true)
@@ -261,7 +265,11 @@ local compare_collapse_and_train = function ()
         if result > 200 then
             Collapse.start_now(true, false)
             Collapse.set_speed(1)
-            Collapse.set_amount(40)
+            local catchup_amount = 40
+            if Orient.is_horizontal() then
+                catchup_amount = math.floor(catchup_amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
+            end
+            Collapse.set_amount(catchup_amount)
         else
             if Collapse.has_collapse_started() then
                 Collapse.start_now(false, true)
@@ -277,7 +285,11 @@ local compare_collapse_and_train = function ()
     else
         Collapse.set_force_mode(false)
         Collapse.set_speed(1)
-        Collapse.set_amount(10)
+        local catchup_amount = 10
+        if Orient.is_horizontal() then
+            catchup_amount = math.floor(catchup_amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
+        end
+        Collapse.set_amount(catchup_amount)
         Collapse.set_force_mode(true)
     end
 end

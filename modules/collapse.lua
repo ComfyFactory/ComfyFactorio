@@ -99,7 +99,7 @@ local directions =
         if this.max_line_size_force then
             width = this.max_line_size
         end
-        local a = width * 0.5 + 1
+        local a = width * 0.5 + 4
         if not reverse then
             this.vector = { -1, 0 }
             this.area = { { position.x - 1, position.y - a }, { position.x, position.y + a } }
@@ -125,7 +125,7 @@ local directions =
         if this.max_line_size_force then
             width = this.max_line_size
         end
-        local a = width * 0.5 + 1
+        local a = width * 0.5 + 4
         if not reverse then
             this.vector = { 1, 0 }
             this.area = { { position.x, position.y - a }, { position.x + 1, position.y + a } }

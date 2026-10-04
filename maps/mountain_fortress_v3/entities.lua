@@ -8,7 +8,6 @@ local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
 local Score = require 'utils.gui.score'
-local Discord = require 'utils.discord'
 local Core = require 'utils.core'
 local Diff = require 'modules.difficulty_vote_by_amount'
 local format_number = require 'util'.format_number
@@ -23,15 +22,6 @@ local random = math.random
 local floor = math.floor
 local abs = math.abs
 local round = math.round
-
--- Use these settings for live
-local send_ping_to_channel = Discord.channel_names.mtn_channel
--- Use these settings for testing
--- bot-lounge
--- local send_ping_to_channel = Discord.channel_names.bot_quarters
--- dev
--- local send_ping_to_channel = Discord.channel_names.bot_quarters
--- local role_to_mention = Discord.role_mentions.test_role
 
 local chests =
 {
@@ -1625,10 +1615,8 @@ local function notify_game_lost_to_discord(mvp)
             }
             if server_name_matches then
                 if wave >= 500 then
-                    Server.to_discord_named_parsed_embed(send_ping_to_channel, text)
+                    Server.to_discord_embed_parsed(text)
                 end
-            else
-                Server.to_discord_embed_parsed(text)
             end
 
             Public.set('sent_to_discord', true)
