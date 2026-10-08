@@ -160,6 +160,7 @@ function Public.reset_table(migrate)
     this.rpg_extra.enable_aoe_punch = true
     this.rpg_extra.grant_xp_level = nil
     this.rpg_extra.check_x_position = nil
+    this.rpg_extra.check_position_axis = 'x'
     this.rpg_extra.enable_aoe_punch_globally = false
     this.rpg_extra.disable_get_heal_modifier_from_using_fish = false
     this.rpg_extra.tweaked_crafting_items =
@@ -301,8 +302,9 @@ function Public.set_extra(key, value)
 end
 
 -- Checks if the player is in the correct position to continue with the function
-function Public.set_x_position(value)
+function Public.set_x_position(value, axis)
     this.rpg_extra.check_x_position = value or nil
+    this.rpg_extra.check_position_axis = axis or 'x'
 
     return this.rpg_extra.check_x_position
 end

@@ -997,9 +997,10 @@ local function on_player_used_capsule_custom(event)
         return
     end
 
-    if Public.get_x_position() then
-        local x = Public.get_x_position()
-        if player.physical_position.x > x then
+    local limit = Public.get_x_position()
+    if limit then
+        local axis = Public.get_extra('check_position_axis') or 'x'
+        if player.physical_position[axis] > limit then
             return
         end
     end

@@ -248,7 +248,7 @@ function Public.pre_init_task(current_task)
         Public.set_xp_yield()
     end
     RPG.set_extra('modded_hotkeys', true)
-    RPG.set_x_position(700)
+    RPG.set_x_position(700, Orient.is_horizontal() and 'y' or 'x')
     Public.clear_all_chart_tags()
     Explosives.disable(false)
 
