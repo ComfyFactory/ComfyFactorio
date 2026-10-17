@@ -17,8 +17,12 @@ local function destroy_tracked_entity(entity)
     if not (entity and entity.valid) then
         return
     end
-    local segmented = entity.segmented_unit
-    if segmented and segmented.valid then
+
+    local ok, segmented = pcall(function ()
+        return entity.segmented_unit
+    end)
+
+    if ok and segmented and segmented.valid then
         segmented.destroy()
         return
     end
