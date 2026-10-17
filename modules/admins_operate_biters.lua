@@ -1,65 +1,314 @@
---luacheck: ignore
+-- Biter Commander - lets admins (or whitelisted/regular players when enabled) command unit groups
+
 local Event = require 'utils.event'
+local Global = require 'utils.global'
+local Gui = require 'utils.gui'
+local SpamProtection = require 'utils.spam_protection'
 local AI = require 'utils.functions.AI'
-local math_random = math.random
-local math_floor = math.floor
-storage.biter_command = {}
-storage.biter_command.active_unit_groups = {}
-storage.biter_command.enabled = true
-storage.biter_command.whitelist = {}
-storage.biter_command.admin_mode = true   --if only admins can see and use the panel
 
-storage.biter_command.teleporting = false --if teleporting is allowed for non-admins
-storage.biter_command.buildings = true    ---if player can trigger building nests and worms
+local Public = {}
 
-local worm_raffle = {
-    'small-worm-turret',
-    'small-worm-turret',
-    'medium-worm-turret',
-    'small-worm-turret',
-    'medium-worm-turret',
-    'medium-worm-turret',
-    'big-worm-turret',
-    'medium-worm-turret',
-    'big-worm-turret',
-    'big-worm-turret',
-    'behemoth-worm-turret',
-    'big-worm-turret',
-    'behemoth-worm-turret',
-    'behemoth-worm-turret',
-    'behemoth-worm-turret',
-    'big-worm-turret',
-    'behemoth-worm-turret'
+local random = math.random
+local floor = math.floor
+
+local this = {
+    active_unit_groups = {},
+    enabled = true,
+    whitelist = {},
+    admin_mode = true,   --if only admins can see and use the panel
+    teleporting = false, --if teleporting is allowed for non-admins
+    buildings = true,    --if player can trigger building nests and worms
+    locations = {},      --last window location per player index
+    selected_force = {}, --selected force name (or ALL) per player index
+    selected_group = {}, --selected unit group id per player index
+    dirty = false        --group list changed and open panels need refresh
 }
 
+Global.register(
+    this,
+    function (t)
+        this = t
+    end
+)
 
+local L = 'modules_biter_commander.'
+local ALL = '*'
+local builders_cost = 5
+local unit_search_radius = 50
+local default_location = { x = 5, y = 45 }
 
+local main_button_name = Gui.uid_name()
+local main_frame_name = Gui.uid_name()
+local info_button_name = Gui.uid_name()
+local close_button_name = Gui.uid_name()
+local force_select_name = Gui.uid_name()
+local group_select_name = Gui.uid_name()
 
+-- the window stays open when other comfy frames get cleared
+Gui.screen_to_bypass(main_frame_name)
 
-local function get_evo(force)
-    local evo = math_floor(game.forces['enemy'].evolution_factor * 20)
-    local nests = math_random(1 + evo, 2 + evo * 2)
+local sections = {
+    { key = 'camera',     commands = { 'pan', 'teleport' } },
+    { key = 'movement',   commands = { 'movetome', 'movetoposition', 'patroltome', 'patroltoposition' } },
+    { key = 'build',      commands = { 'settle', 'siege' } },
+    { key = 'attack',     commands = { 'attackenemiesaround', 'attackobstaclesaround', 'attackenemiesaroundme', 'attackobstaclesaroundme' } },
+    { key = 'management', commands = { 'report', 'forcemove', 'addunitsaroundme', 'addunits', 'creategroup', 'disband' } }
+}
+
+local direction_pad = { 'nw', 'n', 'ne', 'w', 'center', 'e', 'sw', 's', 'se' }
+
+local directions = {
+    nw = { -25, -25 },
+    n = { 0, -25 },
+    ne = { 25, -25 },
+    w = { -25, 0 },
+    e = { 25, 0 },
+    sw = { -25, 25 },
+    s = { 0, 25 },
+    se = { 25, 25 }
+}
+
+local element_names = {}
+for _, section in pairs(sections) do
+    for _, key in pairs(section.commands) do
+        element_names[key] = Gui.uid_name()
+    end
+end
+for _, key in pairs(direction_pad) do
+    element_names[key] = Gui.uid_name()
+end
+
+local reply_counts = { ok = 5, no = 5, attack = 4, disband = 5 }
+local reply_colors = {
+    ok = { r = 0, g = 220, b = 0 },
+    no = { r = 220, g = 0, b = 0 },
+    attack = { r = 0, g = 100, b = 220 },
+    disband = { r = 200, g = 200, b = 0 }
+}
+local message_color = { r = 255, g = 255, b = 255 }
+local print_color = { color = { r = 0.88, g = 0.88, b = 0.88 } }
+
+local group_states = {
+    [defines.group_state.gathering] = 'gathering',
+    [defines.group_state.moving] = 'moving',
+    [defines.group_state.attacking_distraction] = 'attacking_distraction',
+    [defines.group_state.attacking_target] = 'attacking_target',
+    [defines.group_state.finished] = 'finished',
+    [defines.group_state.pathfinding] = 'pathfinding',
+    [defines.group_state.wander_in_group] = 'wander_in_group'
+}
+
+local function round(value)
+    return floor(value + 0.5)
+end
+
+local function can_use(player)
+    if this.admin_mode and not player.admin then
+        return false
+    end
+    return this.enabled or this.whitelist[player.name] == true
+end
+
+local function reply(player, mood, position)
+    player.create_local_flying_text { text = { L .. 'reply_' .. mood .. '_' .. random(1, reply_counts[mood]) }, position = position, color = reply_colors[mood] }
+end
+
+local function flying_message(player, key, position)
+    player.create_local_flying_text { text = { L .. key }, position = position, color = message_color }
+end
+
+----------------------forces and groups-----------------
+
+---Non-admins are always locked to their own force
+local function get_selected_force(player)
+    if not player.admin then
+        return player.force.name
+    end
+    local name = this.selected_force[player.index]
+    if name == ALL then
+        return ALL
+    end
+    if name and game.forces[name] then
+        return name
+    end
+    return player.force.name
+end
+
+local function build_force_items(player)
+    local selected = get_selected_force(player)
+    if not player.admin then
+        return { selected }, { selected }, 1
+    end
+    ---@type LocalisedString[]
+    local items = { { L .. 'force_all' } }
+    local names = { ALL }
+    local selected_index = 1
+    for _, force in pairs(game.forces) do
+        local name = force.name
+        if name ~= 'neutral' then
+            items[#items + 1] = name
+            names[#names + 1] = name
+            if name == selected then
+                selected_index = #names
+            end
+        end
+    end
+    return items, names, selected_index
+end
+
+local function prune_groups()
+    for id, entry in pairs(this.active_unit_groups) do
+        if not entry.group.valid then
+            this.active_unit_groups[id] = nil
+        end
+    end
+end
+
+local function build_group_items(player)
+    prune_groups()
+    local force_name = get_selected_force(player)
+    local ids = {}
+    for id, entry in pairs(this.active_unit_groups) do
+        if force_name == ALL or entry.group.force.name == force_name then
+            ids[#ids + 1] = id
+        end
+    end
+    table.sort(ids)
+
+    local items = { { L .. 'group_none' } }
+    local group_ids = { false }
+    local selected_index = 1
+    for _, id in pairs(ids) do
+        local group = this.active_unit_groups[id].group
+        items[#items + 1] = { L .. 'group_label', id, #group.members, group.force.name }
+        group_ids[#group_ids + 1] = id
+        if id == this.selected_group[player.index] then
+            selected_index = #group_ids
+        end
+    end
+    if selected_index == 1 then
+        this.selected_group[player.index] = nil
+    end
+    return items, group_ids, selected_index
+end
+
+----------------------------gui helpers-----------------------
+
+local function get_frame(player)
+    local frame = player.gui.screen[main_frame_name]
+    if frame and frame.valid then
+        return frame
+    end
+end
+
+local function get_frame_data(player)
+    local frame = get_frame(player)
+    if frame then
+        return Gui.get_data(frame), frame
+    end
+end
+
+local function refresh_player(player)
+    local data = get_frame_data(player)
+    if not data then
+        return
+    end
+    local items, names, selected_index = build_force_items(player)
+    data.force_select.items = items
+    data.force_select.selected_index = selected_index
+    data.force_select.enabled = player.admin
+    data.force_names = names
+
+    local group_items, group_ids, group_index = build_group_items(player)
+    data.group_select.items = group_items
+    data.group_select.selected_index = group_index
+    data.group_ids = group_ids
+end
+
+local function refresh_all()
+    for _, player in pairs(game.connected_players) do
+        refresh_player(player)
+    end
+end
+
+---Returns the selected group if it is valid and the player may command it
+local function get_selected_group(player)
+    local id = this.selected_group[player.index]
+    if not id then
+        player.print({ L .. 'msg_no_group' }, print_color)
+        return
+    end
+    local entry = this.active_unit_groups[id]
+    if not (entry and entry.group.valid) then
+        this.selected_group[player.index] = nil
+        player.print({ L .. 'msg_group_gone' }, print_color)
+        refresh_player(player)
+        return
+    end
+    if not player.admin and entry.group.force ~= player.force then
+        player.print({ L .. 'msg_no_permission' }, print_color)
+        return
+    end
+    return entry.group
+end
+
+---Reads coordinates from the panel, empty fields get filled with the group position
+local function get_coords(group, data)
+    local x = tonumber(data.coord_x.text)
+    local y = tonumber(data.coord_y.text)
+    if not x then
+        x = round(group.position.x)
+        data.coord_x.text = tostring(x)
+    end
+    if not y then
+        y = round(group.position.y)
+        data.coord_y.text = tostring(y)
+    end
+    return { x = x, y = y }
+end
+
+local function set_directions(data, offset)
+    local x = tonumber(data.coord_x.text) or 0
+    local y = tonumber(data.coord_y.text) or 0
+    data.coord_x.text = tostring(round(x + offset[1]))
+    data.coord_y.text = tostring(round(y + offset[2]))
+end
+
+----------------------------building-----------------------
+
+---Returns shuffled group members if there is enough valid ones to build something
+local function get_builders(group)
+    if not this.buildings then
+        return
+    end
+    local units = group.members
+    if #units < builders_cost then
+        return
+    end
+    table.shuffle_table(units)
+    for i = 1, builders_cost, 1 do
+        if not units[i].valid then
+            return
+        end
+    end
+    return units
+end
+
+local function consume_builders(units, surface, position)
+    surface.create_entity({ name = 'blood-explosion-huge', position = position })
+    for i = 1, builders_cost, 1 do
+        units[i].surface.create_entity({ name = 'blood-explosion-huge', position = units[i].position })
+        units[i].destroy()
+    end
 end
 
 local function place_nest_near_unit_group(group)
-    if not storage.biter_command.buildings then
+    local units = get_builders(group)
+    if not units then
         return false
-    end
-    if not group.members then
-        return false
-    end
-    if #group.members < 5 then
-        return false
-    end
-    local units = group.members
-    table.shuffle_table(units)
-    for i = 1, 5, 1 do
-        if not units[i].valid then
-            return false
-        end
     end
     local name = 'biter-spawner'
-    if math_random(1, 3) == 1 then
+    if random(1, 3) == 1 then
         name = 'spitter-spawner'
     end
     local position = group.surface.find_non_colliding_position(name, group.position, 16, 1)
@@ -67,593 +316,495 @@ local function place_nest_near_unit_group(group)
         return false
     end
     group.surface.create_entity({ name = name, position = position, force = group.force })
-    group.surface.create_entity({ name = 'blood-explosion-huge', position = position })
-    for i = 1, 5, 1 do
-        units[i].surface.create_entity({ name = 'blood-explosion-huge', position = units[i].position })
-        units[i].destroy()
-    end
+    consume_builders(units, group.surface, position)
     return true
 end
 
 local function build_worm(group)
-    if not storage.biter_command.buildings then
+    local units = get_builders(group)
+    if not units then
         return false
-    end
-    if not group.members then
-        return false
-    end
-    if #group.members < 5 then
-        return false
-    end
-    local units = group.members
-    table.shuffle_table(units)
-    for i = 1, 5, 1 do
-        if not units[i].valid then
-            return false
-        end
     end
     local position = group.surface.find_non_colliding_position('assembling-machine-1', group.position, 8, 1)
-    local worm = worm_raffle[math_random(1 + math_floor(group.force.evolution_factor * 8), math_floor(1 + group.force.evolution_factor * 16))]
     if not position then
         return false
     end
+    local worm = AI.pick_worm(group.force.get_evolution_factor(group.surface))
     group.surface.create_entity({ name = worm, position = position, force = group.force })
-    group.surface.create_entity({ name = 'blood-explosion-huge', position = position })
-    for i = 1, 5, 1 do
-        units[i].surface.create_entity({ name = 'blood-explosion-huge', position = units[i].position })
-        units[i].destroy()
-    end
+    consume_builders(units, group.surface, position)
     return true
 end
 
-local function flying_text(message, action, position, player)
-    local texts = {
-        { 'roger',    'acknowledged',     'aye aye',         'confirmed',                'will do' },
-        { 'negative', 'no',               'not really',      'we are not your critters', 'go away' },
-        { 'fooood',   'nom nom',          'we hunger',       'killllll' },
-        { 'WTF',      'we wanted ACTION', 'why you hate us', 'we were good soldiers',    'go to hell' }
-    }
-    colors = { { r = 0, g = 220, b = 0 }, { r = 220, g = 0, b = 0 }, { r = 0, g = 100, b = 220 }, { r = 200, g = 200, b = 0 }, { r = 255, g = 255, b = 255 } }
-    if message then
-        player.create_local_flying_text { text = message, position = position, color = colors[5] }
-    else
-        player.create_local_flying_text { text = texts[action][math_random(1, #texts[action])], position = position, color = colors[action] }
-    end
-end
+----------------------------commands-----------------------
 
------------commands-----------
-
-
--- local function attackmaincommand(target)
---   local wave_defense_table = WD.get_table()
---   if not wave_defense_table.target then return end
---   if not wave_defense_table.target.valid then return end
---   local command = {
--- 		type = defines.command.attack,
--- 		target = target,
--- 		distraction = defines.distraction.by_enemy,
--- 	}
---   return command
--- end
-
-
-
-local function get_coords(group, source_player)
-    local position
-    if source_player.gui.screen['biter_panel'] then
-        local x = tonumber(source_player.gui.screen['biter_panel']['coords']['coord_x'].text)
-        local y = tonumber(source_player.gui.screen['biter_panel']['coords']['coord_y'].text)
-        if x == nil or x == 'nil' then
-            x = group.position.x
-            source_player.gui.screen['biter_panel']['coords']['coord_x'].text = tostring(group.position.x)
-        end
-        if y == nil or y == 'nil' then
-            y = group.position.y
-            source_player.gui.screen['biter_panel']['coords']['coord_y'].text = tostring(group.position.y)
-        end
-        position = { x = x, y = y }
-    end
-    return position
-end
-
--------button functions-------------
-
-local function pan(group, source_player)
-    source_player.open_map(group.position, 0.5)
-end
-
-local function teleport(group, source_player)
-    if source_player.admin or storage.biter_command.teleporting then
-        source_player.teleport(group.position, group.surface)
-    else
-        flying_text('Teleporting is disabled', nil, source_player.position, source_player)
-    end
-end
-
-local function disband(group, source_player)
-    flying_text(nil, 4, group.position, source_player)
-    group.destroy()
-end
-
-local function movetome(group, source_player)
-    group.set_command(AI.command_move_to(source_player.position, defines.distraction.none))
-    flying_text(nil, 1, group.position, source_player)
-end
-
-local function movetoposition(group, source_player)
-    local position = get_coords(group, source_player)
+local function move_group(group, player, position, distraction)
     if position then
-        group.set_command(AI.command_move_to(position, defines.distraction.none))
-        flying_text(nil, 1, group.position, source_player)
+        group.set_command(AI.command_move_to(position, distraction))
+        reply(player, 'ok', group.position)
     else
-        flying_text(nil, 2, group.position, source_player)
+        reply(player, 'no', group.position)
     end
 end
 
-local function patroltome(group, source_player)
-    group.set_command(AI.command_move_to(source_player.position, defines.distraction.by_enemy))
-    flying_text(nil, 1, group.position, source_player)
+local function attack_area(group, player, position)
+    group.set_command(AI.command_attack_area(position, 25))
+    reply(player, 'attack', group.position)
 end
 
-local function patroltoposition(group, source_player)
-    local position = get_coords(group, source_player)
-    if position then
-        group.set_command(AI.command_move_to(position, defines.distraction.by_enemy))
-        flying_text(nil, 1, group.position, source_player)
+local function attack_obstacles(group, player, surface, position, fail_message)
+    -- obstacles closest to the group go first, so it eats its way through dense areas
+    local command = AI.command_attack_obstacles(surface, position, nil, group.position)
+    -- last command is always move_to, so there must be more to have any obstacles
+    if #command.commands > 1 then
+        group.set_command(command)
+        reply(player, 'attack', group.position)
     else
-        flying_text(nil, 2, group.position, source_player)
+        player.print({ L .. fail_message }, print_color)
+        reply(player, 'no', group.position)
     end
 end
 
-local function settle(group, source_player)
-    local success = place_nest_near_unit_group(group)
-    if success then
-        flying_text(nil, 1, group.position, source_player)
-    else
-        flying_text(nil, 2, group.position, source_player)
-        source_player.print('Settling new nest failed. Check if group has enough members(5+) and there is empty space (or nests are disabled).')
+local function register_group(group)
+    this.active_unit_groups[group.unique_id] = { id = group.unique_id, group = group }
+end
+
+---Adds units around position into the group. The group gets recreated so everyone gathers at it, selections move to the new group.
+local function add_units_around(group, player, surface, position)
+    local units = surface.find_entities_filtered { position = position, radius = unit_search_radius, type = 'unit', force = group.force }
+    local old_id = group.unique_id
+    local new_group = AI.regroup(group, units)
+    if new_group.unique_id == old_id then
+        reply(player, 'no', group.position)
+        return
     end
-end
-
-local function siege(group, source_player)
-    local success = build_worm(group)
-    if success then
-        flying_text(nil, 1, group.position, source_player)
-    else
-        flying_text(nil, 2, group.position, source_player)
-        source_player.print('Making worm failed. Check if group has enough members(5+) and there is empty space (or worms are disabled).')
-    end
-end
-
-local function report(group, source_player)
-    local status = group.state
-    local states = { 'gathering', 'moving', 'attacking distraction', 'attacking target', 'finished', 'pathfinding', 'wander in group' }
-    flying_text(states[status + 1], nil, group.position, source_player)
-end
-
-local function attackenemiesaround(group, source_player)
-    flying_text(nil, 3, group.position, source_player)
-    group.set_command(AI.command_attack_area(group.position, 25))
-end
-
-local function attackobstaclesaround(group, source_player)
-    local commands = AI.command_attack_obstacles(group.surface, group.position)
-    if #commands > 1 then
-        group.set_command(
-            {
-                type = defines.command.compound,
-                structure_type = defines.compound_command.return_last,
-                commands = commands
-            }
-        )
-        flying_text(nil, 3, group.position, source_player)
-    else
-        source_player.print('No obstacles found around unit group.')
-        flying_text(nil, 2, group.position, source_player)
-    end
-end
-
-local function attackenemiesaroundme(group, source_player)
-    group.set_command(AI.command_attack_area(source_player.position, 25))
-    flying_text(nil, 3, group.position, source_player)
-end
-
-local function attackobstaclesaroundme(group, source_player)
-    local commands = AI.command_attack_obstacles(source_player.surface, source_player.position)
-    if #commands > 1 then
-        group.set_command(
-            {
-                type = defines.command.compound,
-                structure_type = defines.compound_command.return_last,
-                commands = commands
-            }
-        )
-        flying_text(nil, 3, group.position, source_player)
-    else
-        source_player.print('No obstacles found around player.')
-        flying_text(nil, 2, group.position, source_player)
-    end
-end
-
-local function addunitsaroundme(group, source_player)
-    local units = source_player.surface.find_entities_filtered { position = source_player.position, radius = 50, type = 'unit', force = group.force }
-    for i = 1, #units, 1 do
-        group.add_member(units[i])
-    end
-end
-
-local function addunits(group, source_player)
-    local units = source_player.surface.find_entities_filtered { position = group.position, radius = 50, type = 'unit', force = group.force }
-    for i = 1, #units, 1 do
-        group.add_member(units[i])
-    end
-end
-
-local function forcemove(group, source_player)
-    group.start_moving()
-    flying_text(nil, 1, group.position, source_player)
-end
-
-local function creategroup(source_player)
-    source_player.surface.create_unit_group { position = source_player.position, force = source_player.force }
-    flying_text('Unit group created', nil, source_player.position, source_player)
-end
-----------------------direction panel-----------------
-local function set_directions(changedx, changedy, source_player)
-    if source_player.gui.screen['biter_panel'] then
-        local x = tonumber(source_player.gui.screen['biter_panel']['coords']['coord_x'].text)
-        local y = tonumber(source_player.gui.screen['biter_panel']['coords']['coord_y'].text)
-        if x == nil or x == 'nil' then
-            x = 0
+    register_group(new_group)
+    this.active_unit_groups[old_id] = nil
+    for player_index, id in pairs(this.selected_group) do
+        if id == old_id then
+            this.selected_group[player_index] = new_group.unique_id
         end
-        if y == nil or y == 'nil' then
-            y = 0
+    end
+    reply(player, 'ok', new_group.position)
+    refresh_all()
+end
+
+---Commands working with the selected group, called with (group, player, data)
+local group_commands = {
+    pan = function (group, player)
+        player.set_controller({ type = defines.controllers.remote, position = group.position, surface = group.surface })
+    end,
+    teleport = function (group, player)
+        if player.admin or this.teleporting then
+            player.teleport(group.position, group.surface)
+        else
+            flying_message(player, 'msg_teleport_disabled', player.position)
         end
-        x = x + changedx
-        y = y + changedy
-        source_player.gui.screen['biter_panel']['coords']['coord_x'].text = tostring(x)
-        source_player.gui.screen['biter_panel']['coords']['coord_y'].text = tostring(y)
+    end,
+    movetome = function (group, player)
+        move_group(group, player, player.position, defines.distraction.none)
+    end,
+    movetoposition = function (group, player, data)
+        move_group(group, player, get_coords(group, data), defines.distraction.none)
+    end,
+    patroltome = function (group, player)
+        move_group(group, player, player.position, defines.distraction.by_enemy)
+    end,
+    patroltoposition = function (group, player, data)
+        move_group(group, player, get_coords(group, data), defines.distraction.by_enemy)
+    end,
+    settle = function (group, player)
+        if place_nest_near_unit_group(group) then
+            reply(player, 'ok', group.position)
+        else
+            reply(player, 'no', group.position)
+            player.print({ L .. 'msg_settle_failed' }, print_color)
+        end
+    end,
+    siege = function (group, player)
+        if build_worm(group) then
+            reply(player, 'ok', group.position)
+        else
+            reply(player, 'no', group.position)
+            player.print({ L .. 'msg_worm_failed' }, print_color)
+        end
+    end,
+    attackenemiesaround = function (group, player)
+        attack_area(group, player, group.position)
+    end,
+    attackobstaclesaround = function (group, player)
+        attack_obstacles(group, player, group.surface, group.position, 'msg_no_obstacles_group')
+    end,
+    attackenemiesaroundme = function (group, player)
+        attack_area(group, player, player.position)
+    end,
+    attackobstaclesaroundme = function (group, player)
+        attack_obstacles(group, player, player.surface, player.position, 'msg_no_obstacles_player')
+    end,
+    report = function (group, player)
+        local state = group_states[group.state] or 'unknown'
+        flying_message(player, 'state_' .. state, group.position)
+    end,
+    forcemove = function (group, player)
+        group.start_moving()
+        reply(player, 'ok', group.position)
+    end,
+    addunitsaroundme = function (group, player)
+        add_units_around(group, player, player.surface, player.position)
+    end,
+    addunits = function (group, player)
+        add_units_around(group, player, group.surface, group.position)
+    end,
+    disband = function (group, player)
+        reply(player, 'disband', group.position)
+        group.destroy()
+    end,
+    center = function (group, _, data)
+        data.coord_x.text = tostring(round(group.position.x))
+        data.coord_y.text = tostring(round(group.position.y))
     end
-end
+}
 
-local function nw(source_player)
-    set_directions(-25, -25, source_player)
-end
-
-local function n(source_player)
-    set_directions(0, -25, source_player)
-end
-
-local function ne(source_player)
-    set_directions(25, -25, source_player)
-end
-
-local function w(source_player)
-    set_directions(-25, 0, source_player)
-end
-
-local function e(source_player)
-    set_directions(25, 0, source_player)
-end
-
-local function sw(source_player)
-    set_directions(-25, 25, source_player)
-end
-
-local function s(source_player)
-    set_directions(0, 25, source_player)
-end
-
-local function se(source_player)
-    set_directions(25, 25, source_player)
-end
-
-local function center(group, source_player)
-    if source_player.gui.screen['biter_panel'] then
-        source_player.gui.screen['biter_panel']['coords']['coord_x'].text = tostring(group.position.x)
-        source_player.gui.screen['biter_panel']['coords']['coord_y'].text = tostring(group.position.y)
+---Creates group of the selected force from units around the player and selects it
+local function create_group(player)
+    local force_name = get_selected_force(player)
+    if force_name == ALL then
+        force_name = player.force.name
     end
+    local units = player.surface.find_entities_filtered { position = player.position, radius = unit_search_radius, type = 'unit', force = force_name }
+    if #units == 0 then
+        player.print({ L .. 'msg_no_units', force_name }, print_color)
+        reply(player, 'no', player.position)
+        return
+    end
+    local group = AI.create_group(player.surface, player.position, force_name, units)
+    -- registered directly, so the group is listed right away
+    register_group(group)
+    this.selected_group[player.index] = group.unique_id
+    flying_message(player, 'msg_group_created', player.position)
+    refresh_all()
+end
+
+local function on_command(player, key)
+    local data, frame = get_frame_data(player)
+    if not data then
+        return
+    end
+    if not can_use(player) then
+        Gui.destroy(frame)
+        return
+    end
+    if directions[key] then
+        set_directions(data, directions[key])
+        return
+    end
+    if key == 'creategroup' then
+        create_group(player)
+        return
+    end
+    local group = get_selected_group(player)
+    if not group then
+        return
+    end
+    group_commands[key](group, player, data)
+    refresh_player(player)
 end
 
 ----------------------------gui-----------------------
 
-local function top_button(player)
-    if player.gui.top['biter_commands'] then
-        if storage.biter_command.enabled or storage.biter_command.whitelist[player.name] == true then
-            player.gui.top['biter_commands'].visible = true
-            return
-        else
-            --player.gui.top["biter_commands"].destroy()
-            player.gui.top['biter_commands'].visible = false
-            return
-        end
+local function get_top_button(player)
+    if Gui.get_mod_gui_top_frame() then
+        return Gui.get_button_flow(player)[main_button_name]
     end
-    if player.admin or not storage.biter_command.admin_mode then
-        if storage.biter_command.enabled or storage.biter_command.whitelist[player.name] == true then
-            local button = player.gui.top.add({ type = 'sprite-button', name = 'biter_commands', sprite = 'entity/medium-spitter' })
-            button.style.minimal_height = 38
-            button.style.minimal_width = 38
+    return player.gui.top[main_button_name]
+end
+
+local function top_button(player)
+    local allowed = can_use(player)
+    local button = get_top_button(player)
+    if button and button.valid then
+        button.visible = allowed
+        return
+    end
+    if not allowed then
+        return
+    end
+    local definition = {
+        type = 'sprite-button',
+        name = main_button_name,
+        sprite = 'entity/medium-spitter',
+        tooltip = { L .. 'top_button_tooltip' },
+        style = Gui.button_style
+    }
+    if Gui.get_mod_gui_top_frame() then
+        button = Gui.add_mod_button(player, definition)
+        if button then
+            button.style.minimal_height = 36
+            button.style.maximal_height = 36
+            button.style.minimal_width = 40
             button.style.padding = -2
         end
+    else
+        button = player.gui.top.add(definition)
+        button.style.minimal_height = 38
+        button.style.maximal_height = 38
+        button.style.minimal_width = 40
+        button.style.padding = -2
     end
 end
 
-local function show_info(player)
-    if player.gui.screen['biter_comm_info'] then
-        player.gui.screen['biter_comm_info'].destroy()
+local function style_button(button, width)
+    button.style.font = 'default-bold'
+    button.style.font_color = { r = 0.99, g = 0.99, b = 0.99 }
+    button.style.minimal_width = width
+end
+
+local function draw_main_frame(player)
+    local frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'screen', main_frame_name, info_button_name, close_button_name, { L .. 'title' }, true)
+    if not (frame and inside_frame) then
         return
     end
-    local frame = player.gui.screen.add { type = 'frame', name = 'biter_comm_info', caption = 'Biter Commander needs halp', direction = 'vertical' }
-    frame.location = { x = 350, y = 45 }
-    frame.style.minimal_height = 300
-    frame.style.maximal_height = 300
-    frame.style.minimal_width = 330
-    frame.style.maximal_width = 630
-    frame.add({ type = 'label', caption = 'Create new group first, then add biters to it.' })
-    frame.add({ type = 'label', caption = 'You can use directionpad to navigate them, or do it in person.' })
-    frame.add({ type = 'label', caption = "If you input invalid coordinates, they get rewritten to current group's position." })
-    frame.add({ type = 'label', caption = 'You can operate only biters and create groups of your own force.' })
-    frame.add({ type = 'label', caption = "If group is stuck at gathering state, use 'force move' button." })
-    frame.add({ type = 'label', caption = 'Empty groups get autodeleted by game after a while.' })
-    frame.add({ type = 'button', name = 'close_info', caption = 'Close' })
-end
-
-local function build_groups(player)
-    local groups = {}
-    for _, g in pairs(storage.biter_command.active_unit_groups) do
-        if g.group.valid then
-            if player.admin and storage.biter_command.admin_mode then
-                table.insert(groups, tostring(g.id))
-            else
-                if player.force == g.group.force then
-                    table.insert(groups, tostring(g.id))
-                end
-            end
-        else
-            g = nil
-        end
-    end
-    table.insert(groups, 'Select Group')
-    return groups
-end
-
-local function biter_panel(player)
-    if player.gui.screen['biter_panel'] then
-        player.gui.screen['biter_panel'].destroy()
-        return
-    end
-
-    local frame = player.gui.screen.add { type = 'frame', caption = 'Biter Commander', name = 'biter_panel', direction = 'vertical' }
-    frame.location = { x = 5, y = 45 }
-    frame.style.minimal_height = 680
-    frame.style.maximal_height = 680
+    frame.location = this.locations[player.index] or default_location
     frame.style.minimal_width = 330
     frame.style.maximal_width = 330
+    frame.titlebar[info_button_name].tooltip = { L .. 'info_tooltip' }
 
-    local groups = build_groups(player)
-    local selected_index = #groups
-    if storage.panel_group_index then
-        if storage.panel_group_index[player.name] then
-            if groups[storage.panel_group_index[player.name]] then
-                selected_index = storage.paneld_group_index[player.name]
-            end
+    local data = {}
+
+    local top = inside_frame.add({ type = 'table', column_count = 2 })
+    data.force_select = top.add({ type = 'drop-down', name = force_select_name, tooltip = { L .. 'force_tooltip' } })
+    data.force_select.style.width = 145
+    data.group_select = top.add({ type = 'drop-down', name = group_select_name, tooltip = { L .. 'group_tooltip' } })
+    data.group_select.style.width = 145
+
+    local body = inside_frame.add({ type = 'flow', direction = 'vertical' })
+    for _, section in pairs(sections) do
+        body.add({ type = 'label', caption = { L .. 'section_' .. section.key } })
+        local tbl = body.add({ type = 'table', column_count = 2 })
+        for _, key in pairs(section.commands) do
+            local button = tbl.add({ type = 'button', name = element_names[key], caption = { L .. key }, tooltip = { L .. key .. '_tooltip' } })
+            style_button(button, 150)
         end
     end
-    local t0 = frame.add({ type = 'table', name = 'top', column_count = 3 })
-    local drop_down = t0.add({ type = 'drop-down', name = 'group_select', items = groups, selected_index = selected_index })
-    drop_down.style.minimal_width = 150
-    drop_down.style.right_padding = 12
-    drop_down.style.left_padding = 12
-    t0.add({ type = 'sprite-button', name = 'info', sprite = 'virtual-signal/signal-info' })
-    t0.add({ type = 'sprite-button', name = 'close_biters', sprite = 'virtual-signal/signal-X' })
 
-    local l1 = frame.add({ type = 'label', caption = 'Camera' })
-    local t1 = frame.add({ type = 'table', name = 'camera', column_count = 2 })
-    local l2 = frame.add({ type = 'label', caption = 'Movement' })
-    local t2 = frame.add({ type = 'table', name = 'movement', column_count = 2 })
-    local l3 = frame.add({ type = 'label', caption = 'Build' })
-    local t3 = frame.add({ type = 'table', name = 'build', column_count = 2 })
-    local l4 = frame.add({ type = 'label', caption = 'Attack' })
-    local t4 = frame.add({ type = 'table', name = 'attack', column_count = 2 })
-    local l5 = frame.add({ type = 'label', caption = 'Group Management' })
-    local t5 = frame.add({ type = 'table', name = 'management', column_count = 2 })
-    local line = frame.add { type = 'line' }
+    local line = body.add({ type = 'line' })
     line.style.top_margin = 8
     line.style.bottom_margin = 8
-    local t6 = frame.add({ type = 'table', name = 'directions', column_count = 3 })
-    local buttons = {
-        t1.add({ type = 'button', caption = 'Pan to group', name = 'pan', tooltip = 'Moves camera to group position.' }),
-        t1.add({ type = 'button', caption = 'TP to group', name = 'teleport', tooltip = 'Teleports to group.' }),
-        t2.add({ type = 'button', caption = 'Move to me', name = 'movetome', tooltip = 'Gives group order to move to your position.' }),
-        t2.add({ type = 'button', caption = 'Move to position', name = 'movetoposition', tooltip = 'Sends group to position with coordinates entered below.' }),
-        t2.add({ type = 'button', caption = 'Patrol to me ', name = 'patroltome', tooltip = 'Gives group order to move to your position and engage any enemy during movement.' }),
-        t2.add(
-            {
-                type = 'button',
-                caption = 'Patrol to position',
-                name = 'patroltoposition',
-                tooltip = 'Sends group to position with coordinates entered below and engage any enemy during movement.'
-            }
-        ),
-        t3.add({ type = 'button', caption = 'Settle nest', name = 'settle', tooltip = 'Group creates base. Costs 5 units.' }),
-        t3.add({ type = 'button', caption = 'Build worm', name = 'siege', tooltip = 'Group builds worm turret. Costs 5 units.' }),
-        t4.add({ type = 'button', caption = 'Attack area', name = 'attackenemiesaround', tooltip = 'Group attacks enemy things around self.' }),
-        t4.add({ type = 'button', caption = 'Attack obstacles', name = 'attackobstaclesaround', tooltip = 'Group attacks obstacles around self.' }),
-        t4.add({ type = 'button', caption = 'Attack my area', name = 'attackenemiesaroundme', tooltip = 'Group attacks enemy things around your position.' }),
-        t4.add({ type = 'button', caption = 'Attack my obstacles', name = 'attackobstaclesaroundme', tooltip = 'Group attacks obstacles around your position.' }),
-        t5.add({ type = 'button', caption = 'Report', name = 'report', tooltip = 'Reports group status.' }),
-        t5.add({ type = 'button', caption = 'Force Move', name = 'forcemove', tooltip = 'Makes group to start moving even if gathering is not done (unstuck).' }),
-        t5.add({ type = 'button', caption = 'Add units around me', name = 'addunitsaroundme', tooltip = 'Adds units around you to selected unit group.' }),
-        t5.add({ type = 'button', caption = 'Add units', name = 'addunits', tooltip = 'Adds units around group to it.' }),
-        t5.add({ type = 'button', caption = 'Create group', name = 'creategroup', tooltip = 'Creates new group on player position' }),
-        t5.add({ type = 'button', caption = 'Disband group', name = 'disband', tooltip = 'Disbands group.' })
-    }
-    local buttons2 = {
-        t6.add({ type = 'button', caption = '25 NW', name = 'nw', tooltip = 'Changes remote position' }),
-        t6.add({ type = 'button', caption = '25 N', name = 'n', tooltip = 'Changes remote position' }),
-        t6.add({ type = 'button', caption = '25 NE', name = 'ne', tooltip = 'Changes remote position' }),
-        t6.add({ type = 'button', caption = '25 W', name = 'w', tooltip = 'Changes remote position' }),
-        t6.add({ type = 'button', caption = 'Center', name = 'center', tooltip = 'Centers remote position to group' }),
-        t6.add({ type = 'button', caption = '25 E', name = 'e', tooltip = 'Changes remote position' }),
-        t6.add({ type = 'button', caption = '25 SW', name = 'sw', tooltip = 'Changes remote position' }),
-        t6.add({ type = 'button', caption = '25 S', name = 's', tooltip = 'Changes remote position' }),
-        t6.add({ type = 'button', caption = '25 SE', name = 'se', tooltip = 'Changes remote position' })
-    }
-    for _, button in pairs(buttons) do
-        button.style.font = 'default-bold'
-        button.style.font_color = { r = 0.99, g = 0.99, b = 0.99 }
-        button.style.minimal_width = 150
-    end
-    for _, button in pairs(buttons2) do
-        button.style.font = 'default-bold'
-        button.style.font_color = { r = 0.99, g = 0.99, b = 0.99 }
-        button.style.minimal_width = 70
-    end
-    local t7 = frame.add({ type = 'table', name = 'coords', column_count = 2 })
-    t7.add({ type = 'label', caption = 'X: ' })
-    t7.add({ type = 'textfield', name = 'coord_x' })
-    t7.add({ type = 'label', caption = 'Y: ' })
-    t7.add({ type = 'textfield', name = 'coord_y' })
-end
 
-local comm_functions = {
-    ['pan'] = pan,
-    ['teleport'] = teleport,
-    ['disband'] = disband,
-    ['movetome'] = movetome,
-    ['movetoposition'] = movetoposition,
-    ['patroltome'] = patroltome,
-    ['patroltoposition'] = patroltoposition,
-    ['settle'] = settle,
-    ['siege'] = siege,
-    ['report'] = report,
-    ['attackenemiesaround'] = attackenemiesaround,
-    ['attackobstaclesaround'] = attackobstaclesaround,
-    ['attackenemiesaroundme'] = attackenemiesaroundme,
-    ['attackobstaclesaroundme'] = attackobstaclesaroundme,
-    ['addunits'] = addunits,
-    ['addunitsaroundme'] = addunitsaroundme,
-    ['forcemove'] = forcemove,
-    ['center'] = center
-}
-
-local comm_global_functions = {
-    ['creategroup'] = creategroup,
-    ['nw'] = nw,
-    ['n'] = n,
-    ['ne'] = ne,
-    ['w'] = w,
-    ['e'] = e,
-    ['sw'] = sw,
-    ['s'] = s,
-    ['se'] = se
-}
-
-local function refresh_groups(player)
-    local groups = build_groups(player)
-    player.gui.screen['biter_panel']['top']['group_select'].items = groups
-end
-
-local function on_gui_click(event)
-    if not event then
-        return
-    end
-    if not event.element then
-        return
-    end
-    if not event.element.valid then
-        return
-    end
-    local player = game.players[event.element.player_index]
-    if event.element.name == 'biter_commands' then --top button press
-        if storage.biter_command.enabled or storage.biter_command.whitelist[player.name] == true then
-            biter_panel(player)
-            return
+    local pad = body.add({ type = 'table', column_count = 3 })
+    for _, key in pairs(direction_pad) do
+        local caption, tooltip
+        if key == 'center' then
+            caption, tooltip = { L .. 'center' }, { L .. 'center_tooltip' }
         else
-            top_button(player)
-            player.print('Biter commander module is disabled.')
-            return
+            caption, tooltip = { L .. 'dir_' .. key }, { L .. 'dir_tooltip' }
         end
+        local button = pad.add({ type = 'button', name = element_names[key], caption = caption, tooltip = tooltip })
+        style_button(button, 70)
+    end
+
+    local coords = body.add({ type = 'table', column_count = 2 })
+    coords.add({ type = 'label', caption = { L .. 'coord_x' } })
+    data.coord_x = coords.add({ type = 'textfield', numeric = true, allow_negative = true, allow_decimal = true })
+    coords.add({ type = 'label', caption = { L .. 'coord_y' } })
+    data.coord_y = coords.add({ type = 'textfield', numeric = true, allow_negative = true, allow_decimal = true })
+
+    -- help replaces the body while shown, so the window does not grow
+    local help = inside_frame.add({ type = 'flow', direction = 'vertical', visible = false })
+    for i = 1, 6 do
+        local label = help.add({ type = 'label', caption = { L .. 'help_' .. i } })
+        label.style.single_line = false
+        label.style.maximal_width = 300
+    end
+
+    data.body = body
+    data.help = help
+    Gui.set_data(frame, data)
+    refresh_player(player)
+end
+
+local function toggle_main_frame(player)
+    local frame = get_frame(player)
+    if frame then
+        Gui.destroy(frame)
+        return
+    end
+    if not can_use(player) then
+        player.print({ L .. 'msg_disabled' }, print_color)
+        top_button(player)
+        return
+    end
+    draw_main_frame(player)
+end
+
+---Updates button and open window after admin status, force or module settings changed
+local function update_access(player)
+    top_button(player)
+    local frame = get_frame(player)
+    if not frame then
+        return
+    end
+    if can_use(player) then
+        refresh_player(player)
     else
-        if storage.biter_command.enabled or storage.biter_command.whitelist[player.name] == true then
-            top_button(player)
-        end
-    end
-    if event.element.type ~= 'button' and event.element.type ~= 'sprite-button' then
-        return
-    end
-    --if event.frame.name ~= "biter_panel" then return end
-    local name = event.element.name
-    if name == 'close_biters' then
-        biter_panel(player)
-        return
-    end
-    if name == 'info' then
-        show_info(player)
-        return
-    end
-    if name == 'close_info' then
-        show_info(player)
-        return
-    end
-    if comm_functions[name] then
-        local target_group_id = event.element.parent.parent['top']['group_select'].items[event.element.parent.parent['top']['group_select'].selected_index]
-        if not target_group_id then
-            return
-        end
-        if target_group_id == 'Select Group' then
-            player.print('No target group selected.', { r = 0.88, g = 0.88, b = 0.88 })
-            return
-        end
-        -- local index = index(tonumber(target_group_id))
-        -- if not index then
-        --   player.print("Selected group is no longer valid.", {r=0.88, g=0.88, b=0.88})
-        --   return
-        -- end
-        local group = storage.biter_command.active_unit_groups[tonumber(target_group_id)]
-        if group and group.group.valid then
-            comm_functions[name](group.group, player)
-        else
-            refresh_groups(player)
-        end
-        return
-    end
-
-    if comm_global_functions[name] then
-        comm_global_functions[name](player)
-        return
+        Gui.destroy(frame)
     end
 end
 
-local function refresh_panel()
-    for _, player in pairs(game.connected_players) do
-        if player.gui.screen['biter_panel'] then
-            refresh_groups(player)
+Gui.on_click(
+    main_button_name,
+    function (event)
+        if SpamProtection.is_spamming(event.player, nil, 'Biter Commander Main Button') then
+            return
         end
+        toggle_main_frame(event.player)
+    end
+)
+
+Gui.on_click(
+    close_button_name,
+    function (event)
+        local frame = get_frame(event.player)
+        if frame then
+            Gui.destroy(frame)
+        end
+    end
+)
+
+Gui.on_click(
+    info_button_name,
+    function (event)
+        local data = get_frame_data(event.player)
+        if not data then
+            return
+        end
+        data.body.visible = not data.body.visible
+        data.help.visible = not data.body.visible
+    end
+)
+
+for key, name in pairs(element_names) do
+    Gui.on_click(
+        name,
+        function (event)
+            on_command(event.player, key)
+        end
+    )
+end
+
+Gui.on_selection_state_changed(
+    force_select_name,
+    function (event)
+        local player = event.player
+        local data = get_frame_data(player)
+        if not data then
+            return
+        end
+        if player.admin then
+            this.selected_force[player.index] = data.force_names[event.element.selected_index]
+        end
+        refresh_player(player)
+    end
+)
+
+Gui.on_selection_state_changed(
+    group_select_name,
+    function (event)
+        local player = event.player
+        local data = get_frame_data(player)
+        if not data then
+            return
+        end
+        this.selected_group[player.index] = data.group_ids[event.element.selected_index] or nil
+    end
+)
+
+----------------------------events-----------------------
+
+local function on_gui_location_changed(event)
+    local element = event.element
+    if element and element.valid and element.name == main_frame_name then
+        this.locations[event.player_index] = element.location
     end
 end
 
 local function on_player_joined_game(event)
-    top_button(game.players[event.player_index])
-end
-
-local function on_unit_group_created(event)
-    if event and event.group and event.group.valid then
-        storage.biter_command.active_unit_groups[event.groupunique_id] = { id = event.groupunique_id, group = event.group }
-        refresh_panel()
+    local player = game.get_player(event.player_index)
+    if player then
+        top_button(player)
     end
 end
 
+local function on_player_access_changed(event)
+    local player = game.get_player(event.player_index)
+    if player then
+        update_access(player)
+    end
+end
+
+local function on_unit_group_created(event)
+    local group = event.group
+    if group and group.valid then
+        register_group(group)
+        this.dirty = true
+    end
+end
+
+-- refresh only when group disappears, unit counts get updated on clicks so the open dropdown is not reset all the time
 local function on_unit_removed_from_group(event)
-    if event and event.group and event.group.valid then
-        if #event.group.members == 1 then
-            storage.biter_command.active_unit_groups[event.groupunique_id] = nil
-            refresh_panel()
-        end
+    local group = event.group
+    if not (group and group.valid) or #group.members == 0 then
+        this.dirty = true
+    end
+end
+
+-- group events can come in bursts (whole attack waves), so open panels get refreshed at most twice per second
+local function refresh_if_dirty()
+    if not this.dirty then
+        return
+    end
+    this.dirty = false
+    prune_groups()
+    refresh_all()
+end
+
+---Gets module setting or state
+---@param key string|nil #returns whole table if nil
+function Public.get(key)
+    if key then
+        return this[key]
+    end
+    return this
+end
+
+---Sets module setting (enabled, admin_mode, teleporting, buildings)
+---@param key string
+---@param value any
+function Public.set(key, value)
+    this[key] = value
+    for _, player in pairs(game.connected_players) do
+        update_access(player)
+    end
+    return this[key]
+end
+
+---Allows player to use the panel even when module is disabled
+---@param player_name string
+---@param value boolean|nil
+function Public.whitelist(player_name, value)
+    this.whitelist[player_name] = value or nil
+    local player = game.get_player(player_name)
+    if player and player.connected then
+        update_access(player)
     end
 end
 
 Event.add(defines.events.on_unit_removed_from_group, on_unit_removed_from_group)
 Event.add(defines.events.on_unit_group_created, on_unit_group_created)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_gui_click, on_gui_click)
+Event.add(defines.events.on_player_promoted, on_player_access_changed)
+Event.add(defines.events.on_player_demoted, on_player_access_changed)
+Event.add(defines.events.on_player_changed_force, on_player_access_changed)
+Event.add(defines.events.on_gui_location_changed, on_gui_location_changed)
+Event.on_nth_tick(30, refresh_if_dirty)
+
+return Public
