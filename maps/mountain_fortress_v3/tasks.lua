@@ -36,7 +36,25 @@ local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
 local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
+local reset_messages =
+{
+    '** Mtn Fortress was just reset! **',
+    '** The mountain has been rebuilt. The biters are already hungry! **',
+    '** Fresh rocks, fresh ore, fresh biters. Mtn Fortress has reset! **',
+    '** The locomotive is fueled up and ready to roll. New map is live! **',
+    '** Someone forgot to feed the train again... Mtn Fortress has reset! **',
+    '** The collapse has swallowed everything. Time for a new beginning! **',
+    '** Grab your pickaxe, engineers! A new mountain awaits! **',
+    '** The biters celebrated too early. Mtn Fortress is back! **',
+    '** New map, same old biters. Mtn Fortress has reset! **',
+    '** The fortress rises again! Who will carry the team this time? **',
+    '** Rocks reloaded. Mtn Fortress was just reset! **',
+    '** The train has respawned. Please keep your hands inside the wagon at all times! **',
+    '** Another round, another chance to blame the collapse. Mtn Fortress has reset! **'
+}
+
 local abs = math.abs
+local random = math.random
 
 local planet_discovery_techs =
 {
@@ -488,7 +506,7 @@ function Public.announce_new_map(current_task)
     if Public.get('disable_startup_notification') then return end
     local server_name = Server.check_server_name(Public.discord_name)
     if server_name then
-        Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ** Mtn Fortress was just reset! **')
+        Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ' .. reset_messages[random(1, #reset_messages)])
     end
     local starting_planet = Public.get_planet()
     current_task.message = 'Announced new map!'
