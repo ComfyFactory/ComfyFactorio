@@ -1,7 +1,6 @@
 local Chrono_table = require 'maps.chronosphere.table'
 local Balance = require 'maps.chronosphere.balance'
 local Difficulty = require 'modules.difficulty_vote'
-local Raffle = require 'utils.math.raffle'
 local Raffles = require 'maps.chronosphere.raffles'
 local AI = require 'utils.functions.AI'
 local Public = {}
@@ -65,13 +64,7 @@ local function generate_side_attack_target(surface, position, area)
             goto retry
         end
     end
-    table.shuffle_table(entities)
-    table.shuffle_by_distance(entities, position)
-    local weights = {}
-    for index, _ in pairs(entities) do
-        weights[#weights + 1] = 1 + floor((#entities - index) / 2)
-    end
-    return Raffle.raffle(entities, weights)
+    return AI.raffle_closest(entities, position)
 end
 
 local function generate_main_attack_target()
@@ -97,46 +90,12 @@ local function get_random_close_spawner(surface)
     if not spawners[1] then
         return false
     end
-    table.shuffle_table(spawners)
-    table.shuffle_by_distance(spawners, objective.locomotive.position)
-    local weights = {}
-    for index, _ in pairs(spawners) do
-        weights[#weights + 1] = 1 + floor((#spawners - index) / 2)
-    end
-    return Raffle.raffle(spawners, weights), area
-end
-
-local function is_biter_inactive(biter)
-    if not biter.entity then
-        return true
-    end
-    if not biter.entity.valid then
-        return true
-    end
-    if not biter.entity.commandable then
-        return true
-    end
-    if not biter.entity.commandable.valid then
-        return true
-    end
-    if game.tick - biter.active_since > 162000 then
-        biter.entity.destroy()
-        return true
-    end
-    return false
+    return AI.raffle_closest(spawners, objective.locomotive.position), area
 end
 
 local function get_active_biter_count()
     local bitertable = Chrono_table.get_biter_table()
-    local count = 0
-    for k, biter in pairs(bitertable.active_biters) do
-        if biter.entity.valid then
-            count = count + 1
-        else
-            bitertable[k] = nil
-        end
-    end
-    return count
+    return AI.count_valid_units(bitertable.active_biters)
 end
 
 local function select_units_around_spawner(spawner, size)
@@ -254,10 +213,7 @@ local function create_attack_group(surface, size)
     if not units then
         return nil
     end
-    local unit_group = surface.create_unit_group({ position = position, force = 'enemy' })
-    for _, unit in pairs(units) do
-        unit_group.add_member(unit)
-    end
+    local unit_group = AI.create_group(surface, position, 'enemy', units)
     bitertable.unit_groups[unit_group.unique_id] = unit_group
     return unit_group, area
 end
@@ -266,61 +222,7 @@ end
 
 local function colonize(group)
     --if _DEBUG then game.print(game.tick ..": colonizing") end
-    local surface = group.surface
-    local evo = group.force.get_evolution_factor(surface)
-    local nests = random(1 + floor(evo * 20), 2 + floor(evo * 20) * 2)
-    local commands = {}
-    local biters = surface.find_entities_filtered { position = group.position, radius = 30, name = Raffles.biters, force = 'enemy' }
-    local goodbiters = {}
-    if #biters > 1 then
-        for i = 1, #biters, 1 do
-            if biters[i].commandable == group then
-                goodbiters[#goodbiters + 1] = biters[i]
-            end
-        end
-    end
-    local eligible_spawns
-    if #goodbiters < 10 then
-        if #group.members < 10 then
-            group.destroy()
-        end
-        return
-    else
-        eligible_spawns = 1 + floor(#goodbiters / 10)
-    end
-    local success = false
-
-    for i = 1, nests, 1 do
-        if eligible_spawns < i then
-            break
-        end
-        local pos = surface.find_non_colliding_position('biter-spawner', group.position, 20, 1, true)
-        if pos then
-            --game.print("[gps=" .. pos.x .. "," .. pos.y .."," .. surface.name .. "]")
-            success = true
-            if random(1, 5) == 1 then
-                surface.create_entity({ name = Raffles.worms[random(1 + floor(evo * 8), floor(1 + evo * 16))], position = pos, force = group.force })
-            else
-                surface.create_entity({ name = Raffles.spawners[random(1, #Raffles.spawners)], position = pos, force = group.force })
-            end
-        else
-            commands = {
-                AI.command_attack_obstacles(surface, group.position)
-            }
-        end
-    end
-    if success then
-        for i = 1, #goodbiters, 1 do
-            if goodbiters[i].valid then
-                goodbiters[i].destroy()
-            end
-        end
-        return
-    end
-    if #commands > 0 then
-        --game.print("Attacking [gps=" .. commands[1].target.position.x .. "," .. commands[1].target.position.y .. "]")
-        AI.multicommand(group, commands)
-    end
+    AI.colonize(group, Raffles.biters, Raffles.spawners, Raffles.worms)
 end
 
 local function send_near_biters_to_objective()
@@ -376,12 +278,7 @@ end
 
 local function destroy_inactive_biters()
     local bitertable = Chrono_table.get_biter_table()
-    for unit_number, biter in pairs(bitertable.active_biters) do
-        if is_biter_inactive(biter) then
-            bitertable.active_biters[unit_number] = nil
-            bitertable.free_biters = bitertable.free_biters + 1
-        end
-    end
+    bitertable.free_biters = bitertable.free_biters + AI.remove_inactive_units(bitertable.active_biters, 162000)
 end
 
 local function prepare_biters()
