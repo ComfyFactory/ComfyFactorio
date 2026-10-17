@@ -93,7 +93,12 @@ Event.on_nth_tick(
                     for c in surface.get_chunks() do
                         for _, entity in pairs(surface.find_entities_filtered({ force = { 'enemy', 'aggressors', 'aggressors_frenzy' }, area = { { c.x * 32, c.y * 32 }, { c.x * 32 + 32, c.y * 32 + 32 } }, type = { "unit", "turret", "unit-spawner", "spider-unit", "segmented-unit" } })) do
                             if entity and entity.valid then
-                                entity.destroy()
+                                local unit = entity.segmented_unit
+                                if unit and unit.valid then
+                                    unit.destroy()
+                                else
+                                    entity.destroy()
+                                end
                             end
                         end
                     end
@@ -240,7 +245,7 @@ Event.on_nth_tick(
                         end
                         local demolisher_pos = surface.find_non_colliding_position(demolisher_name, spawn_pos, 32, 2)
                         if demolisher_pos then
-                            surface.create_entity({ name = demolisher_name, position = demolisher_pos, force = 'aggressors_frenzy' })
+                            surface.create_segmented_unit({ name = demolisher_name, position = demolisher_pos, force = 'aggressors_frenzy' })
                         end
                     end
                 end

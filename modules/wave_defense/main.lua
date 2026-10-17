@@ -267,6 +267,18 @@ local function refresh_active_unit_threat()
     end
 end
 
+local function destroy_tracked_entity(entity)
+    if not (entity and entity.valid) then
+        return
+    end
+    local segmented = entity.segmented_unit
+    if segmented and segmented.valid then
+        segmented.destroy()
+        return
+    end
+    entity.destroy()
+end
+
 local function time_out_biters()
     local generated_units = Public.get('generated_units')
     local active_biter_count = Public.get('active_biter_count')
@@ -294,7 +306,7 @@ local function time_out_biters()
             if entity and entity.valid then
                 Public.set('active_biter_threat', active_biter_threat - round(threat_values[entity.name] * biter_health_boost, 2))
                 if valid_enemy_forces[entity.force.name] then
-                    entity.destroy()
+                    destroy_tracked_entity(entity)
                 end
             end
             Public.debug_print('time_out_biters: ' .. k .. ' got deleted.')
@@ -550,7 +562,20 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
     local entity_data = { name = name, position = position, force = force }
     if not surface.can_place_entity(entity_data) then return false end
 
-    local biter = surface.create_entity(entity_data)
+    local proto = prototypes.entity[name]
+    local biter
+    if proto and proto.type == 'segmented-unit' then
+        local unit = surface.create_segmented_unit({ name = name, position = position, force = force })
+        if not (unit and unit.valid) then return false end
+        local segment = unit.segments[1]
+        biter = segment and segment.entity
+        if not (biter and biter.valid) then
+            unit.destroy()
+            return false
+        end
+    else
+        biter = surface.create_entity(entity_data)
+    end
     if not (biter and biter.valid) then return false end
 
     if biter.type == 'unit' or biter.type == 'spider-unit' then

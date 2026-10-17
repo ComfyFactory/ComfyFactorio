@@ -385,6 +385,22 @@ local function do_place_rocks(data)
     end
 end
 
+local function place_map_entity(surface, e)
+    local proto = prototypes.entity[e.name]
+    if proto and proto.type == 'segmented-unit' then
+        local unit = surface.create_segmented_unit({ name = e.name, position = e.position, force = e.force })
+        if not (unit and unit.valid) then
+            return
+        end
+        local segment = unit.segments[1]
+        if segment and segment.entity and segment.entity.valid then
+            return segment.entity
+        end
+        return
+    end
+    return surface.create_entity(e)
+end
+
 local function do_place_entities(data)
     local surface = data.surface
     if not surface or not surface.valid then
@@ -395,7 +411,7 @@ local function do_place_entities(data)
         if e.collision and e.name then
             if surface.can_place_entity(e) then
                 e.create_build_effect_smoke = false
-                entity = surface.create_entity(e)
+                entity = place_map_entity(surface, e)
                 if entity then
                     if e.note then -- flamethrower-turret and artillery-turret are at default health, only gun-turret is modified
                         local modified_unit_health = WD.get('modified_unit_health')
@@ -430,7 +446,7 @@ local function do_place_entities(data)
         else
             if e.name then
                 e.create_build_effect_smoke = false
-                entity = surface.create_entity(e)
+                entity = place_map_entity(surface, e)
                 if entity then
                     if e.note then -- small-worm-turret, medium-worm-turret, big-worm-turret, behemoth-worm-turret
                         local modified_unit_health = WD.get('modified_unit_health')

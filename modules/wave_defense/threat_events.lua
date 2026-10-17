@@ -6,6 +6,18 @@ local Task = require 'utils.task_token'
 local Misc = require 'utils.commands.misc'
 
 local raise = Event.raise
+
+local function destroy_tracked_entity(entity)
+    if not (entity and entity.valid) then
+        return
+    end
+    local segmented = entity.segmented_unit
+    if segmented and segmented.valid then
+        segmented.destroy()
+        return
+    end
+    entity.destroy()
+end
 local round = math.round
 local random = math.random
 
@@ -180,7 +192,7 @@ local place_nest_near_unit_group = function ()
     unit.surface.create_entity({ name = 'blood-explosion-huge', position = position })
     unit.surface.create_entity({ name = 'blood-explosion-huge', position = unit.position })
     remove_unit(unit)
-    unit.destroy()
+    destroy_tracked_entity(unit)
     local threat = Public.get('threat')
     local threat_values = Public.get('threat_values')
     Public.set('threat', threat - threat_values[name])
@@ -331,7 +343,7 @@ function Public.build_worm()
     unit.surface.create_entity({ name = 'blood-explosion-huge', position = position })
     unit.surface.create_entity({ name = 'blood-explosion-huge', position = unit.position })
     remove_unit(unit)
-    unit.destroy()
+    destroy_tracked_entity(unit)
     Public.set('threat', threat - threat_values[worm])
 end
 
@@ -394,7 +406,7 @@ function Public.build_worm_custom()
     unit.surface.create_entity({ name = 'blood-explosion-huge', position = position })
     unit.surface.create_entity({ name = 'blood-explosion-huge', position = unit.position })
     remove_unit(unit)
-    unit.destroy()
+    destroy_tracked_entity(unit)
 end
 
 local function shred_simple_entities(entity)

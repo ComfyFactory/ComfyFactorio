@@ -13,6 +13,18 @@ local abs = math.abs
 local floor = math.floor
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 
+local function destroy_tracked_entity(entity)
+    if not (entity and entity.valid) then
+        return
+    end
+    local segmented = entity.segmented_unit
+    if segmented and segmented.valid then
+        segmented.destroy()
+        return
+    end
+    entity.destroy()
+end
+
 local this =
 {
     states = {},
@@ -459,7 +471,7 @@ local function on_entity_created(event)
         else
             state = Public.new(data)
             if not state then
-                entity.destroy()
+                destroy_tracked_entity(entity)
                 return
             end
             state:set_burst_frenzy()
@@ -544,9 +556,7 @@ end
 ---@return table|nil
 function Public.new(data)
     if has_unit_limit_reached() then
-        if data.entity and data.entity.valid then
-            data.entity.destroy()
-        end
+        destroy_tracked_entity(data.entity)
         return
     end
 
@@ -668,7 +678,7 @@ end
 -- Removes the given entity from tracking
 function Public._esp:remove(raised)
     if not raised and self.entity and self.entity.valid then
-        self.entity.destroy()
+        destroy_tracked_entity(self.entity)
     end
 
     this.states[self.id] = nil
