@@ -531,7 +531,7 @@ function Event.generate_event_name(name)
         if events[name] then
             name = 'custom_' .. name
         end
-        events[name] = event_id
+        events[name] = event_id -- luacheck: ignore 122
     end
 
     return event_id
