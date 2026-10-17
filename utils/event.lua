@@ -525,8 +525,13 @@ function Event.generate_event_name(name)
     local event_id = generate_event_name()
 
     -- If we're in debug, add the event ID into defines.events for the debuggertron's event module
+    -- names already used by game events get prefixed, so the game event is not overwritten
     if _DEBUG then
-        defines.events[name] = event_id -- luacheck: ignore 122
+        local events = defines.events --[[@as table<string, defines.events>]]
+        if events[name] then
+            name = 'custom_' .. name
+        end
+        events[name] = event_id
     end
 
     return event_id
