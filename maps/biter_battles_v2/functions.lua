@@ -195,7 +195,7 @@ function Public.init_player(player)
         player.create_character()
     end
     player.clear_items_inside()
-    player.spectator = true
+    player.set_controller({ type = defines.controllers.spectator })
     player.force = game.forces.spectator
 
     local surface = game.surfaces.biter_battles

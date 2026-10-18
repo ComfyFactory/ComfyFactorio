@@ -58,7 +58,6 @@ function Public.assign_random_force_to_active_players()
 end
 
 function Public.assign_force_to_player(player)
-    player.spectator = false
     if math_random(1, 2) == 1 then
         if #game.forces.east.connected_players > #game.forces.west.connected_players then
             player.force = game.forces.west
@@ -110,7 +109,6 @@ function Public.set_player_to_spectator(player)
     end
     player.force = game.forces.spectator
     player.character = nil
-    player.spectator = true
     player.set_controller({ type = defines.controllers.spectator })
 end
 
@@ -144,7 +142,6 @@ function Public.init(hatchery)
                 player.character.destroy()
             end
             player.character = nil
-            player.spectator = true
             player.set_controller({ type = defines.controllers.spectator })
             player.force = game.forces.player
             Public.teleport_player_to_spawn(player)
@@ -159,7 +156,6 @@ function Public.init(hatchery)
                 player.character.destroy()
             end
             player.character = nil
-            player.spectator = true
             player.set_controller({ type = defines.controllers.spectator })
             player.force = game.forces.player
             Public.teleport_player_to_spawn(player)

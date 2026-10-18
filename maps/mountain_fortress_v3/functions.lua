@@ -3640,8 +3640,6 @@ function Public.set_player_to_spectator(player)
         spectate_group.add_player(player)
     end
 
-    player.character = nil
-    player.spectator = true
     player.tag = '[img=utility/create_ghost_on_entity_death_modifier_icon]'
     player.set_controller({ type = defines.controllers.spectator })
     game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is now spectating.')

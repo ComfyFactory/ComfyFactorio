@@ -22,7 +22,8 @@ local this =
         },
         poll_trusted = false
     },
-    scenario_registry = {}
+    scenario_registry = {},
+    spectators = {}
 }
 
 Global.register(
@@ -120,10 +121,15 @@ end
 local functions =
 {
     ['spectator_switch'] = function (event)
+        local player = game.get_player(event.player_index)
         if event.element.switch_state == 'left' then
-            game.get_player(event.player_index).spectator = true
+            if player.character and player.character ~= nil then
+                this.spectators[player.index] = player.character
+                player.set_controller({ type = defines.controllers.spectator })
+            end
         else
-            game.get_player(event.player_index).spectator = false
+            player.set_controller({ type = defines.controllers.character, character = this.spectators[player.index] })
+            this.spectators[player.index] = nil
         end
     end,
     ['auto_hotbar_switch'] = function (event)
@@ -250,7 +256,7 @@ local function build_config_gui(data)
     scroll_pane.add({ type = 'line' })
 
     switch_state = 'right'
-    if player.spectator then
+    if player.controller_type == defines.controllers.spectator then
         switch_state = 'left'
     end
     add_switch(scroll_pane, switch_state, 'spectator_switch', { 'gui.spectator_mode' }, { 'gui-description.spectator_mode' })

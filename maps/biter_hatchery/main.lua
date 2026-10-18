@@ -338,7 +338,6 @@ local function on_player_joined_game(event)
             player.character.destroy()
         end
         player.character = nil
-        player.spectator = true
         player.set_controller({ type = defines.controllers.spectator })
         if hatchery.gamestate == 'game_in_progress' or hatchery.gamestate == 'rejoin_question' then
             Team.assign_force_to_player(player)

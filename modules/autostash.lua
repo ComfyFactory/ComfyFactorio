@@ -821,7 +821,7 @@ local function do_whitelist()
             local r = items[k].name
             this.whitelist[r] = true
         end
-        if items[k] and items[k].fuel_category and items[k].fuel_value then
+        if items[k] and items[k].fuel_categories and items[k].fuel_value then
             local r = items[k].name
             this.furnace_fuel[r] = 0
         end

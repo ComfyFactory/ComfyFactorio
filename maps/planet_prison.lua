@@ -623,7 +623,6 @@ local function init_game()
 
     local time = 10
     for _, player in pairs(game.connected_players) do
-        player.spectator = false
         if player.character == nil then
             player.set_controller({ type = defines.controllers.god })
             player.create_character()
@@ -2032,7 +2031,7 @@ local function move_to_orbit(player)
     char.destroy()
 
     game.merge_forces(get_player_force(player), 'neutral')
-    player.spectator = true
+    player.set_controller({ type = defines.controllers.spectator })
     redraw_gui(player)
 
     local orbit_perms = game.permissions.get_group('orbit')

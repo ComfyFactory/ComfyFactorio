@@ -347,7 +347,8 @@ function join_team(player, force_name, forced_join)
         local msg = table.concat({ 'Team ', player.force.name, ' player ', player.name, ' is no longer spectating.' })
         game.print(msg, { r = 0.98, g = 0.66, b = 0.22 })
         Server.to_discord_bold(msg)
-        player.spectator = false
+        player.set_controller({ type = defines.controllers.character, character = storage.spectators[player.index] })
+        storage.spectators[player.index] = nil
         return
     end
     local pos = surface.find_non_colliding_position('character', game.forces[force_name].get_spawn_position(surface), 8, 1)
@@ -378,7 +379,8 @@ function join_team(player, force_name, forced_join)
         player.insert { name = 'burner-mining-drill', count = 10 }
     end
     storage.chosen_team[player.name] = force_name
-    player.spectator = false
+    player.set_controller({ type = defines.controllers.character, character = storage.spectators[player.index] })
+    storage.spectators[player.index] = nil
     Public.refresh()
 end
 
@@ -403,7 +405,11 @@ function spectate(player, forced_join)
     game.permissions.get_group('spectator').add_player(player)
     storage.spectator_rejoin_delay[player.name] = game.tick
     Public.create_main_gui(player)
-    player.spectator = true
+    if not storage.spectators then
+        storage.spectators = {}
+    end
+    storage.spectators[player.index] = player.character
+    player.set_controller({ type = defines.controllers.spectator })
 end
 
 local function join_gui_click(name, player)
