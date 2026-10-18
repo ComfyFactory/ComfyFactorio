@@ -169,7 +169,7 @@ room.tree_ring = function (surface, cell_left_top, direction)
     local tree = tree_raffle[math.random(1, #tree_raffle)]
     map_functions.draw_noise_tile_circle({ x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5 }, 'grass-2', surface, grid_size * 0.35)
     map_functions.draw_noise_entity_ring(surface, { x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5 }, tree, 'neutral', grid_size * 0.25, grid_size * 0.33)
-    surface.spill_item_stack({ x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5 }, get_loot_item_stack(), true, nil, true)
+    surface.spill_item_stack({ position = { x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5 }, stack = get_loot_item_stack(), enable_looted = true, allow_belts = true })
     room.spitters(surface, cell_left_top, direction)
 end
 
@@ -314,7 +314,7 @@ room.maze = function (surface, cell_left_top, direction)
     local left_top = { x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size }
     create_maze(surface, { x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5 }, math.floor(grid_size * 0.25), 3, 'stone-wall', 'enemy', true)
 
-    surface.spill_item_stack({ x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5 }, get_loot_item_stack(), true, nil, true)
+    surface.spill_item_stack({ position = { x = left_top.x + grid_size * 0.5, y = left_top.y + grid_size * 0.5 }, stack = get_loot_item_stack(), enable_looted = true, allow_belts = true })
 end
 
 room.mr_nibbles = function (surface, cell_left_top, direction)

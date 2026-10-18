@@ -76,9 +76,14 @@ local function draw_convert_button(parent, entity)
         Gui.destroy(frame)
     end
 
+    local anchor_gui = defines.relative_gui_type.storage_tank_gui or defines.relative_gui_type.generic_on_off_entity_gui
+    if not anchor_gui then
+        return
+    end
+
     local anchor =
     {
-        gui = defines.relative_gui_type.storage_tank_gui,
+        gui = anchor_gui,
         position = defines.relative_gui_position.right
     }
     frame =

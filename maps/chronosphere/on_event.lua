@@ -326,7 +326,7 @@ function Public.script_raised_revive(event)
     local entity = event.entity
     if not entity or not entity.valid then return end
     if entity.force.name == "player" then
-        entity.minable = false
+        entity.minable_flag = false
         entity.destructible = false
         if entity.name == 'solar-panel' or entity.name == 'substation' then
             entity.operable = false

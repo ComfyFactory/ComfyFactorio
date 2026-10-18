@@ -417,7 +417,7 @@ local function uranium_mining(entity)
     if tank and tank.valid then
         local acid = tank.get_fluid_count('sulfuric-acid')
         if acid > 5 then
-            tank.remove_fluid { name = 'sulfuric-acid', amount = 4 }
+            tank.extract_fluid { name = 'sulfuric-acid', amount = 4 }
             entity.surface.spill_item_stack({position = entity.position, stack ={ name = 'uranium-ore', count = 4 }, enable_looted = true, allow_belts = true})
             FT.flying_text(nil, entity.surface, tank.position, '-4 [fluid=sulfuric-acid]', { r = 0.88, g = 0.02, b = 0.02 })
         end

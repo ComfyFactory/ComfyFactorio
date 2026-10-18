@@ -281,7 +281,7 @@ local function init_player(player, surface)
         end
 
         player.insert({ name = 'raw-fish', count = 8 })
-        player.set_quick_bar_slot(1, 'raw-fish')
+        player.set_quick_bar_slot(1, 1, 'raw-fish')
         player.insert({ name = 'pistol', count = 1 })
         player.insert({ name = 'firearm-magazine', count = 16 })
     else

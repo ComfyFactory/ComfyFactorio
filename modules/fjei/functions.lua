@@ -10,14 +10,13 @@ local Public = {}
 function Public.get_crafting_machines_for_recipe(force_name, recipe)
     local item_whitelist = storage.fjei.item_whitelist[force_name]
     local crafting_machines = storage.fjei.crafting_machines
-    local recipe_category = recipe.category
     local result = {}
     local i = 1
     for _, name in pairs(crafting_machines) do
         if item_whitelist[name] or name == 'character' then
             local crafting_categories = prototypes.entity[name].crafting_categories
             for category, _ in pairs(crafting_categories) do
-                if recipe_category == category then
+                if recipe.has_category(category) then
                     result[i] = name
                     i = i + 1
                     break

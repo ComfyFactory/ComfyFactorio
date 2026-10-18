@@ -103,7 +103,7 @@ function Public.configure_structure_entities(special_name, components)
 						inv.insert(l)
 					end
 				elseif e.name == 'centrifuge' then
-					local inv = e.get_inventory(defines.inventory.assembling_machine_input)
+					local inv = e.get_inventory(defines.inventory.crafter_input)
 					e.set_recipe('kovarex-enrichment-process')
 					inv.insert({ name = 'uranium-235', count = 20 })
 					-- Hack when porting to 2.0, since we can't use unresearched recipes anymore:

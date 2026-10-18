@@ -1,6 +1,6 @@
 return {
   application="factorio",
-  application_version="2.1.7",
+  application_version="2.1.22",
   api_version=6,
   stage="runtime",
   classes={
@@ -353,6 +353,7 @@ return {
         get_event_filter=true,
         get_event_handler=true,
         get_event_id=true,
+        get_event_name=true,
         get_event_order=true,
         new_notification_queue=true,
         on_configuration_changed=true,
@@ -405,11 +406,13 @@ return {
       methods={},
       attributes={
         auto_refuel=true,
+        burner_usage=true,
         burnt_inventory_size=true,
         effectivity=true,
         emissions_per_joule=true,
         fuel_categories=true,
         fuel_inventory_size=true,
+        hide_from_stats=true,
         initial_fuel=true,
         initial_fuel_percent=true,
         light_flicker=true,
@@ -461,8 +464,10 @@ return {
         get_circuit_network=true
       },
       attributes={
+        empty_slots_signal=true,
         object_name=true,
         read_contents=true,
+        read_empty_slots=true,
         set_requests=true,
         valid=true,
         entity=true,
@@ -602,8 +607,10 @@ return {
         get_circuit_network=true
       },
       attributes={
+        empty_slots_signal=true,
         object_name=true,
         read_contents=true,
+        read_empty_slots=true,
         valid=true,
         entity=true,
         input_networks=true,
@@ -821,7 +828,9 @@ return {
     },
     LuaDebugAdapter={
       methods={
+        breakpoint=true,
         describe_field=true,
+        print=true,
         start_profile=true,
         stop_profile=true
       },
@@ -835,12 +844,16 @@ return {
     LuaDeciderCombinatorControlBehavior={
       methods={
         add_condition=true,
+        add_else_output=true,
         add_output=true,
         get_condition=true,
+        get_else_output=true,
         get_output=true,
         remove_condition=true,
+        remove_else_output=true,
         remove_output=true,
         set_condition=true,
+        set_else_output=true,
         set_output=true,
         get_signal_last_tick=true,
         get_circuit_network=true
@@ -1060,6 +1073,7 @@ return {
         get_recipe=true,
         get_signal=true,
         get_signals=true,
+        get_signals_changed=true,
         get_spider_legs=true,
         get_stopped_train=true,
         get_stored_durability=true,
@@ -1300,6 +1314,7 @@ return {
         loader_container=true,
         loader_filter_mode=true,
         loader_type=true,
+        local_effect=true,
         localised_description=true,
         localised_name=true,
         logistic_cell=true,
@@ -1328,6 +1343,7 @@ return {
         pickup_target=true,
         player=true,
         pollution_bonus=true,
+        potential_effects=true,
         power_production=true,
         power_switch_state=true,
         power_usage=true,
@@ -1338,6 +1354,7 @@ return {
         products_finished=true,
         protected=true,
         prototype=true,
+        providing_to_other_platforms=true,
         proxy_target=true,
         proxy_target_entity=true,
         proxy_target_inventory=true,
@@ -1355,6 +1372,7 @@ return {
         render_player=true,
         render_to_forces=true,
         request_from_buffers=true,
+        request_missing_construction_materials=true,
         result_quality=true,
         robot_order_queue=true,
         rocket=true,
@@ -1549,6 +1567,7 @@ return {
         allow_unloading=true,
         allowed_effects=true,
         allowed_module_categories=true,
+        allows_flipping=true,
         always_on=true,
         ammo_category=true,
         ammo_stack_limit=true,
@@ -1584,7 +1603,7 @@ return {
         boiler_mode=true,
         braking_force=true,
         build_distance=true,
-        building_grid_bit_shift=true,
+        build_grid_size=true,
         bulk=true,
         burner_prototype=true,
         burns_fluid=true,
@@ -1648,9 +1667,11 @@ return {
         default_copy_color_from_train_stop=true,
         default_day_length_output_signal=true,
         default_day_tick_output_signal=true,
+        default_empty_slots_signal=true,
         default_game_tick_output_signal=true,
         default_green_output_signal=true,
         default_green_signal=true,
+        default_launched_signal=true,
         default_orange_output_signal=true,
         default_output_signal=true,
         default_recipe_finished_signal=true,
@@ -1868,7 +1889,10 @@ return {
         max_underground_distance=true,
         maximum_corner_sliding_distance=true,
         maximum_damage_multiplier=true,
+        maximum_fuel_temperature=true,
+        maximum_input_temperature=true,
         maximum_lifetime=true,
+        maximum_oxidizer_temperature=true,
         maximum_spread_count=true,
         maximum_temperature=true,
         meltdown_action=true,
@@ -1878,6 +1902,9 @@ return {
         min_to_charge=true,
         mineable_properties=true,
         minimal_arm_swing_segment_retraction=true,
+        minimum_fuel_temperature=true,
+        minimum_input_temperature=true,
+        minimum_oxidizer_temperature=true,
         minimum_resource_amount=true,
         mining_drill_radius=true,
         mining_speed=true,
@@ -1997,6 +2024,7 @@ return {
         shot_category=true,
         shots_per_flare=true,
         should_ground_target=true,
+        show_fluid_visualization_when_in_cursor=true,
         shuffle_resources_to_mine=true,
         smoke=true,
         smoke_count=true,
@@ -2256,6 +2284,7 @@ return {
         solar_panel_performance_at_day=true,
         solar_panel_performance_at_night=true,
         solar_panel_solar_coefficient_property=true,
+        sunglasses=true,
         take_result=true,
         valid=true,
         custom_tooltip_fields=true,
@@ -2312,8 +2341,6 @@ return {
         entity=true,
         filter=true,
         index=true,
-        maximum_temperature=true,
-        minimum_temperature=true,
         object_name=true,
         pipe_connections=true,
         production_type=true,
@@ -2332,7 +2359,10 @@ return {
         emissions_per_joule=true,
         fluid_box=true,
         fluid_usage_per_tick=true,
+        hide_from_stats=true,
+        maximum_input_temperature=true,
         maximum_temperature=true,
+        minimum_input_temperature=true,
         object_name=true,
         output_fluid_box=true,
         render_no_network_icon=true,
@@ -2434,6 +2464,7 @@ return {
         get_logistic_group=true,
         get_logistic_groups=true,
         get_script_visible=true,
+        get_space_platforms=true,
         get_spawn_position=true,
         get_surface_hidden=true,
         get_turret_attack_modifier=true,
@@ -2665,8 +2696,10 @@ return {
         permissions=true,
         planets=true,
         player=true,
+        player_death_notifications_enabled=true,
         players=true,
         simulation=true,
+        space_platform_death_notifications_enabled=true,
         speed=true,
         surfaces=true,
         technology_notifications_enabled=true,
@@ -2692,21 +2725,6 @@ return {
         input_networks=true,
         output_networks=true,
         type=true
-      },
-      operators={}
-    },
-    LuaGroup={
-      methods={},
-      attributes={
-        group=true,
-        localised_name=true,
-        name=true,
-        object_name=true,
-        order=true,
-        order_in_recipe=true,
-        subgroups=true,
-        type=true,
-        valid=true
       },
       operators={}
     },
@@ -2789,12 +2807,12 @@ return {
         force=true,
         game_controller_interaction=true,
         gui=true,
-        hand_send_stacks_to_trash=true,
         handle_cursor_split=true,
         handle_cursor_transfer=true,
         handle_open_item=true,
         handle_open_mod_item=true,
         handle_send_stack_to_trash=true,
+        handle_send_stacks_to_trash=true,
         horizontal_scroll_policy=true,
         hovered_sprite=true,
         icon_selector=true,
@@ -2823,6 +2841,7 @@ return {
         resize_to_sprite=true,
         right_label_caption=true,
         right_label_tooltip=true,
+        secondary_number=true,
         selectable=true,
         selected_index=true,
         selected_tab_index=true,
@@ -2928,6 +2947,7 @@ return {
       },
       attributes={
         game_version=true,
+        instrument_mod=true,
         object_name=true,
         stage=true
       },
@@ -3181,6 +3201,20 @@ return {
       },
       operators={}
     },
+    LuaItemGroup={
+      methods={},
+      attributes={
+        localised_name=true,
+        name=true,
+        object_name=true,
+        order=true,
+        order_in_recipe=true,
+        subgroups=true,
+        type=true,
+        valid=true
+      },
+      operators={}
+    },
     LuaItemPrototype={
       methods={
         get_ammo_type=true,
@@ -3227,7 +3261,7 @@ return {
         flags=true,
         fuel_acceleration_multiplier=true,
         fuel_acceleration_multiplier_quality_bonus=true,
-        fuel_category=true,
+        fuel_categories=true,
         fuel_emissions_multiplier=true,
         fuel_glow_color=true,
         fuel_top_speed_multiplier=true,
@@ -3254,6 +3288,7 @@ return {
         productivity_quality_multiplier=true,
         provides_flight=true,
         quality_affects_inventory_size=true,
+        quality_affects_spoil_ticks=true,
         quality_quality_multiplier=true,
         radius_color=true,
         rails=true,
@@ -3261,6 +3296,7 @@ return {
         requires_beacon_alt_mode=true,
         resistances=true,
         rocket_launch_products=true,
+        science_capacity=true,
         send_to_orbit_mode=true,
         shoot_protected=true,
         skip_fog_of_war=true,
@@ -3410,6 +3446,19 @@ return {
       },
       operators={}
     },
+    LuaItemSubGroup={
+      methods={},
+      attributes={
+        group=true,
+        localised_name=true,
+        name=true,
+        object_name=true,
+        order=true,
+        type=true,
+        valid=true
+      },
+      operators={}
+    },
     LuaLabControlBehavior={
       methods={
         get_circuit_network=true
@@ -3541,8 +3590,10 @@ return {
       attributes={
         circuit_condition=true,
         circuit_condition_enabled=true,
+        empty_slots_signal=true,
         object_name=true,
         read_contents=true,
+        read_empty_slots=true,
         set_requests=true,
         valid=true,
         entity=true,
@@ -3867,6 +3918,29 @@ return {
       },
       operators={}
     },
+    LuaPin={
+      methods={
+        destroy=true,
+        get_pin_center=true
+      },
+      attributes={
+        alert_positions=true,
+        alert_type=true,
+        always_visible=true,
+        chart_tag=true,
+        index=true,
+        label=true,
+        object_name=true,
+        owner=true,
+        player=true,
+        position=true,
+        preview_distance=true,
+        surface_index=true,
+        targets=true,
+        valid=true
+      },
+      operators={}
+    },
     LuaPlanet={
       methods={
         associate_surface=true,
@@ -3898,6 +3972,7 @@ return {
         clear_cursor=true,
         clear_inventory_highlights=true,
         clear_local_flying_texts=true,
+        clear_pins=true,
         clear_recipe_notification=true,
         clear_recipe_notifications=true,
         clear_selection=true,
@@ -3922,6 +3997,7 @@ return {
         get_associated_characters=true,
         get_goal_description=true,
         get_infinity_inventory_filter=true,
+        get_pins=true,
         get_quick_bar_slot=true,
         get_recipe_notifications=true,
         is_alert_enabled=true,
@@ -4012,10 +4088,12 @@ return {
         display_resolution=true,
         display_scale=true,
         drag_target=true,
+        editor_settings=true,
         entity_copy_source=true,
         game_view_settings=true,
         gui=true,
         hand_location=true,
+        hide_locked_prototypes_in_factoriopedia=true,
         index=true,
         infinity_inventory_filters=true,
         input_method=true,
@@ -4040,11 +4118,11 @@ return {
         respawn_quality=true,
         saved_logistic_filters=true,
         show_on_map=true,
-        spectator=true,
         spidertron_remote_selection=true,
         stashed_controller_type=true,
         tag=true,
         ticks_to_respawn=true,
+        toggle_menu_leaves_remote_view=true,
         undo_redo_stack=true,
         valid=true,
         zoom=true,
@@ -4242,6 +4320,7 @@ return {
         max_force_distraction_distance=true,
         max_gate_activation_distance=true,
         max_inserter_reach_distance=true,
+        max_logistics_connection_distance=true,
         max_pipe_to_ground_distance=true,
         max_underground_belt_distance=true,
         mod_data=true,
@@ -4276,8 +4355,10 @@ return {
         get_circuit_network=true
       },
       attributes={
+        empty_slots_signal=true,
         object_name=true,
         read_contents=true,
+        read_empty_slots=true,
         valid=true,
         entity=true,
         input_networks=true,
@@ -4307,7 +4388,10 @@ return {
       operators={}
     },
     LuaQualityPrototype={
-      methods={},
+      methods={
+        get_roll_chances=true,
+        roll_quality=true
+      },
       attributes={
         accumulator_capacity_multiplier=true,
         asteroid_collector_collection_radius_bonus=true,
@@ -4352,6 +4436,7 @@ return {
         previous_probability=true,
         range_multiplier=true,
         rolling_stock_max_speed_multiplier=true,
+        science_capacity_multiplier=true,
         science_pack_drain_multiplier=true,
         spoil_ticks_multiplier=true,
         tool_durability_multiplier=true,
@@ -4563,6 +4648,7 @@ return {
         main_product=true,
         maximum_productivity=true,
         object_name=true,
+        on_crafted_event=true,
         overload_multiplier=true,
         preserve_products_in_machine_output=true,
         products=true,
@@ -4703,6 +4789,7 @@ return {
         sprite=true,
         start_angle=true,
         surface=true,
+        tall=true,
         target=true,
         text=true,
         time_to_live=true,
@@ -4787,7 +4874,9 @@ return {
         get_circuit_network=true
       },
       attributes={
+        launched_signal=true,
         object_name=true,
+        read_launched=true,
         read_mode=true,
         valid=true,
         entity=true,
@@ -5005,6 +5094,8 @@ return {
         from=true,
         length=true,
         object_name=true,
+        origin=true,
+        shape=true,
         to=true,
         valid=true,
         custom_tooltip_fields=true,
@@ -5039,6 +5130,7 @@ return {
         map_seed_offset=true,
         object_name=true,
         orientation=true,
+        origin=true,
         parked_platforms_orientation=true,
         parked_platforms_position=true,
         player_effects=true,
@@ -5080,6 +5172,7 @@ return {
         repair_tile=true
       },
       attributes={
+        completed_trips=true,
         damaged_tiles=true,
         distance=true,
         ejected_items=true,
@@ -5110,9 +5203,11 @@ return {
       },
       attributes={
         damage_taken_signal=true,
+        empty_slots_signal=true,
         object_name=true,
         read_contents=true,
         read_damage_taken=true,
+        read_empty_slots=true,
         read_moving_from=true,
         read_moving_to=true,
         read_speed=true,
@@ -5690,6 +5785,7 @@ return {
         get_contents=true,
         get_detailed_contents=true,
         get_item_count=true,
+        get_item_position=true,
         get_line_item_position=true,
         insert_at=true,
         insert_at_back=true,

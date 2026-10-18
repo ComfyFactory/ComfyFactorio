@@ -7,9 +7,9 @@ function Public.production_factory(surface, position)
     local factory = Factories.roll_random_assembler()
     local entity = surface.create_entity({name = factory.entity, force = 'neutral', position = position})
     entity.destructible = false
-    entity.minable = false
+    entity.minable_flag = false
     entity.operable = false
-    entity.active = false
+    entity.disabled_by_script = true
     Factories.register_random_assembler(entity, factory.id, factory.tier)
 end
 
@@ -74,10 +74,10 @@ function Public.danger_event(surface, left_top)
     local solar = surface.create_entity({name = 'solar-panel', position = {x = left_top.x + 14, y = left_top.y + 10}, force = 'scrapyard', create_build_effect_smoke = false})
     local acu = surface.create_entity({name = 'accumulator', position = {x = left_top.x + 14, y = left_top.y + 8}, force = 'scrapyard', create_build_effect_smoke = false})
     acu.energy = 5000000
-    speaker.minable = false
+    speaker.minable_flag = false
     speaker.destructible = false
     speaker.operable = false
-    combinator.minable = false
+    combinator.minable_flag = false
     combinator.destructible = false
     combinator.operable = false
     solar.destructible = false
@@ -102,7 +102,7 @@ function Public.fish_market(surface, left_top)
     local market = surface.create_entity({name = 'market', force = 'player', position = {x = left_top.x + 16, y = left_top.y + 16}})
     market.destructible = false
     market.operable = false
-    market.minable = false
+    market.minable_flag = false
     rendering.draw_text {
         text = 'Fish Market',
         surface = surface,
@@ -119,7 +119,7 @@ function Public.fish_market(surface, left_top)
     }
     local fishchest = surface.create_entity({name = 'blue-chest', force = 'player', position = {x = left_top.x + 11, y = left_top.y + 16}})
     fishchest.destructible = false
-    fishchest.minable = false
+    fishchest.minable_flag = false
     fishchest.operable = false
     objective.fishchest = fishchest
     rendering.draw_text {
@@ -138,12 +138,12 @@ function Public.fish_market(surface, left_top)
     }
     local inserter = surface.create_entity({name = 'fast-inserter', force = 'player', position = {x = left_top.x + 10, y = left_top.y + 16}, direction = defines.direction.west})
     inserter.destructible = false
-    inserter.minable = false
+    inserter.minable_flag = false
     inserter.operable = false
     inserter.rotatable = false
     local track = surface.create_entity({name = 'straight-rail', force = 'player', position = {x = left_top.x + 8, y = left_top.y + 16}})
     track.destructible = false
-    track.minable = false
+    track.minable_flag = false
 end
 
 function Public.defended_position(left_top, entities)

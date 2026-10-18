@@ -58,15 +58,31 @@ function Public.fluidbox_count(entity)
         return #entity.prototype.fluidbox_prototypes
     end
 
-    return #entity.fluidbox
+    local fluidbox = entity.fluidbox
+
+    return fluidbox and #fluidbox or 0
 end
 
 function Public.set_fluid_filter(entity, index, filter)
     if Public.is_21() then
+        if type(filter) == 'table' then
+            filter = filter.name
+        end
         entity.set_fluid_filter(index, filter)
     else
+        if type(filter) == 'string' then
+            filter = { name = filter }
+        end
         entity.fluidbox.set_filter(index, filter)
     end
+end
+
+function Public.get_fluid_filter(entity, index)
+    if Public.is_21() then
+        return entity.get_fluid_filter(index)
+    end
+
+    return entity.fluidbox.get_filter(index)
 end
 
 function Public.get_fluid_contents(entity)
@@ -155,6 +171,38 @@ end
 
 function Public.set_entity_active(entity, active)
     entity.disabled_by_script = not active
+end
+
+local function quickbar_page_and_slot(player, index)
+    local width = player.quick_bar_width
+    if not width or width < 1 then
+        width = 10
+    end
+
+    local page = math.floor((index - 1) / width) + 1
+    local slot = (index - 1) % width + 1
+
+    return page, slot
+end
+
+function Public.get_quick_bar_slot(player, index)
+    if not Public.is_21() then
+        return player.get_quick_bar_slot(index)
+    end
+
+    local page, slot = quickbar_page_and_slot(player, index)
+
+    return player.get_quick_bar_slot(page, slot)
+end
+
+function Public.set_quick_bar_slot(player, index, filter)
+    if not Public.is_21() then
+        player.set_quick_bar_slot(index, filter)
+        return
+    end
+
+    local page, slot = quickbar_page_and_slot(player, index)
+    player.set_quick_bar_slot(page, slot, filter)
 end
 
 return Public

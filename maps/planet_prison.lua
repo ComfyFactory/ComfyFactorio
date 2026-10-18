@@ -845,7 +845,7 @@ end
 local function redraw_gui(player)
     player.gui.left.clear()
     draw_common_gui(player)
-    if player.spectator == true then
+    if player.controller_type == defines.controllers.spectator then
         draw_orbit_gui(player)
     else
         draw_normal_gui(player)

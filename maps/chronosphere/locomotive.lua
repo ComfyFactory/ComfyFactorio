@@ -49,11 +49,11 @@ function Public.locomotive_spawn(surface, position, wagons)
                 inv.insert(wagons[i].inventory[ii])
             end
         end
-        objective.locomotive_cargo[i].minable = false
+        objective.locomotive_cargo[i].minable_flag = false
     end
     objective.locomotive_cargo[1].operable = false
     objective.locomotive.color = {0, 255, 0}
-    objective.locomotive.minable = false
+    objective.locomotive.minable_flag = false
     local chest_positions = {
         {x = -2, y = -1},
         {x = -2, y = 0},
@@ -83,7 +83,7 @@ function Public.locomotive_spawn(surface, position, wagons)
     for i = 1, 24, 1 do
         local comfychest = surface.create_entity({name = 'blue-chest', position = {position.x + chest_positions[i].x, position.y + chest_positions[i].y}, force = 'player'})
         --comfychest.link_id = 1000 + i
-        comfychest.minable = false
+        comfychest.minable_flag = false
         if not objective.comfychests[i] then
             table.insert(objective.comfychests, comfychest)
             table.insert(objective.comfychest_invs, comfychest.get_inventory(defines.inventory.chest))

@@ -310,7 +310,7 @@ function Public.treasure_chest(surface, position, container_name)
     end
 
     local e = surface.create_entity({name = container_name, position = position, force = 'neutral', create_build_effect_smoke = false})
-    e.minable = false
+    e.minable_flag = false
     local inv = e.get_inventory(defines.inventory.chest)
     for _ = 1, math_random(2, 6), 1 do
         local loot = Raffle.raffle(loot_types, loot_weights)

@@ -82,7 +82,7 @@ local function on_entity_died(event)
         return
     end
     if event.entity.type == 'unit-spawner' or event.entity.type == 'turret' then
-        event.entity.surface.spill_item_stack({ event.entity.position.x, event.entity.position.y + 2 }, { name = 'railgun-dart', count = math.random(0, 3) }, false)
+        event.entity.surface.spill_item_stack({ position = { x = event.entity.position.x, y = event.entity.position.y + 2 }, stack = { name = 'railgun-dart', count = math.random(0, 3) }, enable_looted = false })
     end
 end
 

@@ -2,6 +2,7 @@ local Chrono_table = require 'maps.chronosphere.table'
 local Public = {}
 local Server = require 'utils.server'
 local Upgrades = require 'maps.chronosphere.upgrade_list'
+local Compat = require 'utils.functions.factorio_compat'
 
 local function check_win()
     local objective = Chrono_table.get_table()
@@ -56,7 +57,7 @@ local function spawn_accumulators()
     end
     for i = 1, 27, 1 do
         local acumulator = surface.create_entity({name = 'accumulator', position = {x + 2 * i, y + yy}, force = 'player', create_build_effect_smoke = false})
-        acumulator.minable = false
+        acumulator.minable_flag = false
         acumulator.destructible = false
         table.insert(objective.accumulators, acumulator)
     end
@@ -78,9 +79,9 @@ local function upgrade_water()
     for i = 1, 4, 1 do
         local e = game.surfaces['cargo_wagon'].create_entity({name = 'offshore-pump', position = positions[i], force = 'player'})
         if not e then return end
-        e.fluidbox.set_filter(1, {name = 'water'})
+        Compat.set_fluid_filter(e, 1, 'water')
         e.destructible = false
-        e.minable = false
+        e.minable_flag = false
     end
 end
 
@@ -94,7 +95,7 @@ local function upgrade_out()
         local e = game.surfaces['cargo_wagon'].create_entity({name = 'blue-chest', position = positions[i], force = 'player'})
         if not e or not e.valid then break end
         e.destructible = false
-        e.minable = false
+        e.minable_flag = false
         objective.outchests[i] = e
         rendering.draw_text {
             text = 'Output',
@@ -123,7 +124,7 @@ local function upgrade_out_signals()
         local e = game.surfaces['cargo_wagon'].create_entity({name = 'constant-combinator', position = positions[i], force = 'player'})
         e.combinator_description = 'Automatically generated signals based on items in the train wagon'
         e.destructible = false
-        e.minable = false
+        e.minable_flag = false
         objective.outcombinators[i] = e
     end
 end
@@ -186,12 +187,12 @@ local function upgrade_storage()
             old = surface.find_entity('steel-chest', oldpos)
         end
         if old then
-            old.minable = true
+            old.minable_flag = true
             old.destructible = true
         end
         local e = surface.create_entity(chests[i].entity)
         e.destructible = false
-        e.minable = false
+        e.minable_flag = false
     end
     if #tiles > 0 then
         surface.set_tiles(tiles)

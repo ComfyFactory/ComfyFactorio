@@ -9,7 +9,7 @@ local math_random = math.random
 local Public = {}
 
 local function protect(entity, operable)
-    entity.minable = false
+    entity.minable_flag = false
     entity.destructible = false
     entity.operable = operable
 end
@@ -355,7 +355,7 @@ local function fill_wagons(surface, width, height)
         end
         local position = { x = -32 + key * 3, y = height * 0.5 - 5 }
         local e = surface.create_entity({ name = factory, force = 'player', position = position })
-        e.active = false
+        e.disabled_by_script = true
         protect(e, false)
         e.rotatable = false
         Factories.register_train_assembler(e, key)

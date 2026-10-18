@@ -122,14 +122,26 @@ local functions =
 {
     ['spectator_switch'] = function (event)
         local player = game.get_player(event.player_index)
+        if not player or not player.valid then
+            return
+        end
+
         if event.element.switch_state == 'left' then
-            if player.character and player.character ~= nil then
+            if player.controller_type ~= defines.controllers.spectator and player.character then
                 this.spectators[player.index] = player.character
                 player.set_controller({ type = defines.controllers.spectator })
             end
         else
-            player.set_controller({ type = defines.controllers.character, character = this.spectators[player.index] })
-            this.spectators[player.index] = nil
+            if player.controller_type == defines.controllers.spectator then
+                local character = this.spectators[player.index]
+                if character and character.valid then
+                    player.set_controller({ type = defines.controllers.character, character = character })
+                else
+                    player.set_controller({ type = defines.controllers.god })
+                    player.create_character()
+                end
+                this.spectators[player.index] = nil
+            end
         end
     end,
     ['auto_hotbar_switch'] = function (event)

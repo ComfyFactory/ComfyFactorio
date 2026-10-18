@@ -358,7 +358,7 @@ room.maze = function (surface, cell_left_top, direction)
     local left_top = { x = cell_left_top.x * grid_size, y = cell_left_top.y * grid_size }
     create_maze(surface, { x = left_top.x + grid_size, y = left_top.y + grid_size }, math.floor(grid_size * 0.5), 3, 'stone-wall', 'enemy', true)
 
-    surface.spill_item_stack({ x = left_top.x + grid_size, y = left_top.y + grid_size }, get_loot_item_stack(), true, nil, true)
+    surface.spill_item_stack({ position = { x = left_top.x + grid_size, y = left_top.y + grid_size }, stack = get_loot_item_stack(), enable_looted = true, allow_belts = true })
 end
 
 local room_weights = {

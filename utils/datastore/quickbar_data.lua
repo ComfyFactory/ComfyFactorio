@@ -7,6 +7,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Core = require 'utils.core'
 local Commands = require 'utils.commands'
+local Compat = require 'utils.functions.factorio_compat'
 
 local quickbar_dataset = 'quickbar'
 local quickbar_dataset_modded = 'quickbar_modded'
@@ -132,7 +133,7 @@ local fetch_quickbar =
             if value then
                 for i, slot in pairs(value) do
                     if slot and slot ~= '' then
-                        player.set_quick_bar_slot(i, slot)
+                        Compat.set_quick_bar_slot(player, i, slot)
                     end
                 end
             end
@@ -188,7 +189,7 @@ function Public.save_quickbar(player)
     local slots = {}
 
     for i = 1, 100 do
-        local slot = player.get_quick_bar_slot(i)
+        local slot = Compat.get_quick_bar_slot(player, i)
         if slot ~= nil and not ignored_items[slot.name] then
             slots[i] = { name = slot.name, quality = slot.quality or "normal" }
         end

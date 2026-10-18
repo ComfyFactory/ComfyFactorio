@@ -73,7 +73,7 @@ local function silo_kaboom(entity)
     end
     for _, drop in pairs(drops) do
         for _ = 1, drop[2], 1 do
-            entity.surface.spill_item_stack({ drop[1].x + math.random(0, 9) * 0.1, drop[1].y + math.random(0, 9) * 0.1 }, { name = 'raw-fish', count = 1 }, false, nil, true)
+            entity.surface.spill_item_stack({ position = { x = drop[1].x + math.random(0, 9) * 0.1, y = drop[1].y + math.random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 }, enable_looted = false, allow_belts = true })
         end
     end
 end

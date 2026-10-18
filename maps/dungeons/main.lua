@@ -160,7 +160,7 @@ local function init_player(player)
     local surface = game.surfaces['dungeons']
     player.teleport(surface.find_non_colliding_position('character', { 0, 0 }, 50, 0.5), surface)
     player.insert({ name = 'raw-fish', count = 8 })
-    player.set_quick_bar_slot(1, 'raw-fish')
+    player.set_quick_bar_slot(1, 1, 'raw-fish')
     player.insert({ name = 'pistol', count = 1 })
     player.insert({ name = 'firearm-magazine', count = 16 })
 end

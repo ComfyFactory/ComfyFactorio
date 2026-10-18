@@ -347,7 +347,13 @@ function join_team(player, force_name, forced_join)
         local msg = table.concat({ 'Team ', player.force.name, ' player ', player.name, ' is no longer spectating.' })
         game.print(msg, { r = 0.98, g = 0.66, b = 0.22 })
         Server.to_discord_bold(msg)
-        player.set_controller({ type = defines.controllers.character, character = storage.spectators[player.index] })
+        local character = storage.spectators[player.index]
+        if character and character.valid then
+            player.set_controller({ type = defines.controllers.character, character = character })
+        else
+            player.set_controller({ type = defines.controllers.god })
+            player.create_character()
+        end
         storage.spectators[player.index] = nil
         return
     end
@@ -379,7 +385,13 @@ function join_team(player, force_name, forced_join)
         player.insert { name = 'burner-mining-drill', count = 10 }
     end
     storage.chosen_team[player.name] = force_name
-    player.set_controller({ type = defines.controllers.character, character = storage.spectators[player.index] })
+    local character = storage.spectators[player.index]
+    if character and character.valid then
+        player.set_controller({ type = defines.controllers.character, character = character })
+    else
+        player.set_controller({ type = defines.controllers.god })
+        player.create_character()
+    end
     storage.spectators[player.index] = nil
     Public.refresh()
 end

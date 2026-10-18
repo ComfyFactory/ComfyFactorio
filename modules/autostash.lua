@@ -9,6 +9,7 @@ local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
+local Compat = require 'utils.functions.factorio_compat'
 
 local auto_stash_button_name = Gui.uid_name()
 local floor = math.floor
@@ -666,7 +667,7 @@ local function auto_stash(player, event)
 
     local hotbar_items = {}
     for i = 1, 100, 1 do
-        local prototype = player.get_quick_bar_slot(i)
+        local prototype = Compat.get_quick_bar_slot(player, i)
         if prototype then
             hotbar_items[prototype.name] = true
         end
