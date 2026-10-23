@@ -666,10 +666,15 @@ local function auto_stash(player, event)
     this.floating_text_y_offsets = {}
 
     local hotbar_items = {}
-    for i = 1, 100, 1 do
-        local prototype = Compat.get_quick_bar_slot(player, i)
-        if prototype and prototype.type == 'item' and type(prototype.name) == 'string' then
-            hotbar_items[prototype.name] = true
+    for i = 1, 100 do
+        local slot = Compat.get_quick_bar_slot(player, i)
+
+        if slot and slot.filter then
+            local name = type(slot.filter) == 'string' and slot.filter or slot.filter.name
+
+            if name then
+                hotbar_items[name] = true
+            end
         end
     end
 
