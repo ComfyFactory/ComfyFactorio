@@ -164,6 +164,44 @@ local restore_force_token =
         end
     )
 
+local force_change_token =
+    Task.register(
+        function (event)
+            if not event or not event.unit_number or not event.force_name then
+                return
+            end
+
+            local state = Public.get_unit(event.unit_number)
+            local force = game.forces[event.force_name]
+            if not state or not force then
+                return
+            end
+
+            local entity = state.entity
+            if not entity or not entity.valid then
+                return
+            end
+
+            entity.force = force
+            state.force = entity.force
+        end
+    )
+
+
+local burst_frenzy_token =
+    Task.register(
+        function (event)
+            if not event or not event.unit_number then
+                return
+            end
+
+            local state = Public.get_unit(event.unit_number)
+            if state then
+                state:set_burst_frenzy()
+            end
+        end
+    )
+
 local function create_forces()
     local aggressors = game.forces.aggressors
     local aggressors_frenzy = game.forces.aggressors_frenzy
@@ -421,7 +459,7 @@ local function on_unit_group_created(event)
             if not state then
                 return
             end
-            state:set_burst_frenzy()
+            Task.set_timeout_in_ticks(1, burst_frenzy_token, { unit_number = entity.unit_number })
         end
     end
 end
@@ -699,8 +737,7 @@ function Public._esp:set_force()
         return
     end
 
-    entity.force = game.forces.aggressors
-    self.force = entity.force
+    Task.set_timeout_in_ticks(1, force_change_token, { unit_number = self.unit_number, force_name = 'aggressors' })
 end
 
 -- Grants the unit a frenzy attack speed
@@ -716,8 +753,7 @@ function Public._esp:set_frenzy()
 
     self.frenzied = true
 
-    entity.force = game.forces.aggressors_frenzy
-    self.force = entity.force
+    Task.set_timeout_in_ticks(1, force_change_token, { unit_number = self.unit_number, force_name = 'aggressors_frenzy' })
 end
 
 -- Grants the unit a frenzy attack speed for a short time
@@ -734,8 +770,7 @@ function Public._esp:set_burst_frenzy()
     self.frenzied = true
     set_timeout_in_ticks(this.settings.frenzy_burst_length, restore_force_token, { force_name = self.force.name, unit_number = self.unit_number })
 
-    entity.force = game.forces.aggressors_frenzy
-    self.force = entity.force
+    Task.set_timeout_in_ticks(1, force_change_token, { unit_number = self.unit_number, force_name = 'aggressors_frenzy' })
 end
 
 -- Spawns biters that are one tier higher than the entity
