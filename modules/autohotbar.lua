@@ -4,8 +4,8 @@ local Compat = require 'utils.functions.factorio_compat'
 
 local function get_empty_hotbar_slot(player)
     for i = 1, 20, 1 do
-        local item = Compat.get_quick_bar_slot(player, i)
-        if not item then
+        local slot = Compat.get_quick_bar_slot(player, i)
+        if slot then
             return i
         end
     end
@@ -14,9 +14,9 @@ end
 
 local function is_item_already_present_in_hotbar(player, item)
     for i = 1, 20, 1 do
-        local prototype = Compat.get_quick_bar_slot(player, i)
-        if prototype then
-            if item == prototype.name then
+        local slot = Compat.get_quick_bar_slot(player, i)
+        if slot then
+            if item == slot.filter.name then
                 return true
             end
         end

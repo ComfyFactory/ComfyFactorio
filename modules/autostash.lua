@@ -667,9 +667,9 @@ local function auto_stash(player, event)
 
     local hotbar_items = {}
     for i = 1, 100, 1 do
-        local prototype = Compat.get_quick_bar_slot(player, i)
-        if prototype and prototype.type == 'item' and type(prototype.name) == 'string' then
-            hotbar_items[prototype.name] = true
+        local slot = Compat.get_quick_bar_slot(player, i)
+        if slot then
+            hotbar_items[slot.filter.name] = true
         end
     end
 
@@ -1004,10 +1004,18 @@ end
 
 function Public.insert_into_furnace(value)
     this.insert_into_furnace = value or false
+    local callback = Task.get(on_init_token)
+    if callback then
+        callback({})
+    end
 end
 
 function Public.insert_into_wagon(value)
     this.insert_into_wagon = value or false
+    local callback = Task.get(on_init_token)
+    if callback then
+        callback({})
+    end
 end
 
 function Public.bottom_button(value)

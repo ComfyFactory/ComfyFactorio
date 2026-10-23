@@ -191,8 +191,11 @@ function Public.get_quick_bar_slot(player, index)
     end
 
     local page, slot = quickbar_page_and_slot(player, index)
-
-    return player.get_quick_bar_slot(page, slot)
+    slot = player.get_quick_bar_slot(page, slot)
+    if slot and slot.type and slot.type == 'filter' and slot.filter and slot.filter.name then
+        return slot
+    end
+    return nil
 end
 
 function Public.set_quick_bar_slot(player, index, filter)

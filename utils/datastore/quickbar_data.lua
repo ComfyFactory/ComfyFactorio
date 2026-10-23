@@ -190,8 +190,8 @@ function Public.save_quickbar(player)
 
     for i = 1, 100 do
         local slot = Compat.get_quick_bar_slot(player, i)
-        if slot ~= nil and not ignored_items[slot.name] then
-            slots[i] = { name = slot.name, quality = slot.quality or "normal" }
+        if slot and not ignored_items[slot.filter.name] then
+            slots[i] = { name = slot.filter.name, quality = slot.filter.quality or "normal" }
         end
     end
     if next(slots) then
