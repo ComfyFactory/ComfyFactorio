@@ -182,7 +182,8 @@ local force_change_token =
                 return
             end
 
-            entity.force = force
+            -- bug in 2.1
+            -- entity.force = force
             state.force = entity.force
         end
     )
