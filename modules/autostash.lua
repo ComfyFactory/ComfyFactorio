@@ -668,7 +668,7 @@ local function auto_stash(player, event)
     local hotbar_items = {}
     for i = 1, 100, 1 do
         local prototype = Compat.get_quick_bar_slot(player, i)
-        if prototype then
+        if prototype and prototype.type == 'item' and type(prototype.name) == 'string' then
             hotbar_items[prototype.name] = true
         end
     end
