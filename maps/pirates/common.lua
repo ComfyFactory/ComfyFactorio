@@ -1813,7 +1813,7 @@ function Public.init_game_settings(technology_price_multiplier)
 	game.map_settings.enemy_evolution.destroy_factor = 0
 
 	game.map_settings.unit_group.min_group_gathering_time = 60 * 5
-	game.map_settings.unit_group.max_group_gathering_time = 60 * 210    
+	game.map_settings.unit_group.max_group_gathering_time = 60 * 210
 	game.map_settings.unit_group.max_wait_time_for_late_members = 60 * 15
 	game.map_settings.unit_group.member_disown_distance = 5000
 	game.map_settings.unit_group.max_group_radius = 70
