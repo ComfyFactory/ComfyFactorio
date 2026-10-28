@@ -26,7 +26,7 @@ local Crew = require("maps.pirates.crew")
 -- local Parrot = require 'maps.pirates.parrot'
 local Math = require("maps.pirates.math")
 local _inspect = require("utils.inspect").inspect
-local Compat = require("utils.functions.factorio_compat")
+
 local Kraken = require("maps.pirates.surfaces.sea.kraken")
 
 local Quest = require("maps.pirates.quest")
@@ -1747,12 +1747,12 @@ local function equalise_fluid_storage_pair(storage1, storage2)
 		return
 	end
 
-	local source_fluid = Compat.get_fluid(storage1, 1)
+	local source_fluid = storage1.get_fluid(1)
 	if not source_fluid then
 		return
 	end
 
-	local target_fluid = Compat.get_fluid(storage2, 1)
+	local target_fluid = storage2.get_fluid(1)
 	local source_fluid_amount = source_fluid.amount
 
 	local amount
@@ -1769,7 +1769,7 @@ local function equalise_fluid_storage_pair(storage1, storage2)
 	local inserted_amount =
 		storage2.insert_fluid({ name = source_fluid.name, amount = amount, temperature = source_fluid.temperature })
 	if inserted_amount > 0 then
-		Compat.remove_fluid(storage1, 1, inserted_amount, source_fluid.name)
+		storage1.remove_fluid(1, inserted_amount)
 	end
 end
 

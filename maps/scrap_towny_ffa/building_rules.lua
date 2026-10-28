@@ -8,7 +8,7 @@ local Team = require 'maps.scrap_towny_ffa.team'
 local Building = require 'maps.scrap_towny_ffa.building'
 local table = require 'utils.table'
 local FlyingText = require 'utils.functions.flying_texts'
-local Compat = require 'utils.functions.factorio_compat'
+
 
 local town_zoning_entity_types = { "ammo-turret", "electric-turret", "fluid-turret" }
 local default_protected_radius = 30
@@ -310,10 +310,18 @@ local function process_built_entities(event)
         end
     end
 
-    if entity.type == 'electric-pole' and Compat.get_max_wire_distance(entity) > 0 then
-        Compat.disconnect_foreign_pole_links(entity, force, function ()
-            Building.build_error_notification(player or force, surface, position, "Can't connect to other town", player)
-        end)
+    if entity.type == 'electric-pole' and entity.prototype.get_max_wire_distance() > 0 then
+        local pole_connector = entity.get_wire_connector(defines.wire_connector_id.pole_copper, false)
+        if pole_connector and pole_connector.valid then
+            for _, connection in pairs(pole_connector.connections) do
+                local connected_connector = connection.target
+                local other_pole = connected_connector and connected_connector.valid and connected_connector.owner
+                if other_pole and other_pole.valid and other_pole.force ~= force then
+                    pole_connector.disconnect_from(connected_connector, defines.wire_origin.script)
+                    Building.build_error_notification(player or force, surface, position, "Can't connect to other town", player)
+                end
+            end
+        end
     end
 end
 

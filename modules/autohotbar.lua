@@ -1,10 +1,30 @@
 --luacheck: ignore
 local event = require 'utils.event'
-local Compat = require 'utils.functions.factorio_compat'
+
+local function quickbar_page_and_slot(player, index)
+    local width = player.quick_bar_width
+    if not width or width < 1 then width = 10 end
+    local page = math.floor((index - 1) / width) + 1
+    local slot = (index - 1) % width + 1
+    return page, slot
+end
+
+local function get_quick_bar_slot(player, index)
+    local page, slot = quickbar_page_and_slot(player, index)
+    local value = player.get_quick_bar_slot(page, slot)
+    if value and value.type == 'filter' and value.filter and value.filter.name then
+        return value
+    end
+end
+
+local function set_quick_bar_slot(player, index, filter)
+    local page, slot = quickbar_page_and_slot(player, index)
+    player.set_quick_bar_slot(page, slot, filter)
+end
 
 local function get_empty_hotbar_slot(player)
     for i = 1, 20, 1 do
-        local slot = Compat.get_quick_bar_slot(player, i)
+        local slot = get_quick_bar_slot(player, i)
         if slot then
             return i
         end
@@ -14,7 +34,7 @@ end
 
 local function is_item_already_present_in_hotbar(player, item)
     for i = 1, 20, 1 do
-        local slot = Compat.get_quick_bar_slot(player, i)
+        local slot = get_quick_bar_slot(player, i)
         if slot then
             if item == slot.filter.name then
                 return true
@@ -38,7 +58,7 @@ local function set_hotbar(player, item)
     if is_item_already_present_in_hotbar(player, item) then
         return
     end
-    Compat.set_quick_bar_slot(player, slot_index, item)
+    set_quick_bar_slot(player, slot_index, item)
 end
 
 local function on_player_fast_transferred(event)

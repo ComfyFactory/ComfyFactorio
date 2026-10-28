@@ -1722,9 +1722,9 @@ local function event_on_player_joined_game(event)
 
 	--figure out if we should drop them back into a crew:
 
-	if not Server.get_current_time() then -- don't run this on servers because I'd need to negotiate that with the rest of Comfy
-		player.print({ "pirates.thesixthroc_support_toast" }, { color = { r = 1, g = 0.4, b = 0.9 } })
-	end
+	--if not Server.get_current_time() then -- don't run this on servers because I'd need to negotiate that with the rest of Comfy
+	--	player.print({ "pirates.thesixthroc_support_toast" }, { color = { r = 1, g = 0.4, b = 0.9 } })
+	--end
 
 	if _DEBUG then
 		game.print("Debug mode on. Use /go to get started, /1 /4 /32 etc to change game speed.")

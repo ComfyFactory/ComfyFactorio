@@ -12,7 +12,7 @@ local Cabin = require('maps.pirates.surfaces.cabin')
 local Utils = require('maps.pirates.utils_local')
 local IslandEnum = require('maps.pirates.surfaces.islands.island_enum')
 local _inspect = require('utils.inspect').inspect
-local Compat = require('utils.functions.factorio_compat')
+
 
 -- DEV NOTE: If making boat designs that have rails, make sure the boat is placed at odd co-ordinates before blueprinting.
 
@@ -1248,10 +1248,10 @@ local function process_entity_on_boat(
 
 		-- Save fluidbox contents before any processing. TODO: Prevent pipes from draining, currently they drain slowly.
 		local saved_fluids
-		local fluidbox_count = fluid_entity_tracking and name ~= 'pipe' and name ~= 'pipe-to-ground' and Compat.fluidbox_count(e) or 0
+		local fluidbox_count = fluid_entity_tracking and name ~= 'pipe' and name ~= 'pipe-to-ground' and #e.prototype.fluidbox_prototypes or 0
 		if fluidbox_count > 0 then
 			for fi = 1, fluidbox_count do
-				local fluid = Compat.get_fluid(e, fi)
+				local fluid = e.get_fluid(fi)
 				if fluid and fluid.amount and fluid.amount > 0 then
 					if not saved_fluids then saved_fluids = {} end
 					saved_fluids[fi] = { name = fluid.name, amount = fluid.amount, temperature = fluid.temperature }
@@ -1884,9 +1884,9 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 		for _, entry in ipairs(fluid_entity_tracking) do
 			local e = entry.entity
 			if e and e.valid then
-				for fi = 1, Compat.fluidbox_count(e) do
+				for fi = 1, #e.prototype.fluidbox_prototypes do
 					if entry.fluids[fi] then
-						Compat.set_fluid(e, fi, entry.fluids[fi])
+						e.set_fluid(fi, entry.fluids[fi])
 					end
 				end
 

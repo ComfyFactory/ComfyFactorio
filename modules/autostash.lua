@@ -9,7 +9,17 @@ local Event = require 'utils.event'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Gui = require 'utils.gui'
 local Task = require 'utils.task_token'
-local Compat = require 'utils.functions.factorio_compat'
+
+local function get_quick_bar_slot(player, index)
+    local width = player.quick_bar_width
+    if not width or width < 1 then width = 10 end
+    local page = math.floor((index - 1) / width) + 1
+    local slot = (index - 1) % width + 1
+    local value = player.get_quick_bar_slot(page, slot)
+    if value and value.type == 'filter' and value.filter and value.filter.name then
+        return value
+    end
+end
 
 local auto_stash_button_name = Gui.uid_name()
 local floor = math.floor
@@ -667,7 +677,7 @@ local function auto_stash(player, event)
 
     local hotbar_items = {}
     for i = 1, 100, 1 do
-        local slot = Compat.get_quick_bar_slot(player, i)
+        local slot = get_quick_bar_slot(player, i)
         if slot then
             hotbar_items[slot.filter.name] = true
         end

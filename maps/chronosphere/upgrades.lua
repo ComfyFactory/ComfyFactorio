@@ -2,7 +2,7 @@ local Chrono_table = require 'maps.chronosphere.table'
 local Public = {}
 local Server = require 'utils.server'
 local Upgrades = require 'maps.chronosphere.upgrade_list'
-local Compat = require 'utils.functions.factorio_compat'
+
 
 local function check_win()
     local objective = Chrono_table.get_table()
@@ -79,7 +79,7 @@ local function upgrade_water()
     for i = 1, 4, 1 do
         local e = game.surfaces['cargo_wagon'].create_entity({name = 'offshore-pump', position = positions[i], force = 'player'})
         if not e then return end
-        Compat.set_fluid_filter(e, 1, 'water')
+        e.set_fluid_filter(1, 'water')
         e.destructible = false
         e.minable_flag = false
     end

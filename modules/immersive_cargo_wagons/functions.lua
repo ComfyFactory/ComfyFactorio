@@ -1,4 +1,3 @@
-local Compat = require 'utils.functions.factorio_compat'
 
 --luacheck: ignore
 local Public = {}
@@ -43,7 +42,11 @@ local function connect_power_pole(entity, wagon_area_left_top_y)
     }
     for _, pole in pairs(surface.find_entities_filtered({ area = area, name = entity.name })) do
         if pole.position.y < wagon_area_left_top_y then
-            Compat.connect_poles(entity, pole)
+            local source_wire = entity.get_wire_connector(defines.wire_connector_id.pole_copper, false)
+                        local target_wire = pole.get_wire_connector(defines.wire_connector_id.pole_copper, false)
+                        if source_wire and target_wire then
+                            source_wire.connect_to(target_wire, false, defines.wire_origin.script)
+                        end
             return
         end
     end
@@ -57,12 +60,12 @@ local function equal_fluid(source_tank, target_tank)
         return
     end
 
-    local source_fluid = Compat.get_fluid(source_tank, 1)
+    local source_fluid = source_tank.get_fluid(1)
     if not source_fluid then
         return
     end
 
-    local target_fluid = Compat.get_fluid(target_tank, 1)
+    local target_fluid = target_tank.get_fluid(1)
     local source_fluid_amount = source_fluid.amount
 
     local amount
@@ -78,7 +81,7 @@ local function equal_fluid(source_tank, target_tank)
 
     local inserted_amount = target_tank.insert_fluid({ name = source_fluid.name, amount = amount, temperature = source_fluid.temperature })
     if inserted_amount > 0 then
-        Compat.remove_fluid(source_tank, 1, inserted_amount, source_fluid.name)
+        source_tank.remove_fluid(1, inserted_amount)
     end
 end
 

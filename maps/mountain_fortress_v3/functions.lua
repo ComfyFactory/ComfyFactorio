@@ -16,7 +16,7 @@ local Misc = require 'utils.commands.misc'
 local Core = require 'utils.core'
 local Beams = require 'modules.render_beam'
 local Modifiers = require 'utils.player_modifiers'
-local Compat = require 'utils.functions.factorio_compat'
+
 local Session = require 'utils.datastore.session_data'
 local ICMinimap = require 'maps.mountain_fortress_v3.ic.minimap'
 local Score = require 'utils.gui.score'
@@ -423,7 +423,7 @@ local function do_refill_turrets()
 
     local data = turret_data.data
     if data.liquid then
-        Compat.set_fluid(turret, 1, data)
+        turret.set_fluid(1, data)
     elseif data then
         turret.insert(data)
     end
@@ -518,9 +518,9 @@ local function do_magic_fluid_crafters()
             if fcount > 0 then
                 local fluidbox_index = data.fluidbox_index
 
-                local fluid = Compat.get_fluid(entity, fluidbox_index)
+                local fluid = entity.get_fluid(fluidbox_index)
                 local amount = (fluid and fluid.amount or 0) + fcount
-                Compat.set_fluid(entity, fluidbox_index, { name = (fluid and fluid.name) or data.item, amount = amount, temperature = fluid and fluid.temperature })
+                entity.set_fluid(fluidbox_index, { name = (fluid and fluid.name) or data.item, amount = amount, temperature = fluid and fluid.temperature })
 
                 entity.products_finished = entity.products_finished + fcount
 

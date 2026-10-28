@@ -2,7 +2,7 @@ local Team = require 'maps.scrap_towny_ffa.team'
 local Event = require 'utils.event'
 local ScenarioTable = require 'maps.scrap_towny_ffa.table'
 local FlyingText = require 'utils.functions.flying_texts'
-local Compat = require 'utils.functions.factorio_compat'
+
 
 storage.force_available_recipe_cache = storage.force_available_recipe_cache or {}
 
@@ -62,7 +62,7 @@ local function force_unequip_armor(player, armor_inventory, armor)
         allow_belts = false,
         force = player.force
     }
-    local floor_stack = Compat.spill_item_stack(player.surface, spill_item_stack_param)[1]
+    local floor_stack = player.surface.spill_item_stack(spill_item_stack_param)[1]
     armor_inventory.remove(armor_stack)
     local player_inventory = player.get_main_inventory()
     if player_inventory.insert(floor_stack.stack) == 1 then

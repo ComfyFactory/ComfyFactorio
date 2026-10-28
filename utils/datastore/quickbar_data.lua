@@ -7,7 +7,27 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Core = require 'utils.core'
 local Commands = require 'utils.commands'
-local Compat = require 'utils.functions.factorio_compat'
+
+local function quickbar_page_and_slot(player, index)
+    local width = player.quick_bar_width
+    if not width or width < 1 then width = 10 end
+    local page = math.floor((index - 1) / width) + 1
+    local slot = (index - 1) % width + 1
+    return page, slot
+end
+
+local function get_quick_bar_slot(player, index)
+    local page, slot = quickbar_page_and_slot(player, index)
+    local value = player.get_quick_bar_slot(page, slot)
+    if value and value.type == 'filter' and value.filter and value.filter.name then
+        return value
+    end
+end
+
+local function set_quick_bar_slot(player, index, filter)
+    local page, slot = quickbar_page_and_slot(player, index)
+    player.set_quick_bar_slot(page, slot, filter)
+end
 
 local quickbar_dataset = 'quickbar'
 local quickbar_dataset_modded = 'quickbar_modded'
@@ -133,7 +153,7 @@ local fetch_quickbar =
             if value then
                 for i, slot in pairs(value) do
                     if slot and slot ~= '' then
-                        Compat.set_quick_bar_slot(player, i, slot)
+                        set_quick_bar_slot(player, i, slot)
                     end
                 end
             end
@@ -189,7 +209,7 @@ function Public.save_quickbar(player)
     local slots = {}
 
     for i = 1, 100 do
-        local slot = Compat.get_quick_bar_slot(player, i)
+        local slot = get_quick_bar_slot(player, i)
         if slot and not ignored_items[slot.filter.name] then
             slots[i] = { name = slot.filter.name, quality = slot.filter.quality or "normal" }
         end
