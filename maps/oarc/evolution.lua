@@ -1076,7 +1076,6 @@ Event.on_init(
         game.map_settings.pollution.pollution_with_max_forest_damage = 150
         game.map_settings.pollution.pollution_per_tree_damage = 50
         game.map_settings.pollution.pollution_restored_per_tree_damage = 10
-        game.map_settings.pollution.max_pollution_to_restore_trees = 20
         game.map_settings.pollution.enemy_attack_pollution_consumption_modifier = 1
 
         -- enemy evolution settings

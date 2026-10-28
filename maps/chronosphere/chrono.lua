@@ -145,7 +145,6 @@ function Public.restart_settings()
     game.map_settings.pollution.min_to_show_per_chunk = 40
     game.map_settings.pollution.pollution_restored_per_tree_damage = 0.02
     game.map_settings.pollution.min_pollution_to_damage_trees = 1
-    game.map_settings.pollution.max_pollution_to_restore_trees = 0
     game.map_settings.pollution.pollution_with_max_forest_damage = 10
     game.map_settings.pollution.pollution_per_tree_damage = 0.1
     game.map_settings.pollution.ageing = 0.1

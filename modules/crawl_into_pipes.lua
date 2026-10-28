@@ -20,7 +20,7 @@ local function get_current_pipe(player)
 end
 
 local function is_pipe_end_piece(pipe)
-    local neighbours = pipe.fluidbox_neighbours or pipe.neighbours
+    local neighbours = pipe.fluidbox_neighbours
     if not neighbours then
         return false
     end
