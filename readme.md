@@ -1,32 +1,53 @@
-<p align="center">
-  <a href="https://getcomfy.eu/">
-    <img alt="logo" src="https://getcomfy.eu/comfy.gif?size=128" width="120">
-  </a>
-  <br>
-  <a href="https://github.com/ComfyFactory/ComfyFactorio/tags">
-    <img src="https://img.shields.io/github/tag/ComfyFactory/ComfyFactorio.svg?label=Release" alt="Release">
-  </a>
-    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/comfyFactory/ComfyFactorio.svg">
-  <a href="http://github.com/ComfyFactory/ComfyFactorio/fork">
-    <img src="https://img.shields.io/github/forks/ComfyFactory/ComfyFactorio.svg?label=Forks" alt="Fork">
-  </a>
-  <a href="https://getcomfy.eu/discord">
-    <img src="https://discordapp.com/api/guilds/433039858794233858/widget.png?style=shield" alt="Discord">
-  </a>
-</p>
-<h2 align="center">Comfy Repository</h2>
+
+<div align="center">
+
+<a href="https://getcomfy.eu/">
+  <img src="https://getcomfy.eu/comfy.gif?size=128" width="120" alt="Comfy">
+</a>
 
 # ComfyFactorio
 
-A factorio scenario.
+**A collection of custom Factorio scenarios, built and maintained by the Comfy community.**
 
-## Using Comfy maps
+[Website](https://getcomfy.eu/) · [Wiki](https://github.com/ComfyFactory/ComfyFactorio/wiki) · [Discord](https://getcomfy.eu/discord) · [Releases](https://github.com/ComfyFactory/ComfyFactorio/releases)
 
-- Check out the [wiki](https://github.com/ComfyFactory/ComfyFactorio/wiki) for getting started.
-- We're also live at [discord](https://getcomfy.eu/discord). Don't hesitate to reach out if you're having issues getting started!
-- The scenario is free to play, host or modify, however, you are welcome to visit our servers.
+<br>
 
-### Factorio Version
+[![Release](https://img.shields.io/github/v/tag/ComfyFactory/ComfyFactorio?label=release&style=flat-square)](https://github.com/ComfyFactory/ComfyFactorio/tags)
+[![Last Commit](https://img.shields.io/github/last-commit/ComfyFactory/ComfyFactorio?style=flat-square)](https://github.com/ComfyFactory/ComfyFactorio/commits)
+[![Forks](https://img.shields.io/github/forks/ComfyFactory/ComfyFactorio?style=flat-square)](https://github.com/ComfyFactory/ComfyFactorio/forks)
+[![Discord](https://img.shields.io/discord/433039858794233858?label=discord&style=flat-square)](https://getcomfy.eu/discord)
 
-- We always try to use the latest stable branch, meaning - if you want to play our maps then you need to be on the stable branch.
-- Latest version of scenario for Factorio 1.1: [Release 375](https://github.com/ComfyFactory/ComfyFactorio/releases/tag/1.0.375)
+</div>
+
+---
+
+## About
+
+ComfyFactorio is a community-driven collection of custom scenarios for Factorio.
+
+Our scenarios are free to play, host, and modify. You're welcome to run them on your own server or join us on one of ours.
+
+## Getting started
+
+Looking to play or host a Comfy scenario?
+
+Check out the **[Wiki](https://github.com/ComfyFactory/ComfyFactorio/wiki)** for setup instructions and everything you need to get started.
+
+If you run into any issues, feel free to ask for help on our **[Discord server](https://getcomfy.eu/discord)**.
+
+## Factorio compatibility
+
+We aim to keep our scenarios compatible with the latest stable version of Factorio.
+
+Make sure you're running the stable branch before playing or hosting.
+
+**Still running Factorio 1.1?**
+
+The latest compatible scenario release is [v1.0.375](https://github.com/ComfyFactory/ComfyFactorio/releases/tag/1.0.375).
+
+---
+
+<div align="center">
+  <sub>Made by the Comfy community, for the Factorio community.</sub>
+</div>
