@@ -12,7 +12,6 @@ local Cabin = require('maps.pirates.surfaces.cabin')
 local Utils = require('maps.pirates.utils_local')
 local IslandEnum = require('maps.pirates.surfaces.islands.island_enum')
 local _inspect = require('utils.inspect').inspect
-local Compat = require('utils.functions.factorio_compat')
 
 -- DEV NOTE: If making boat designs that have rails, make sure the boat is placed at odd co-ordinates before blueprinting.
 
@@ -1233,6 +1232,7 @@ local function process_entity_on_boat(
 	unique_entities_list,
 	wire_connections_matrix,
 	fluid_entity_tracking,
+	saved_fluids,
 	e
 )
 	if e and e.valid and (not Utils.contains(unique_entities_list, e)) then
@@ -1243,19 +1243,6 @@ local function process_entity_on_boat(
 		for _, player in pairs(game.connected_players) do
 			if player.opened == e then
 				table.insert(players_with_gui_open, player)
-			end
-		end
-
-		-- Save fluidbox contents before any processing. TODO: Prevent pipes from draining, currently they drain slowly.
-		local saved_fluids
-		local fluidbox_count = fluid_entity_tracking and name ~= 'pipe' and name ~= 'pipe-to-ground' and Compat.fluidbox_count(e) or 0
-		if fluidbox_count > 0 then
-			for fi = 1, fluidbox_count do
-				local fluid = Compat.get_fluid(e, fi)
-				if fluid and fluid.amount and fluid.amount > 0 then
-					if not saved_fluids then saved_fluids = {} end
-					saved_fluids[fi] = { name = fluid.name, amount = fluid.amount, temperature = fluid.temperature }
-				end
 			end
 		end
 
@@ -1852,10 +1839,25 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 		end
 	end
 
-	-- Track entities with fluid through processing for later restoration.
-	-- During same-surface clone+destroy, fluid gets redistributed between the
-	-- clone and original while they briefly coexist on the same fluid network.
-	-- We save exact amounts before processing and restore them afterward.
+	-- Snapshot fluid contents of every entity before any are moved. A clone carries its share of its
+	-- fluid segment, but destroying the original leaves that share behind in the rest of the segment,
+	-- so fluid is duplicated as the boat moves. The exact segment totals are restored afterwards.
+	local saved_fluids_by_index = {}
+	for i = 1, #entities_on_boat do
+		local e = entities_on_boat[i]
+		if e and e.valid and e.fluids_count > 0 then
+			for fi = 1, e.fluids_count do
+				local fluid = e.get_fluid(fi)
+				if fluid and fluid.amount and fluid.amount > 0 then
+					if not saved_fluids_by_index[i] then
+						saved_fluids_by_index[i] = {}
+					end
+					saved_fluids_by_index[i][fi] =
+						{ name = fluid.name, amount = fluid.amount, temperature = fluid.temperature }
+				end
+			end
+		end
+	end
 	local fluid_entity_tracking = {}
 
 	local wire_connections_matrix = {}
@@ -1875,23 +1877,42 @@ function Public.teleport_boat(boat, newsurface_name, newposition, new_floor_tile
 			unique_entities_list,
 			wire_connections_matrix,
 			fluid_entity_tracking,
+			saved_fluids_by_index[i],
 			e
 		)
 	end
 
-	-- Restore saved fluidbox contents to moved entities
-	if #fluid_entity_tracking > 0 then
-		for _, entry in ipairs(fluid_entity_tracking) do
-			local e = entry.entity
-			if e and e.valid then
-				for fi = 1, Compat.fluidbox_count(e) do
-					if entry.fluids[fi] then
-						Compat.set_fluid(e, fi, entry.fluids[fi])
+	-- Restore saved fluid contents to moved entities. Fluidboxes that share a segment are summed and set
+	-- on the segment as a whole, since setting an individual fluidbox only sets its share of the segment.
+	local segments = {}
+	for _, entry in ipairs(fluid_entity_tracking) do
+		local e = entry.entity
+		if e and e.valid then
+			for fi = 1, e.fluids_count do
+				local fluid = entry.fluids[fi]
+				if fluid then
+					if e.has_fluid_segment(fi) then
+						local id = e.get_fluid_segment_id(fi)
+						local segment = segments[id]
+						if not segment then
+							segment = { entity = e, index = fi, name = fluid.name, amount = 0, heat = 0 }
+							segments[id] = segment
+						end
+						segment.amount = segment.amount + fluid.amount
+						segment.heat = segment.heat + fluid.amount * fluid.temperature
+					else
+						e.set_fluid(fi, fluid)
 					end
 				end
-
 			end
 		end
+	end
+	for _, segment in pairs(segments) do
+		segment.entity.set_fluid_segment_fluid(segment.index, {
+			name = segment.name,
+			amount = segment.amount,
+			temperature = segment.heat / segment.amount,
+		})
 	end
 
 	if first_rail_found_p then
