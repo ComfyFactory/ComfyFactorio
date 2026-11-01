@@ -318,7 +318,7 @@ local function kick_players_from_surface(wagon)
         if validate_entity(main_surface) then
             for _, e in pairs(wagon.surface.find_entities_filtered({ area = wagon.area })) do
                 if validate_entity(e) and e.name == 'character' and e.player then
-                    e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
+                    e.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
                 end
             end
         end
@@ -329,9 +329,9 @@ local function kick_players_from_surface(wagon)
         if validate_entity(e) and e.name == 'character' and e.player then
             local p = wagon.entity.surface.find_non_colliding_position('character', wagon.entity.position, 128, 0.5)
             if p then
-                e.player.teleport(p, wagon.entity.surface)
+                e.teleport(p, wagon.entity.surface)
             else
-                e.player.teleport(wagon.entity.position, wagon.entity.surface)
+                e.teleport(wagon.entity.position, wagon.entity.surface)
             end
         end
     end

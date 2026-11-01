@@ -1354,6 +1354,11 @@ local function on_entity_died(event)
         if biters.amount <= 0 then
             biters.amount = 0
         end
+        if entity.type == 'unit' and valid_enemy_forces[entity.force.name]
+            and string.find(entity.name, 'biter', 1, true) and random(1, 32) == 1 then
+            Public.tick_tack_trap(entity, true)
+            return
+        end
         if Public.is_around_train(entity) then
             return
         end

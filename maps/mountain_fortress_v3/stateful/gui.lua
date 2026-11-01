@@ -447,7 +447,14 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
 
     local function format_force_buff_text(name, count)
         local display_name = Stateful.buff_to_string[name] or name
-        local flat_value_buffs = { xp_level = true, xp_bonus = true, character_health_bonus = true }
+        local flat_value_buffs =
+                {
+                    xp_level = true,
+                    xp_bonus = true,
+                    character_health_bonus = true,
+                    character_inventory_slots_bonus = true,
+                    character_build_distance_bonus = true
+                }
 
         if flat_value_buffs[name] then
             return '[font=default-bold]' .. display_name .. ': ' .. count .. '[/font]\n'

@@ -455,6 +455,7 @@ local function on_unit_group_created(event)
             local data =
             {
                 entity = entity,
+                unit_group = event.incremental and unit_group or nil
             }
             local state = Public.new(data)
             if not state then
@@ -499,7 +500,8 @@ local function on_entity_created(event)
     if not state then
         local data =
         {
-            entity = entity
+            entity = entity,
+            unit_group = event.unit_group
         }
 
         if this.settings.track_bosses_only then
@@ -617,6 +619,9 @@ function Public.new(data)
     state.id = state.entity.unit_number
     state.update_rate = this.settings.update_rate + (10 * state.uid)
     state.ttl = data.ttl or tick + (5 * 3600) -- 5 minutes duration
+    if data.unit_group and data.unit_group.valid then
+        state.group = data.unit_group
+    end
     state:check_unit_group()
     state:validate()
 
@@ -1060,7 +1065,16 @@ function Public._esp:set_ttl(ttl)
     self.ttl = ttl
 end
 
+-- Registered wave groups have one order "owner"
+function Public._esp:can_issue_group_command()
+    local generated = Public.get('generated_units')
+    return not (self.group and self.group.valid and generated
+        and generated.unit_groups[self.group.unique_id] == self.group)
+end
+
+-- Issues a go to location command to the group
 function Public._esp:go_to_location_command()
+    if not self:can_issue_group_command() then return end
     local unit = this.target_settings.main_target
     if not unit or not unit.valid then
         return
@@ -1095,7 +1109,9 @@ function Public._esp:go_to_location_command()
     end
 end
 
+-- Issues an attack command to the group
 function Public._esp:attack_command()
+    if not self:can_issue_group_command() then return end
     local unit = this.target_settings.main_target
     if not unit or not unit.valid then
         return
@@ -1132,7 +1148,9 @@ function Public._esp:attack_command()
     )
 end
 
+-- Issues an attack area command to the group
 function Public._esp:attack_area_command()
+    if not self:can_issue_group_command() then return end
     local unit = this.target_settings.main_target
     if not unit or not unit.valid then
         return
@@ -1171,7 +1189,9 @@ function Public._esp:attack_area_command()
     )
 end
 
+-- Issues a flee command to the group
 function Public._esp:flee_command()
+    if not self:can_issue_group_command() then return end
     local unit = this.target_settings.main_target
     if not unit or not unit.valid then
         return
@@ -1204,6 +1224,7 @@ function Public._esp:flee_command()
     )
 end
 
+-- Main work function for the unit
 function Public._esp:work(tick)
     if self.go_frenzy then
         self:set_frenzy()

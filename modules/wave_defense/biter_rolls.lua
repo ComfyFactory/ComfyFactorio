@@ -2,8 +2,8 @@ local Public = require 'modules.wave_defense.table'
 local Task = require 'utils.task_token'
 local round = math.round
 
-function Public.wave_defense_roll_biter_name()
-    local biter_raffle = Public.get('biter_raffle') --[[@as table]]
+function Public.wave_defense_roll_biter_name(raffle)
+    local biter_raffle = raffle or Public.get('biter_raffle') --[[@as table]]
     local max_chance = 0
     for _, v in pairs(biter_raffle) do
         max_chance = max_chance + v
@@ -34,8 +34,8 @@ function Public.wave_defense_roll_boss_name()
     end
 end
 
-function Public.wave_defense_roll_spitter_name()
-    local spitter_raffle = Public.get('spitter_raffle') --[[@as table]]
+function Public.wave_defense_roll_spitter_name(raffle)
+    local spitter_raffle = raffle or Public.get('spitter_raffle') --[[@as table]]
     local max_chance = 0
     for _, v in pairs(spitter_raffle) do
         max_chance = max_chance + v

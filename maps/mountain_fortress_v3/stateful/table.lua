@@ -87,6 +87,8 @@ local buff_to_string =
     ['worker_robots_speed_modifier'] = 'Robot speed',
     ['mining_drill_productivity_bonus'] = 'Mining drill speed',
     ['character_health_bonus'] = 'Character health',
+    ['character_inventory_slots_bonus'] = 'Inventory slots',
+    ['character_build_distance_bonus'] = 'Build distance',
     ['character_reach_distance_bonus'] = 'Reach',
     ['distance'] = 'All distance modifiers',
     ['manual_crafting_speed_modifier'] = 'Crafting',
@@ -142,7 +144,8 @@ local function notify_season_over_to_discord(perm_buff)
             buffs = buffs .. 'Force buffs:\n'
             for name, buff_data in pairs(stateful.buffs_collected) do
                 if type(buff_data.amount) ~= 'table' and name ~= 'starting_items' then
-                    if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus' then
+                    if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus'
+                                            or name == 'character_inventory_slots_bonus' or name == 'character_build_distance_bonus' then
                         if buff_data.count and buff_to_string[name] then
                             buffs = buffs .. buff_to_string[name] .. ': ' .. buff_data.count
                         else
@@ -636,68 +639,68 @@ local function make_entry(item)
 end
 
 local function get_random_items()
-    local items =
+    local basic =
     {
-        { 'advanced-circuit', scale(225000, 9000000) },
         { 'copper-cable', scale(3000000, 120000000) },
         { 'copper-plate', scale(1500000, 60000000) },
-        { 'electric-engine-unit', scale(10000, 400000) },
         { 'electronic-circuit', scale(1000000, 40000000) },
-        { 'engine-unit', scale(20000, 800000) },
-        { 'explosives', scale(150000, 6000000) },
         { 'iron-gear-wheel', scale(150000, 6000000) },
         { 'iron-plate', scale(2000000, 80000000) },
         { 'iron-stick', scale(75000, 3000000) },
-        { 'processing-unit', scale(40000, 1600000) },
-        { 'steel-plate', scale(200000, 8000000) },
+        { 'steel-plate', scale(200000, 8000000) }
+    }
+    local supplies =
+    {
+        { 'explosives', scale(150000, 6000000) },
         { 'rocket', scale(25000, 1000000) },
         { 'explosive-rocket', scale(25000, 1000000) },
         { 'slowdown-capsule', scale(10000, 400000) },
         { 'laser-turret', scale(3000, 120000) },
         { 'stone-wall', scale(20000, 800000) },
-        { 'accumulator', scale(5000, 200000) },
-        { 'refined-concrete', scale(15000, 600000) },
         { 'uranium-rounds-magazine', scale(4000, 160000) },
         { 'explosive-uranium-cannon-shell', scale(3000, 120000) },
         { 'distractor-capsule', scale(1500, 60000) },
         { 'cluster-grenade', scale(4000, 160000) },
-        { 'small-lamp', scale(5000, 200000) },
+        { 'repair-pack', scale(10000, 400000) },
+        { 'piercing-rounds-magazine', scale(20000, 800000) },
+        { 'transport-belt', scale(30000, 1200000) },
+        { 'inserter', scale(10000, 400000) },
+        { 'small-lamp', scale(5000, 200000) }
+    }
+    local advanced =
+    {
+        { 'advanced-circuit', scale(225000, 9000000) },
+        { 'electric-engine-unit', scale(10000, 400000) },
+        { 'engine-unit', scale(20000, 800000) },
+        { 'processing-unit', scale(40000, 1600000) },
+        { 'accumulator', scale(5000, 200000) },
+        { 'refined-concrete', scale(15000, 600000) },
         { 'uranium-fuel-cell', scale(2500, 100000) }
     }
 
     if Public.is_modded_pt2 then
-        table.insert(items, { 'lithium', scale(5000, 80000000) })
-        table.insert(items, { 'lithium-plate', scale(1000, 80000000) })
-        table.insert(items, { 'carbon-fiber', scale(1000, 80000000) })
-
-        table.insert(items, { 'tungsten-carbide', scale(100, 500000) })
-        table.insert(items, { 'tungsten-plate', scale(100, 500000) })
-        table.insert(items, { 'holmium-plate', scale(100, 500000) })
-        table.insert(items, { 'supercapacitor', scale(50, 500000) })
-        table.insert(items, { 'superconductor', scale(50, 500000) })
-        table.insert(items, { 'carbon', scale(100, 500000) })
-        table.insert(items, { 'turbo-splitter', scale(50, 500000) })
-        table.insert(items, { 'turbo-transport-belt', scale(50, 500000) })
-        table.insert(items, { 'turbo-underground-belt', scale(50, 500000) })
+        table.insert(basic, { 'lithium', scale(5000, 80000000) })
+        table.insert(basic, { 'lithium-plate', scale(1000, 80000000) })
+        table.insert(basic, { 'carbon', scale(100, 500000) })
+        table.insert(advanced, { 'carbon-fiber', scale(1000, 80000000) })
+        table.insert(advanced, { 'tungsten-carbide', scale(100, 500000) })
+        table.insert(advanced, { 'tungsten-plate', scale(100, 500000) })
+        table.insert(advanced, { 'holmium-plate', scale(100, 500000) })
+        table.insert(advanced, { 'supercapacitor', scale(50, 500000) })
+        table.insert(advanced, { 'superconductor', scale(50, 500000) })
+        table.insert(supplies, { 'turbo-splitter', scale(50, 500000) })
+        table.insert(supplies, { 'turbo-transport-belt', scale(50, 500000) })
+        table.insert(supplies, { 'turbo-underground-belt', scale(50, 500000) })
     end
 
-    shuffle(items)
-    shuffle(items)
-
-    local container =
-    {
-        [1] = make_entry(items[1]),
-        [2] = make_entry(items[2]),
-        [3] = make_entry(items[3])
-    }
-
-    if this.test_mode then
-        container =
-        {
-            [1] = { name = items[1][1], count = 1, quality = get_random_quality() },
-            [2] = { name = items[2][1], count = 1, quality = get_random_quality() },
-            [3] = { name = items[3][1], count = 1, quality = get_random_quality() }
-        }
+    local container = {}
+    for index, category in ipairs({ basic, supplies, advanced }) do
+        shuffle(category)
+        local entry = make_entry(category[1])
+        if this.test_mode then
+            entry.count = 1
+        end
+        container[index] = entry
     end
 
     return container
@@ -748,46 +751,47 @@ local function get_random_item()
 end
 
 local function get_random_handcrafted_item()
+    local growth = 1.02
     local items =
     {
-        { 'advanced-circuit', scale(2000, 500000) },
-        { 'copper-cable', scale(10000, 500000) },
-        { 'electronic-circuit', scale(5000, 1000000) },
-        { 'iron-gear-wheel', scale(50000, 1000000) },
-        { 'iron-stick', scale(75000, 3000000) },
-        { 'rocket', scale(5000, 1000000) },
-        { 'explosive-rocket', scale(5000, 1000000) },
-        { 'slowdown-capsule', scale(2500, 400000) },
-        { 'laser-turret', scale(1500, 20000) },
-        { 'stone-wall', scale(5000, 800000) },
-        { 'accumulator', scale(1000, 200000) },
-        { 'uranium-rounds-magazine', scale(1000, 60000) },
-        { 'explosive-uranium-cannon-shell', scale(1000, 10000) },
-        { 'distractor-capsule', scale(1500, 60000) },
-        { 'grenade', scale(5000, 200000) },
-        { 'cluster-grenade', scale(1000, 100000) },
-        { 'small-lamp', scale(2500, 200000) },
-        { 'rail', scale(5000, 100000) },
-        { 'small-electric-pole', scale(5000, 100000) },
-        { 'medium-electric-pole', scale(3500, 80000) },
-        { 'big-electric-pole', scale(2000, 50000) },
-        { 'transport-belt', scale(10000, 100000) },
-        { 'fast-transport-belt', scale(3000, 50000) },
-        { 'repair-pack', scale(10000, 100000) },
-        { 'splitter', scale(10000, 100000) },
-        { 'fast-splitter', scale(3000, 50000) },
-        { 'inserter', scale(3000, 50000) },
-        { 'firearm-magazine', scale(10000, 200000) },
-        { 'piercing-rounds-magazine', scale(5000, 100000) },
-        { 'pipe', scale(10000, 100000) },
-        { 'pipe-to-ground', scale(3000, 50000) },
-        { 'efficiency-module', scale(100, 50000) },
-        { 'productivity-module', scale(100, 50000) },
-        { 'speed-module', scale(100, 50000) },
+        { 'advanced-circuit', scale(150, 600, growth) },
+        { 'copper-cable', scale(4000, 16000, growth) },
+        { 'electronic-circuit', scale(1000, 4000, growth) },
+        { 'iron-gear-wheel', scale(1500, 6000, growth) },
+        { 'iron-stick', scale(4000, 16000, growth) },
+        { 'rocket', scale(200, 800, growth) },
+        { 'explosive-rocket', scale(100, 400, growth) },
+        { 'slowdown-capsule', scale(100, 400, growth) },
+        { 'laser-turret', scale(50, 200, growth) },
+        { 'stone-wall', scale(1000, 4000, growth) },
+        { 'accumulator', scale(100, 400, growth) },
+        { 'uranium-rounds-magazine', scale(100, 400, growth) },
+        { 'explosive-uranium-cannon-shell', scale(50, 200, growth) },
+        { 'distractor-capsule', scale(30, 120, growth) },
+        { 'grenade', scale(100, 400, growth) },
+        { 'cluster-grenade', scale(30, 120, growth) },
+        { 'small-lamp', scale(300, 1200, growth) },
+        { 'rail', scale(1000, 4000, growth) },
+        { 'small-electric-pole', scale(1000, 4000, growth) },
+        { 'medium-electric-pole', scale(300, 1200, growth) },
+        { 'big-electric-pole', scale(150, 600, growth) },
+        { 'transport-belt', scale(2000, 8000, growth) },
+        { 'fast-transport-belt', scale(500, 2000, growth) },
+        { 'repair-pack', scale(500, 2000, growth) },
+        { 'splitter', scale(150, 600, growth) },
+        { 'fast-splitter', scale(100, 400, growth) },
+        { 'inserter', scale(500, 2000, growth) },
+        { 'firearm-magazine', scale(1000, 4000, growth) },
+        { 'piercing-rounds-magazine', scale(300, 1200, growth) },
+        { 'pipe', scale(1500, 6000, growth) },
+        { 'pipe-to-ground', scale(200, 800, growth) },
+        { 'efficiency-module', scale(50, 200, growth) },
+        { 'productivity-module', scale(50, 200, growth) },
+        { 'speed-module', scale(50, 200, growth) },
     }
 
     if Public.is_modded_pt2 then
-        table.insert(items, { 'quality-module', scale(100, 50000) })
+        table.insert(items, { 'quality-module', scale(50, 200, growth) })
     end
 
     shuffle(items)
@@ -966,6 +970,8 @@ end
 
 local function migrate_buffs_generic(saved_buffs)
     local static_buffs = Public.get_random_buff(true)
+    -- Keep already earned start kits, but do not offer them in future votes.
+    local retired_startup_buffs = { fluid_startup = true, steam_power_startup = true, railway_startup = true }
 
     local static_buffs_by_name = {}
     for _, static_buff in pairs(static_buffs) do
@@ -1003,7 +1009,7 @@ local function migrate_buffs_generic(saved_buffs)
                     saved_buffs[index] = nil
                 end
             end
-        else
+        elseif not retired_startup_buffs[saved_buff.name] then
             saved_buffs[index] = nil
         end
     end

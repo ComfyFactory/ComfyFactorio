@@ -89,6 +89,25 @@ end
 function Public.clear_old_surface(current_task)
     local old_surface = game.surfaces[current_task.starting_planet]
     if old_surface then
+        local removed = 0
+        for _, entity in pairs(old_surface.find_entities_filtered({ type = 'segmented-unit' })) do
+            if entity.valid then
+                local segmented = entity.segmented_unit
+                if segmented and segmented.valid then
+                    segmented.destroy()
+                else
+                    entity.destroy()
+                end
+                removed = removed + 1
+            end
+        end
+        if removed > 0 then
+            current_task.message = 'Cleared demolishers from old fortress!'
+            current_task.delay = game.tick + 60
+            current_task.state = 'clear_old_surface'
+            Server.output_script_data('Removed segmented units before surface reset: ' .. removed)
+            return
+        end
         game.delete_surface(old_surface.name)
         Public.set('active_surface_index', nil)
     end
@@ -464,7 +483,6 @@ function Public.post_init_task(current_task)
 end
 
 function Public.create_locomotive(current_task)
-    if Public.get('disable_startup_notification') then return end
     local adjusted_zones = Public.get('adjusted_zones')
     local spawn_near_collapse = Public.get('spawn_near_collapse')
     local surface_index = Public.get('active_surface_index')
@@ -489,12 +507,14 @@ function Public.create_locomotive(current_task)
     Public.render_direction(surface, adjusted_zones.reversed)
 
     local locomotive = Public.get('locomotive')
-    if locomotive and locomotive.valid then
-        WD.set_main_target(locomotive)
-        Core.iter_connected_players(function (player)
-            player.teleport(locomotive.position, surface)
-        end)
+    if not locomotive or not locomotive.valid then
+        Server.output_script_data('Create locomotive: Locomotive not valid, retrying initialization.')
+        return
     end
+    WD.set_main_target(locomotive)
+    Core.iter_connected_players(function (player)
+        player.teleport(locomotive.position, surface)
+    end)
 
     current_task.message = 'Created locomotive!'
     current_task.delay = game.tick + 100
@@ -503,10 +523,11 @@ function Public.create_locomotive(current_task)
 end
 
 function Public.announce_new_map(current_task)
-    if Public.get('disable_startup_notification') then return end
-    local server_name = Server.check_server_name(Public.discord_name)
-    if server_name then
-        Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ' .. reset_messages[random(1, #reset_messages)])
+    if not Public.get('disable_startup_notification') then
+        local server_name = Server.check_server_name(Public.discord_name)
+        if server_name then
+            Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ' .. reset_messages[random(1, #reset_messages)])
+        end
     end
     local starting_planet = Public.get_planet()
     current_task.message = 'Announced new map!'
@@ -517,12 +538,19 @@ function Public.announce_new_map(current_task)
 end
 
 function Public.to_fortress(current_task)
-    WD.set('game_lost', false)
     local surface = game.get_surface(current_task.surface_name)
     if not surface or not surface.valid then
         Server.output_script_data('To Fortress: Surface not valid - please check this out!')
         return
     end
+    local locomotive = Public.get('locomotive')
+    if not locomotive or not locomotive.valid or locomotive.surface ~= surface then
+        Server.output_script_data('To Fortress: Locomotive not valid, recreating it before enabling wave defense.')
+        current_task.state = 'create_locomotive'
+        current_task.delay = game.tick + 60
+        return
+    end
+    if Public.get('game_lost') then return end
     local adjusted_zones = Public.get('adjusted_zones')
     local position
 
@@ -581,6 +609,17 @@ function Public.to_fortress(current_task)
     end)
 
     Public.stateful.activate_delayed_techs(game.forces.player)
+    locomotive = Public.get('locomotive')
+    if not locomotive or not locomotive.valid or locomotive.surface ~= surface then
+        Server.output_script_data('To Fortress: Locomotive not valid, recreating it before enabling wave defense.')
+        current_task.state = 'create_locomotive'
+        current_task.delay = game.tick + 60
+        return
+    end
+    if Public.get('game_lost') then return end
+    WD.set('target', locomotive)
+    WD.get_es('target_settings').main_target = locomotive
+    WD.set('game_lost', false)
 
     current_task.message = 'Moved players back to fortress!'
     current_task.done = true
@@ -605,6 +644,11 @@ local scenario_manager = function ()
         local old_task = current_task.state
         current_task.state = 'idle'
         Public[old_task](current_task)
+        if current_task.state == 'idle' and not current_task.done then
+            current_task.state = old_task
+            current_task.delay = game.tick + 60
+            return
+        end
         if current_task.message and current_task.show_messages then
             game.print(mapkeeper .. ' ' .. current_task.message)
         end

@@ -12,6 +12,8 @@ stylua.toml
 todo/
 
 # Ignore tests
+tests/
+repo*
 tmp.lua
 *.txt
 

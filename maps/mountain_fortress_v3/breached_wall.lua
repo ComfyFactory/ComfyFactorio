@@ -238,6 +238,30 @@ local spidertron_too_far =
         end
     )
 
+local function update_locomotive_barrier()
+    local current_task = Public.get('current_task')
+    if not current_task.done or Public.get('final_battle') or Public.get('game_lost') then
+        return
+    end
+
+    local locomotive = Public.get('locomotive')
+    if not (locomotive and locomotive.valid) then
+        return
+    end
+
+    local gap = Public.get('gap_between_locomotive')
+    local boundary = math.max(300, abs(Orient.progression(locomotive.position)) + gap.neg_gap)
+    local half_width = Orient.zone_width() / 2
+    local surface = locomotive.surface
+    for _, sign in ipairs({ -1, 1 }) do
+        local source = Orient.world(-half_width, boundary * sign)
+        local target = Orient.world(half_width, boundary * sign)
+        for _ = 1, 3 do
+            surface.create_entity({ name = 'electric-beam', position = source, source = source, target = target, duration = 30 })
+        end
+    end
+end
+
 local check_distance_between_player_and_locomotive = function (player)
     local surface = player.physical_surface
     local position = player.physical_position
@@ -659,6 +683,7 @@ local function on_player_driving_changed_state(event)
     Task.set_timeout_in_ticks(15, driving_state_changed_token, { player_index = player.index, entity = entity })
 end
 
+Event.on_nth_tick(30, update_locomotive_barrier)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 
