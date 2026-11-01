@@ -158,7 +158,19 @@ local x_marks_the_spot_token =
                 return
             end
 
-            player.teleport(old_position, old_surface_index)
+            if player.controller_type == defines.controllers.remote and player.physical_controller_type ~= defines.controllers.remote then
+                local body = player.physical_vehicle
+                if not body or not body.valid then
+                    body = player.character
+                end
+                local teleported = body and body.valid and body.teleport(old_position, old_surface_index)
+                if not teleported then
+                    player.exit_remote_view()
+                    player.teleport(old_position, old_surface_index)
+                end
+            else
+                player.teleport(old_position, old_surface_index)
+            end
             Task.set_timeout_in_ticks(5, repeat_sound_token, { player_index = player.index, sound = 'utility/new_objective', once = true })
             local callback = Public.get_x_marks_the_spot_custom_callback()
             if callback then
@@ -1431,10 +1443,20 @@ spells[#spells + 1] =
         local surface = data.surface
 
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
+        if not pos then
             pos = game.forces.player.get_spawn_position(surface)
+        end
+        if player.controller_type == defines.controllers.remote and player.physical_controller_type ~= defines.controllers.remote then
+            local body = player.physical_vehicle
+            if not body or not body.valid then
+                body = player.character
+            end
+            local teleported = body and body.valid and body.teleport(pos, surface)
+            if not teleported then
+                player.exit_remote_view()
+                player.teleport(pos, surface)
+            end
+        else
             player.teleport(pos, surface)
         end
         Public.remove_mana(player, 99999999)
@@ -1468,10 +1490,20 @@ spells[#spells + 1] =
         Public.register_cooldown_for_spell(player)
 
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
+        if not pos then
             pos = game.forces.player.get_spawn_position(surface)
+        end
+        if player.controller_type == defines.controllers.remote and player.physical_controller_type ~= defines.controllers.remote then
+            local body = player.physical_vehicle
+            if not body or not body.valid then
+                body = player.character
+            end
+            local teleported = body and body.valid and body.teleport(pos, surface)
+            if not teleported then
+                player.exit_remote_view()
+                player.teleport(pos, surface)
+            end
+        else
             player.teleport(pos, surface)
         end
 

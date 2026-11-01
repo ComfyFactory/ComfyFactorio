@@ -232,10 +232,45 @@ local function get_sorted_list(sort_by, show_all_players)
             player_list[index] = player_data
         end
     )
-    local comparator = get_comparator(sort_by)
-    table.sort(player_list, comparator)
 
-    return player_list
+    local merged = {}
+    for _, player_data in pairs(player_list) do
+        merged[#merged + 1] = player_data
+    end
+    if _DEBUG then
+        local fake_players =
+        {
+            { name = 'Belt Enjoyer', color = { r = 0.2, g = 0.75, b = 0.3 }, rank = 'item/transport-belt', admin = false, coins = 128, total = 216000 * 6 + 3600 * 12, online = 3600 * 42, rpg = 14, pokes = 3 },
+            { name = 'Smelter', color = { r = 0.9, g = 0.45, b = 0.1 }, rank = 'item/stone-furnace', admin = false, coins = 54, total = 216000 * 23 + 3600 * 40, online = 3600 * 8, rpg = 7, pokes = 1 },
+            { name = 'Admin Faker', color = { r = 0.85, g = 0.15, b = 0.15 }, rank = 'item/power-armor', admin = true, coins = 900, total = 5184000 * 2 + 216000 * 3, online = 216000 * 2, rpg = 42, pokes = 11 },
+            { name = 'Trainman', color = { r = 0.3, g = 0.55, b = 0.95 }, rank = 'item/locomotive', admin = false, coins = 17, total = 3600 * 4, online = 3600 * 4, rpg = 4, pokes = 0 },
+            { name = 'Oil King', color = { r = 0.15, g = 0.15, b = 0.15 }, rank = 'item/pumpjack', admin = false, coins = 320, total = 216000 * 12, online = 3600 * 95, rpg = 21, pokes = 6 },
+            { name = 'Very Long Faker Like So Long', color = { r = 0.7, g = 0.4, b = 0.9 }, rank = 'item/repair-pack', admin = false, coins = 2, total = 3600 * 90, online = 3600 * 15, rpg = 2, pokes = 8 }
+        }
+        for i = 1, #fake_players do
+            local fake = fake_players[i]
+            merged[#merged + 1] =
+            {
+                rank = fake.rank,
+                name = fake.name,
+                rpg_level = fake.rpg,
+                total_played_time = get_formatted_playtime(fake.total),
+                total_played_ticks = fake.total,
+                admin = fake.admin,
+                color = fake.color,
+                index = -i,
+                coins = fake.coins,
+                played_time = get_formatted_playtime(fake.online),
+                played_ticks = fake.online,
+                pokes = fake.pokes
+            }
+        end
+    end
+
+    local comparator = get_comparator(sort_by)
+    table.sort(merged, comparator)
+
+    return merged
 end
 
 local function player_list_show(data)
@@ -243,7 +278,7 @@ local function player_list_show(data)
     local sort_by = data.sort_by
     -- Frame management
     frame.clear()
-    frame.style.padding = 8
+    frame.style.padding = 4
 
     local gui_data =
         Vars.gui_data(
@@ -274,20 +309,25 @@ local function player_list_show(data)
 
     header_modifier[sort_by](gui_data)
 
-    local player_tbl = frame.add { type = 'table', column_count = #gui_data }
-
+    local content_width = 0
     for _, setting in pairs(gui_data) do
-        local label = player_tbl.add { type = 'label', caption = '' }
-        label.style.minimal_width = setting.header_width
-        label.style.maximal_width = setting.header_width
+        content_width = content_width + setting.header_width
     end
+
+    local player_tbl = frame.add { type = 'table', column_count = #gui_data }
 
     for _, setting in pairs(gui_data) do
         setting.sorter(setting, player_tbl)
     end
 
+    local header_line = frame.add({ type = 'line', direction = 'horizontal' })
+    header_line.style.minimal_width = content_width
+    header_line.style.horizontally_stretchable = true
+    header_line.style.top_margin = 2
+    header_line.style.bottom_margin = 2
+
     -- List management
-    local player_list_panel_table =
+    local scroll_pane =
         frame.add
         {
             type = 'scroll-pane',
@@ -296,18 +336,26 @@ local function player_list_show(data)
             horizontal_scroll_policy = 'never',
             vertical_scroll_policy = 'auto'
         }
-    player_list_panel_table.style.maximal_height = 400
+    scroll_pane.style.maximal_height = 360
 
-    player_list_panel_table = player_list_panel_table.add { type = 'table', name = 'player_list_panel_table', column_count = #gui_data }
+    local player_list_panel_table = scroll_pane.add { type = 'flow', name = 'player_list_panel_table', direction = 'vertical' }
+    player_list_panel_table.style.minimal_width = content_width
+    player_list_panel_table.style.horizontally_stretchable = true
 
     local show_all_players = this.player_settings[data.player.index] and this.player_settings[data.player.index].show_all_players or false
 
     local player_list = get_sorted_list(sort_by, show_all_players)
     for i = 1, #player_list, 1 do
         local player = player_list[i]
+        local row = player_list_panel_table.add { type = 'table', column_count = #gui_data }
         for _, setting in pairs(gui_data) do
-            setting.func(player_list_panel_table, player, i)
+            setting.func(row, player, i)
         end
+        local line = player_list_panel_table.add({ type = 'line', direction = 'horizontal' })
+        line.style.minimal_width = content_width
+        line.style.horizontally_stretchable = true
+        line.style.top_margin = 2
+        line.style.bottom_margin = 2
     end
 end
 
@@ -370,6 +418,9 @@ Gui.on_click(
             return
         end
         local target = game.get_player(data)
+        if not target or not target.valid then
+            return
+        end
 
         if player.index == target.index then
             return

@@ -46,17 +46,19 @@ local function build_group_gui(data)
     local members_width = 90
     local member_columns = 2
     local actions_width = 130
+    local members_column_width = members_width * member_columns
+    local content_width = group_name_width + description_width + members_column_width + actions_width
     local total_height = (frame.style.minimal_height or 500) - 60
 
     frame.clear()
 
-    local t = frame.add({ type = 'table', column_count = 5 })
+    local t = frame.add({ type = 'table', column_count = 4 })
 
     local headings =
     {
         { { 'gui.title' }, group_name_width },
         { { 'gui.description' }, description_width },
-        { { 'gui.members' }, members_width * member_columns },
+        { { 'gui.members' }, members_column_width },
         { '', actions_width }
     }
     for _, h in pairs(headings) do
@@ -69,6 +71,12 @@ local function build_group_gui(data)
         l.style.maximal_width = h[2]
         l.style.horizontal_align = 'center'
     end
+
+    local header_line = frame.add({ type = 'line', direction = 'horizontal' })
+    header_line.style.minimal_width = content_width
+    header_line.style.horizontally_stretchable = true
+    header_line.style.top_margin = 2
+    header_line.style.bottom_margin = 2
 
     local scroll_pane =
         frame.add(
@@ -83,15 +91,13 @@ local function build_group_gui(data)
     scroll_pane.style.maximal_height = total_height - 50
     scroll_pane.style.minimal_height = total_height - 50
 
-    t = scroll_pane.add({ type = 'table', name = 'groups_table', column_count = 4 })
-    for _, h in pairs(headings) do
-        local l = t.add({ type = 'label', caption = '' })
-        l.style.minimal_width = h[2]
-        l.style.maximal_width = h[2]
-    end
+    local list = scroll_pane.add({ type = 'flow', name = 'groups_table', direction = 'vertical' })
+    list.style.minimal_width = content_width
+    list.style.horizontally_stretchable = true
 
     for _, group in pairs(this.tag_groups) do
         if (group.name and group.founder and group.description) then
+            t = list.add({ type = 'table', column_count = 4 })
             local l = t.add({ type = 'label', caption = group.name })
             l.style.top_padding = 16
             l.style.bottom_padding = 16
@@ -165,7 +171,12 @@ local function build_group_gui(data)
                 b.style.minimal_width = actions_width
                 b.style.maximal_width = actions_width
             end
-            tt.add { type = 'line' }
+
+            local line = list.add({ type = 'line', direction = 'horizontal' })
+            line.style.minimal_width = content_width
+            line.style.horizontally_stretchable = true
+            line.style.top_margin = 2
+            line.style.bottom_margin = 2
         end
     end
 
@@ -331,65 +342,63 @@ local function on_gui_click(event)
         end
     end
 
-    local p = element.parent
-    if p then
-        p = p.parent
-    end
-    if p then
-        if p.name == 'groups_table' then
-            local is_spamming = SpamProtection.is_spamming(player, nil, 'Group Click')
+    local actions = element.parent
+    local row = actions and actions.parent
+    local list = row and row.parent
+    if list and list.name == 'groups_table' then
+        local is_spamming = SpamProtection.is_spamming(player, nil, 'Group Click')
 
-            if is_spamming then
+        if is_spamming then
+            return
+        end
+
+        local group_name = actions.name
+        local caption = element.caption and element.caption[1]
+
+        if element.type == 'button' and caption == 'gui.join' then
+            this.player_group[player.name] = group_name
+            local str = '[' .. group_name
+            str = str .. ']'
+            player.tag = str
+            if game.tick - this.join_spam_protection[player.name] > 600 then
+                local color =
+                {
+                    r = player.color.r * 0.7 + 0.3,
+                    g = player.color.g * 0.7 + 0.3,
+                    b = player.color.b * 0.7 + 0.3,
+                    a = 1
+                }
+                game.print(player.name .. ' has joined group "' .. group_name .. '"', color)
+                this.join_spam_protection[player.name] = game.tick
+            end
+            refresh_gui()
+            return
+        end
+
+        if element.type == 'button' and caption == 'gui.delete' then
+            if this.tag_groups[group_name] and this.tag_groups[group_name].static then
+                player.print('Static groups cannot be deleted.', { color = Color.warning })
                 return
             end
-
-            local caption = element.caption and element.caption[1]
-
-            if element.type == 'button' and caption == 'gui.join' then
-                this.player_group[player.name] = element.parent.name
-                local str = '[' .. element.parent.name
-                str = str .. ']'
-                player.tag = str
-                if game.tick - this.join_spam_protection[player.name] > 600 then
-                    local color =
-                    {
-                        r = player.color.r * 0.7 + 0.3,
-                        g = player.color.g * 0.7 + 0.3,
-                        b = player.color.b * 0.7 + 0.3,
-                        a = 1
-                    }
-                    game.print(player.name .. ' has joined group "' .. element.parent.name .. '"', color)
-                    this.join_spam_protection[player.name] = game.tick
-                end
-                refresh_gui()
-                return
-            end
-
-            if element.type == 'button' and caption == 'gui.delete' then
-                if this.tag_groups[element.parent.name] and this.tag_groups[element.parent.name].static then
-                    player.print('Static groups cannot be deleted.', { color = Color.warning })
-                    return
-                end
-                for _, players in pairs(game.players) do
-                    if this.player_group[players.name] then
-                        if this.player_group[players.name] == element.parent.name then
-                            this.player_group[players.name] = '[Group]'
-                            players.tag = ''
-                        end
+            for _, players in pairs(game.players) do
+                if this.player_group[players.name] then
+                    if this.player_group[players.name] == group_name then
+                        this.player_group[players.name] = '[Group]'
+                        players.tag = ''
                     end
                 end
-                game.print(player.name .. ' deleted group "' .. element.parent.name .. '"')
-                this.tag_groups[element.parent.name] = nil
-                refresh_gui()
-                return
             end
+            game.print(player.name .. ' deleted group "' .. group_name .. '"')
+            this.tag_groups[group_name] = nil
+            refresh_gui()
+            return
+        end
 
-            if element.type == 'button' and caption == 'gui.leave' then
-                this.player_group[player.name] = '[Group]'
-                player.tag = ''
-                refresh_gui()
-                return
-            end
+        if element.type == 'button' and caption == 'gui.leave' then
+            this.player_group[player.name] = '[Group]'
+            player.tag = ''
+            refresh_gui()
+            return
         end
     end
 end

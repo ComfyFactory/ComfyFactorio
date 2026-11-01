@@ -824,12 +824,15 @@ create_admin_panel = function (data)
 
     frame.add({ type = 'checkbox', name = listable_players_name, caption = checkbox_caption, state = checkbox_state or false })
 
+    local panel_width = 492
+
     local drop_down = frame.add({ type = 'drop-down', name = 'admin_player_select', items = player_names, selected_index = selected_index })
-    drop_down.style.minimal_width = 326
-    drop_down.style.right_padding = 12
-    drop_down.style.left_padding = 12
+    drop_down.style.minimal_width = panel_width
+    drop_down.style.maximal_width = panel_width
 
     local t = frame.add({ type = 'table', column_count = 4 })
+    t.style.horizontal_spacing = 4
+    t.style.vertical_spacing = 2
     local buttons =
     {
         t.add(
@@ -862,6 +865,7 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Make Enemy',
                 name = 'enemy',
+                style = 'red_button',
                 tooltip = 'Sets the selected players force to enemy_players.\nDO NOT USE IN PVP MAPS!!'
             }
         ),
@@ -894,36 +898,44 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Damage',
                 name = 'damage',
+                style = 'red_button',
                 tooltip = 'Damages the selected player with greater damage.\nCan not kill the player.'
             }
         ),
-        t.add({ type = 'button', caption = 'Kill', name = 'kill', tooltip = 'Kills the selected player instantly.' })
+        t.add({ type = 'button', caption = 'Kill', name = 'kill', style = 'red_button', tooltip = 'Kills the selected player instantly.' })
 
     }
     if this.custom_buttons and next(this.custom_buttons) then
         for _, button in pairs(this.custom_buttons) do
-            t.add(
-                {
-                    type = button.type,
-                    caption = button.caption,
-                    name = button.name,
-                    tooltip = button.tooltip
-                }
-            )
+            buttons[#buttons + 1] =
+                t.add(
+                    {
+                        type = button.type,
+                        caption = button.caption,
+                        name = button.name,
+                        tooltip = button.tooltip
+                    }
+                )
         end
     end
     for _, button in pairs(buttons) do
         button.style.font = 'default-bold'
-        --button.style.font_color = { r=0.99, g=0.11, b=0.11}
-        button.style.minimal_width = 106
+        button.style.minimal_width = 120
+        button.style.maximal_width = 120
     end
 
     local line = frame.add { type = 'line' }
-    line.style.top_margin = 8
-    line.style.bottom_margin = 8
+    line.style.top_margin = 4
+    line.style.bottom_margin = 4
+    line.style.minimal_width = panel_width
+    line.style.maximal_width = panel_width
 
-    frame.add({ type = 'label', caption = 'Global Actions:' })
-    local actionTable = frame.add({ type = 'table', column_count = 4 })
+    local global_label = frame.add({ type = 'label', caption = 'Global Actions:' })
+    global_label.style.font = 'heading-2'
+    global_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+    local actionTable = frame.add({ type = 'table', column_count = 2 })
+    actionTable.style.horizontal_spacing = 4
+    actionTable.style.vertical_spacing = 2
     local bottomButtons =
     {
         actionTable.add(
@@ -931,6 +943,7 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Destroy global speakers',
                 name = 'turn_off_global_speakers',
+                style = 'red_button',
                 tooltip = 'Destroys all speakers that are set to play sounds globally.'
             }
         ),
@@ -939,6 +952,7 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Delete blueprints',
                 name = 'delete_all_blueprints',
+                style = 'red_button',
                 tooltip = 'Deletes all placed blueprints on the map.'
             }
         ),
@@ -963,6 +977,7 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Clear items on ground',
                 name = 'clear_items_on_ground',
+                style = 'red_button',
                 tooltip = 'Clears all items on the ground.\nThis might lag the game!'
             }
         ),
@@ -971,6 +986,7 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Remove biters',
                 name = 'clear_biters',
+                style = 'red_button',
                 tooltip = 'Clears out all biters (friendly and enemy).\nThis might lag the game!'
             }
         )
@@ -978,12 +994,15 @@ create_admin_panel = function (data)
     }
     for _, button in pairs(bottomButtons) do
         button.style.font = 'default-bold'
-        button.style.minimal_width = 80
+        button.style.minimal_width = 244
+        button.style.maximal_width = 244
     end
 
     local bottomLine = frame.add { type = 'line' }
-    bottomLine.style.top_margin = 8
-    bottomLine.style.bottom_margin = 8
+    bottomLine.style.top_margin = 4
+    bottomLine.style.bottom_margin = 4
+    bottomLine.style.minimal_width = panel_width
+    bottomLine.style.maximal_width = panel_width
 
     local histories = {}
     if antigrief.capsule_history then
@@ -1024,16 +1043,20 @@ create_admin_panel = function (data)
         return
     end
 
-    local search_table = frame.add({ type = 'table', column_count = 3 })
-    search_table.add({ type = 'label', caption = 'Search: ' })
+    local search_table = frame.add({ type = 'table', column_count = 2 })
+    search_table.style.horizontal_spacing = 8
+    search_table.add({ type = 'label', caption = 'Search' })
     local search_text = search_table.add({ type = 'textfield' })
     -- search_text.focus()
     search_text.text = player_data.search_text or ''
-    search_text.style.width = 140
+    search_text.style.minimal_width = 428
+    search_text.style.maximal_width = 428
 
-    local bottomLine2 = frame.add({ type = 'label', caption = '----------------------------------------------' })
-    bottomLine2.style.font = 'default-listbox'
-    bottomLine2.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+    local bottomLine2 = frame.add { type = 'line' }
+    bottomLine2.style.top_margin = 4
+    bottomLine2.style.bottom_margin = 4
+    bottomLine2.style.minimal_width = panel_width
+    bottomLine2.style.maximal_width = panel_width
 
     local selected_index_2 = 1
     if player_data and player_data.selected_history_index then
@@ -1043,8 +1066,8 @@ create_admin_panel = function (data)
     local pagination_table = frame.add({ type = 'table', column_count = 2, name = 'pagination_table' })
 
     local drop_down_2 = pagination_table.add({ type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index_2 })
-    drop_down_2.style.right_padding = 12
-    drop_down_2.style.left_padding = 12
+    drop_down_2.style.minimal_width = 320
+    drop_down_2.style.maximal_width = 320
 
     local history_index =
     {

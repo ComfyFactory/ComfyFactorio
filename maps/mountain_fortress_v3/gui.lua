@@ -1166,7 +1166,7 @@ Gui.on_selection_state_changed(
 
         player.set_controller({ type = defines.controllers.spectator })
 
-        player.teleport({ x = 0, y = 0 }, surface_name)
+        Public.teleport_player(player, { x = 0, y = 0 }, surface_name)
     end
 )
 

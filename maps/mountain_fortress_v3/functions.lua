@@ -3048,10 +3048,10 @@ function Public.on_player_joined_game(event)
     if player.online_time < 1 then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
-            player.teleport(pos, surface)
+            Public.teleport_player(player, pos, surface)
         else
             pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
+            Public.teleport_player(player, pos, surface)
         end
     else
         local p = { x = player.physical_position.x, y = player.physical_position.y }
@@ -3059,10 +3059,10 @@ function Public.on_player_joined_game(event)
         if get_tile.valid and (get_tile.name == 'out-of-map' or get_tile.name == 'void-tile') then
             local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
             if pos then
-                player.teleport(pos, surface)
+                Public.teleport_player(player, pos, surface)
             else
                 pos = game.forces.player.get_spawn_position(surface)
-                player.teleport(pos, surface)
+                Public.teleport_player(player, pos, surface)
             end
         end
     end
@@ -3084,10 +3084,10 @@ function Public.on_player_joined_game(event)
     if distance_from_train then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
-            player.teleport(pos, surface)
+            Public.teleport_player(player, pos, surface)
         else
             pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
+            Public.teleport_player(player, pos, surface)
         end
     end
 
@@ -3166,10 +3166,10 @@ function Public.on_player_respawned(event)
 
             local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
             if pos then
-                player.teleport(pos, surface)
+                Public.teleport_player(player, pos, surface)
             else
                 pos = game.forces.player.get_spawn_position(surface)
-                player.teleport(pos, surface)
+                Public.teleport_player(player, pos, surface)
             end
         end
     end
@@ -3379,7 +3379,7 @@ function Public.on_player_changed_position(event)
     if adjusted_zones.reversed then
         if Orient.progression(position) < Orient.spawn_len(-74) and Orient.in_map_width(position) then
             if player.character ~= nil then
-                player.character.teleport(Orient.offset(position, 0, 1), surface)
+                Public.teleport_player(player, Orient.offset(position, 0, 1), surface)
             end
             player.print(({ 'main.forcefield' }), { color = FunctionColor })
             if player.character then
@@ -3393,7 +3393,7 @@ function Public.on_player_changed_position(event)
     else
         if Orient.progression(position) >= Orient.spawn_len(74) and Orient.in_map_width(position) then
             if player.character ~= nil then
-                player.character.teleport(Orient.offset(position, 0, -1), surface)
+                Public.teleport_player(player, Orient.offset(position, 0, -1), surface)
             end
             player.print(({ 'main.forcefield' }), { color = FunctionColor })
             if player.character then
@@ -3583,10 +3583,10 @@ function Public.set_player_to_god(player)
 
     local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
     if pos then
-        player.teleport(pos, surface)
+        Public.teleport_player(player, pos, surface)
     else
         pos = game.forces.player.get_spawn_position(surface)
-        player.teleport(pos, surface)
+        Public.teleport_player(player, pos, surface)
     end
 
     player.set_controller({ type = defines.controllers.god })

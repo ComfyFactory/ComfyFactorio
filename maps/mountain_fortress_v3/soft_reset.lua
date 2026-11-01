@@ -54,9 +54,9 @@ local function teleport_players()
     for _, player in pairs(game.connected_players) do
         local pos = surface.find_non_colliding_position('character', position, 3, 0)
         if pos then
-            player.teleport({ x = pos.x, y = pos.y }, surface)
+            Public.teleport_player(player, { x = pos.x, y = pos.y }, surface)
         else
-            player.teleport({ x = position.x, y = position.y }, surface)
+            Public.teleport_player(player, { x = position.x, y = position.y }, surface)
         end
     end
 end

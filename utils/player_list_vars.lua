@@ -344,12 +344,16 @@ Public.gui_data = function (data)
     local gui_data = {}
     gui_data[#gui_data + 1] =
     {
-        width = 40,
-        header_width = 35,
+        width = 36,
+        header_width = 36,
         name = '[color=0.1,0.7,0.1]' .. tostring(connected_players) .. '[/color]',
         func = function (player_list_panel_table, player, index)
+            local flow = player_list_panel_table.add { type = 'flow' }
+            flow.style.minimal_width = 36
+            flow.style.maximal_width = 36
+            flow.style.horizontal_align = 'center'
             local sprite =
-                player_list_panel_table.add
+                flow.add
                 {
                     type = 'sprite',
                     name = 'player_rank_sprite_' .. index,
@@ -361,6 +365,9 @@ Public.gui_data = function (data)
         end,
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow' }
+            flow.style.minimal_width = self.header_width
+            flow.style.maximal_width = self.header_width
+            flow.style.horizontal_align = 'center'
             local header_label =
                 flow.add
                 {
@@ -371,15 +378,15 @@ Public.gui_data = function (data)
             header_label.style.font = 'heading-2'
             header_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
 
-            header_label.style.minimal_width = 36
-            header_label.style.maximal_width = 36
-            header_label.style.horizontal_align = 'right'
+            header_label.style.minimal_width = self.header_width
+            header_label.style.maximal_width = self.header_width
+            header_label.style.horizontal_align = 'center'
         end
     }
     gui_data[#gui_data + 1] =
     {
-        width = 155,
-        header_width = 150,
+        width = 170,
+        header_width = 170,
         header = 'username',
         name = 'Online / [color=0.7,0.1,0.1]' .. tostring(#players - connected_players) .. '[/color]' .. ' Offline',
         func = function (player_list_panel_table, player)
@@ -450,6 +457,9 @@ Public.gui_data = function (data)
                 {
                     type = 'flow'
                 }
+            name_flow.style.minimal_width = 170
+            name_flow.style.maximal_width = 170
+            name_flow.style.vertical_align = 'center'
 
             local name_label =
                 name_flow.add
@@ -469,12 +479,16 @@ Public.gui_data = function (data)
                 g = .4 + player.color.g * 0.6,
                 b = .4 + player.color.b * 0.6
             }
-            name_label.style.minimal_width = 165
-            name_label.style.maximal_width = 165
+            name_label.style.minimal_width = 170
+            name_label.style.maximal_width = 170
+            name_label.style.minimal_height = 32
+            name_label.style.vertical_align = 'center'
             name_label.style.font = 'default-semibold'
         end,
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow', name = 'username' }
+            flow.style.minimal_width = self.header_width
+            flow.style.horizontal_align = 'left'
             local header_label =
                 flow.add
                 {
@@ -485,14 +499,16 @@ Public.gui_data = function (data)
                 }
             header_label.style.font = 'heading-2'
             header_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+            header_label.style.minimal_width = self.header_width
+            header_label.style.horizontal_align = 'left'
         end
     }
     if rpg_enabled then
         gui_data[#gui_data + 1] =
         {
-            width = 90,
+            width = 84,
             header = 'rpg',
-            header_width = 90,
+            header_width = 84,
             name = 'RPG level',
             func = function (player_list_panel_table, player)
                 local rpg_level_label =
@@ -501,12 +517,17 @@ Public.gui_data = function (data)
                         type = 'label',
                         caption = player.rpg_level
                     }
-                rpg_level_label.style.minimal_width = 90
-                rpg_level_label.style.maximal_width = 90
+                rpg_level_label.style.minimal_width = 84
+                rpg_level_label.style.maximal_width = 84
+                rpg_level_label.style.minimal_height = 32
+                rpg_level_label.style.horizontal_align = 'center'
+                rpg_level_label.style.vertical_align = 'center'
                 rpg_level_label.style.font = 'default-semibold'
             end,
             sorter = function (self, player_tbl)
                 local flow = player_tbl.add { type = 'flow', name = 'rpg' }
+                flow.style.minimal_width = self.header_width
+                flow.style.horizontal_align = 'center'
                 local header_label =
                     flow.add
                     {
@@ -517,14 +538,16 @@ Public.gui_data = function (data)
                     }
                 header_label.style.font = 'heading-2'
                 header_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+                header_label.style.minimal_width = self.header_width
+                header_label.style.horizontal_align = 'center'
             end
         }
     end
     gui_data[#gui_data + 1] =
     {
-        width = 90,
+        width = 70,
         header = 'coins',
-        header_width = 90,
+        header_width = 70,
         name = 'Coins',
         func = function (player_list_panel_table, player)
             local coins_label =
@@ -533,12 +556,17 @@ Public.gui_data = function (data)
                     type = 'label',
                     caption = player.coins
                 }
-            coins_label.style.minimal_width = 90
-            coins_label.style.maximal_width = 90
+            coins_label.style.minimal_width = 70
+            coins_label.style.maximal_width = 70
+            coins_label.style.minimal_height = 32
+            coins_label.style.horizontal_align = 'center'
+            coins_label.style.vertical_align = 'center'
             coins_label.style.font = 'default-semibold'
         end,
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow', name = 'coins' }
+            flow.style.minimal_width = self.header_width
+            flow.style.horizontal_align = 'center'
             local header_label =
                 flow.add
                 {
@@ -549,11 +577,13 @@ Public.gui_data = function (data)
                 }
             header_label.style.font = 'heading-2'
             header_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+            header_label.style.minimal_width = self.header_width
+            header_label.style.horizontal_align = 'center'
         end
     }
     gui_data[#gui_data + 1] =
     {
-        width = 145,
+        width = 150,
         header = 'total_time',
         header_width = 150,
         name = 'Total Time',
@@ -566,12 +596,17 @@ Public.gui_data = function (data)
                     caption = player.total_played_time,
                     tooltip = 'Total time played across all Comfy servers.'
                 }
-            total_label.style.minimal_width = 145
-            total_label.style.maximal_width = 145
+            total_label.style.minimal_width = 150
+            total_label.style.maximal_width = 150
+            total_label.style.minimal_height = 32
+            total_label.style.horizontal_align = 'center'
+            total_label.style.vertical_align = 'center'
             total_label.style.font = 'default-semibold'
         end,
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow', name = 'total_time' }
+            flow.style.minimal_width = self.header_width
+            flow.style.horizontal_align = 'center'
             local header_label =
                 flow.add
                 {
@@ -582,12 +617,14 @@ Public.gui_data = function (data)
                 }
             header_label.style.font = 'heading-2'
             header_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+            header_label.style.minimal_width = self.header_width
+            header_label.style.horizontal_align = 'center'
         end
     }
     gui_data[#gui_data + 1] =
     {
-        width = 165,
-        header_width = 175,
+        width = 150,
+        header_width = 150,
         header = 'current_time',
         name = 'Current Time',
         func = function (player_list_panel_table, player)
@@ -599,12 +636,17 @@ Public.gui_data = function (data)
                     caption = player.played_time,
                     tooltip = 'Current time played on this server.'
                 }
-            current_label.style.minimal_width = 165
-            current_label.style.maximal_width = 165
+            current_label.style.minimal_width = 150
+            current_label.style.maximal_width = 150
+            current_label.style.minimal_height = 32
+            current_label.style.horizontal_align = 'center'
+            current_label.style.vertical_align = 'center'
             current_label.style.font = 'default-semibold'
         end,
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow', name = 'current_time' }
+            flow.style.minimal_width = self.header_width
+            flow.style.horizontal_align = 'center'
             local header_label =
                 flow.add
                 {
@@ -615,24 +657,27 @@ Public.gui_data = function (data)
                 }
             header_label.style.font = 'heading-2'
             header_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+            header_label.style.minimal_width = self.header_width
+            header_label.style.horizontal_align = 'center'
         end
     }
     gui_data[#gui_data + 1] =
     {
-        width = 50,
-        header_width = 60,
+        width = 48,
+        header_width = 48,
         header = 'poke',
         name = 'Poke',
         func = function (player_list_panel_table, player, index)
             -- Poke
             local poke_flow = player_list_panel_table.add { type = 'flow', name = 'button_flow_' .. index, direction = 'horizontal' }
-            poke_flow.style.right_padding = 20
-            local poke_label = poke_flow.add { type = 'label', name = 'button_spacer_' .. index, caption = '' }
+            poke_flow.style.minimal_width = 48
+            poke_flow.style.maximal_width = 48
+            poke_flow.style.horizontal_align = 'center'
+            poke_flow.style.vertical_align = 'center'
             local poke_button = poke_flow.add { type = 'button', name = poke_player_frame_name, caption = player.pokes }
             Gui.set_data(poke_button, player.index)
             poke_button.style.font = 'default'
             poke_button.tooltip = 'Poke ' .. player.name .. ' with a random message!\nDoes not work poking yourself :<'
-            poke_label.style.font_color = { r = 0.83, g = 0.83, b = 0.83 }
             poke_button.style.minimal_height = 30
             poke_button.style.minimal_width = 30
             poke_button.style.maximal_height = 30
@@ -644,6 +689,8 @@ Public.gui_data = function (data)
         end,
         sorter = function (self, player_tbl)
             local flow = player_tbl.add { type = 'flow', name = 'poke' }
+            flow.style.minimal_width = self.header_width
+            flow.style.horizontal_align = 'center'
             local header_label =
                 flow.add
                 {
@@ -654,6 +701,8 @@ Public.gui_data = function (data)
                 }
             header_label.style.font = 'heading-2'
             header_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
+            header_label.style.minimal_width = self.header_width
+            header_label.style.horizontal_align = 'center'
         end
     }
 

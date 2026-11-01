@@ -555,7 +555,7 @@ local unstuck_player_token =
             if not position then
                 return
             end
-            player.teleport(position, surface)
+            Public.teleport_player(player, position, surface)
         end
     )
 
@@ -1661,7 +1661,7 @@ function Public.unstuck_player(index)
     if not position then
         return
     end
-    player.teleport(position, surface)
+    Public.teleport_player(player, position, surface)
 end
 
 function Public.loco_died()

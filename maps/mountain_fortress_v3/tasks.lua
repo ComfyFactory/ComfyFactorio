@@ -182,9 +182,9 @@ function Public.move_players(current_task)
 
         local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 5, 4)
         if pos then
-            player.teleport(pos, surface)
+            Public.teleport_player(player, pos, surface)
         else
-            player.teleport({ x = 0, y = 0 }, surface)
+            Public.teleport_player(player, { x = 0, y = 0 }, surface)
         end
         player.clear_items_inside()
     end)
@@ -513,7 +513,7 @@ function Public.create_locomotive(current_task)
     end
     WD.set_main_target(locomotive)
     Core.iter_connected_players(function (player)
-        player.teleport(locomotive.position, surface)
+        Public.teleport_player(player, locomotive.position, surface)
     end)
 
     current_task.message = 'Created locomotive!'
@@ -581,9 +581,9 @@ function Public.to_fortress(current_task)
     Core.iter_connected_players(function (player)
         local pos = surface.find_non_colliding_position('character', position, 5, 4)
         if pos then
-            player.teleport({ x = pos.x, y = pos.y }, surface)
+            Public.teleport_player(player, { x = pos.x, y = pos.y }, surface)
         else
-            player.teleport({ x = position.x, y = position.y }, surface)
+            Public.teleport_player(player, { x = position.x, y = position.y }, surface)
         end
         Public.add_player_to_permission_group(player, 'near_locomotive', true)
 

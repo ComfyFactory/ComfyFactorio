@@ -149,6 +149,13 @@ local function set_group_attack_command(group, destination, target, waypoint)
         }
     end
 
+    local group_id = group.unique_id
+
+    local generated_units = Public.get('generated_units')
+    if generated_units and generated_units.unit_group_last_command then
+        generated_units.unit_group_last_command[group_id] = game.tick
+    end
+
     group.set_command(
         {
             type = defines.command.compound,
@@ -156,11 +163,6 @@ local function set_group_attack_command(group, destination, target, waypoint)
             commands = commands
         }
     )
-
-    local generated_units = Public.get('generated_units')
-    if generated_units and generated_units.unit_group_last_command then
-        generated_units.unit_group_last_command[group.unique_id] = game.tick
-    end
 end
 
 local function release_request(generated_units, id)

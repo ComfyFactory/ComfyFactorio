@@ -907,6 +907,24 @@ function Public.is_task_done()
     return this.current_task and this.current_task.done or false
 end
 
+function Public.teleport_player(player, position, surface)
+    if not player or not player.valid or not position then
+        return false
+    end
+    if player.controller_type == defines.controllers.remote and player.physical_controller_type ~= defines.controllers.remote then
+        local body = player.physical_vehicle
+        if not body or not body.valid then
+            body = player.character
+        end
+        local teleported = body and body.valid and body.teleport(position, surface)
+        if teleported then
+            return true
+        end
+        player.exit_remote_view()
+    end
+    return player.teleport(position, surface)
+end
+
 function Public.set_show_messages(state)
     this.current_task.show_messages = state or false
 end

@@ -2203,9 +2203,9 @@ function Public.move_all_players()
             Public.stateful_gui.boss_frame(player, true)
 
             if pos then
-                player.teleport(pos, surface)
+                Public.teleport_player(player, pos, surface)
             else
-                player.teleport(locomotive.position, surface)
+                Public.teleport_player(player, locomotive.position, surface)
                 Public.unstuck_player(player.index)
             end
         end

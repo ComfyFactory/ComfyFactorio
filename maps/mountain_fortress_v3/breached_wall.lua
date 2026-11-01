@@ -179,10 +179,10 @@ local breach_wall_warning_teleport = function (player, check_trusted)
     end
     local pos = player.physical_surface.find_non_colliding_position('character', player.force.get_spawn_position(player.physical_surface), 3, 0)
     if pos then
-        player.teleport(pos, player.physical_surface)
+        Public.teleport_player(player, pos, player.physical_surface)
     else
         pos = game.forces.player.get_spawn_position(player.physical_surface)
-        player.teleport(pos, player.physical_surface)
+        Public.teleport_player(player, pos, player.physical_surface)
     end
     return true
 end
@@ -209,9 +209,9 @@ local breach_wall_enforced = function (player)
     local message = ({ 'breached_wall.warning_teleport_enforced', player.name })
     Alert.alert_all_players(40, message, nil, nil, nil, 'global')
     if adjusted_zones.reversed then
-        player.teleport(Orient.offset(position, 0, -10), surface)
+        Public.teleport_player(player, Orient.offset(position, 0, -10), surface)
     else
-        player.teleport(Orient.offset(position, 0, 10), surface)
+        Public.teleport_player(player, Orient.offset(position, 0, 10), surface)
     end
     Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'breached_wall', -0.85)
     Task.set_duration_task(15, 200, damage_indicator_token, { player_index = player.index })
@@ -287,9 +287,9 @@ local check_distance_between_player_and_locomotive = function (player)
     if locomotive_distance_too_far then
         local dest_prog = t_y + gap_between_locomotive.neg_gap - 4
         if adjusted_zones.reversed then
-            player.teleport(Orient.world(Orient.lateral(position), dest_prog), surface)
+            Public.teleport_player(player, Orient.world(Orient.lateral(position), dest_prog), surface)
         else
-            player.teleport(Orient.world(Orient.lateral(position), dest_prog * -1), surface)
+            Public.teleport_player(player, Orient.world(Orient.lateral(position), dest_prog * -1), surface)
         end
 
         player.print(({ 'breached_wall.hinder' }), { color = Color.warning })
