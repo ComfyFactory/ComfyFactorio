@@ -754,14 +754,15 @@ main_frame = function (player)
     breached_wall = breached_wall - 1
 
     local frame = player.gui.left.add { type = 'frame', name = main_frame_name, caption = { 'stateful.win_conditions' }, direction = 'vertical', tooltip = { 'stateful.win_conditions_tooltip' } }
-    if Gui.get_mod_gui_top_frame() then
-        frame.location = { x = 0, y = 67 }
-    else
-        frame.location = { x = 1, y = 45 }
-    end
-    frame.style.maximal_height = 700
+    local top_offset = Gui.get_mod_gui_top_frame() and 67 or 45
+    local viewport_height = player.display_resolution.height / player.display_scale
+    frame.style.maximal_height = math.min(700, math.max(100, viewport_height - top_offset - 32))
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
+    local outer_frame = frame
+    frame = outer_frame.add { type = 'scroll-pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto' }
+    frame.style.vertically_squashable = true
+    frame.style.horizontally_stretchable = true
     local season_tbl = frame.add { type = 'table', column_count = 2 }
     season_tbl.style.horizontally_stretchable = true
 
@@ -925,6 +926,7 @@ main_frame = function (player)
         end
     end
 
+
     -- warn players
     spacer(frame)
     frame.add({ type = 'line' })
@@ -932,7 +934,7 @@ main_frame = function (player)
 
     local close = frame.add({ type = 'button', name = close_button, caption = 'Close' })
     close.style.horizontally_stretchable = true
-    Gui.set_data(frame, data)
+    Gui.set_data(outer_frame, data)
 end
 
 local function update_data()
@@ -1049,6 +1051,7 @@ local function update_data()
                 end
                 data.gather_time_label.caption = time_left
             end
+
 
             if data.random_objectives and next(data.random_objectives) then
                 for index = 1, #data.random_objectives do

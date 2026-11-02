@@ -31,6 +31,8 @@ local Session = require 'utils.datastore.session_data'
 local RPG_Settings = require 'utils.datastore.rpg_data'
 local Core = require 'utils.core'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local FlagMission = require 'maps.mountain_fortress_v3.flag_mission'
+local RelayStation = require 'maps.mountain_fortress_v3.relay_station'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
@@ -194,6 +196,8 @@ function Public.move_players(current_task)
 end
 
 function Public.pre_init_task(current_task)
+    RelayStation.reset()
+    FlagMission.reset()
     local this = Public.get()
     game.speed = 1
 
@@ -352,6 +356,8 @@ function Public.reset_map(current_task)
     if current_planet == 'nauvis' then
         game.surfaces['nauvis'].clear()
     end
+
+    RelayStation.begin_round_surface(surface)
 
     current_task.starting_planet = current_planet
 

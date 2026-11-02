@@ -819,12 +819,19 @@ end
 
 
 local function fill_raffles(level)
+    level = math.max(level, 0)
     local raffles =
     {
         biter_raffle = {},
         spitter_raffle = {},
         boss_raffle = {}
     }
+
+    local function add_weight(raffle, name, weight)
+        if weight > 0 and prototypes.entity[name] then
+            raffle[name] = (raffle[name] or 0) + weight
+        end
+    end
 
     local current_planet = Public.get_stateful_settings('current_planet')
     local excluded_families = {}
@@ -844,29 +851,28 @@ local function fill_raffles(level)
                 for tier, range in pairs(tiers) do
                     for _, element in ipairs(elements) do
                         local weight = level_weight(level, range[1], range[2], 2.75)
-                        if weight then
-                            if boss_kind == "demolisher" and Public.is_modded_pt2 then
-                                local name = string.format("%s-%s", tier, range)
-                                raffles.boss_raffle[name] = weight
-                            else
-                                local name = string.format("mtn-addon-boss-%s-%s-%s", element, boss_kind, tier)
-                                raffles.boss_raffle[name] = weight
-                            end
-                        end
+                        local name = string.format("mtn-addon-boss-%s-%s-%s", element, boss_kind, tier)
+                        add_weight(raffles.boss_raffle, name, weight)
                     end
                 end
             end
-        elseif family == "space_age" and Public.is_modded_pt2 then
-            for type_name, sizes in pairs(groups) do
-                for size, tiers in pairs(sizes) do
-                    for _, range in pairs(tiers) do
-                        local weight = level_weight(level, range[1], range[2], 2.75)
-                        if weight then
+        elseif family == "space_age" then
+            if Public.is_modded_pt2 then
+                for type_name, sizes in pairs(groups) do
+                    for size, tiers in pairs(sizes) do
+                        local tier_names = {}
+                        for tier in pairs(tiers) do
+                            tier_names[#tier_names + 1] = tier
+                        end
+                        table.sort(tier_names)
+                        for _, tier in ipairs(tier_names) do
+                            local range = tiers[tier]
+                            local weight = level_weight(level, range[1], range[2], 2.75)
                             local proto_name = string.format("%s-%s-pentapod", size, type_name)
                             if type_name == "demolisher" then
                                 proto_name = string.format("%s-%s", size, type_name)
                             end
-                            raffles.biter_raffle[proto_name] = weight
+                            add_weight(raffles.biter_raffle, proto_name, weight)
                         end
                     end
                 end
@@ -876,10 +882,8 @@ local function fill_raffles(level)
                 for tier, range in pairs(tiers) do
                     for _, element in ipairs(elements) do
                         local weight = level_weight(level, range[1], range[2], 2.75)
-                        if weight then
-                            local name = string.format("mtn-addon-%s-%s-%s-%s", size, element, family, tier)
-                            raffles[family .. "_raffle"][name] = weight
-                        end
+                        local name = string.format("mtn-addon-%s-%s-%s-%s", size, element, family, tier)
+                        add_weight(raffles[family .. "_raffle"], name, weight)
                     end
                 end
             end
@@ -888,13 +892,37 @@ local function fill_raffles(level)
     end
 
 
+    if not excluded_families.biter then
+        local armored_weights =
+        {
+            small = level_weight(level, 1, 300, 2.75),
+            medium = level_weight(level, 100, 400, 2.75),
+            big = level_weight(level, 300, 800, 2.75),
+            behemoth = level_weight(level, 600, 1400, 2.75)
+        }
+        for size, weight in pairs(armored_weights) do
+            local name = string.format('mtn-addon-%s-armored-biter', size)
+            add_weight(raffles.biter_raffle, name, weight)
+        end
+        local flanker_weights =
+        {
+            small = level_weight(level, 1, 300, 2.75),
+            medium = level_weight(level, 100, 400, 2.75),
+            big = level_weight(level, 300, 800, 2.75)
+        }
+        for size, weight in pairs(flanker_weights) do
+            local name = string.format('mtn-addon-%s-flanker-biter', size)
+            add_weight(raffles.biter_raffle, name, weight)
+        end
+    end
+
     return raffles
 end
 
 
 local set_unit_raffle_token =
     Task.register(function (event)
-        local level = event.level
+        local level = math.max(event.level, 0)
         local raffles
 
         if not is_modded then
@@ -931,7 +959,9 @@ local set_unit_raffle_token =
 
         for _, tbl in pairs(raffles) do
             for k, v in pairs(tbl) do
-                tbl[k] = math.max(v or 0, 0)
+                if not v or v <= 0 then
+                    tbl[k] = nil
+                end
             end
         end
 
@@ -942,75 +972,44 @@ local set_unit_raffle_token =
 
 
 local set_worm_raffle_token =
-    Task.register(
-        function (event)
-            local level = event.level
-            if not is_modded then
-                WD.set(
-                    'worm_raffle',
-                    {
-                        ['small-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['medium-worm-turret'] = round(level, 6),
-                        ['big-worm-turret'] = 0,
-                        ['behemoth-worm-turret'] = 0
-                    }
-                )
-                local worm_raffle = WD.get('worm_raffle') --[[@as table]]
+    Task.register(function (event)
+        local level = math.min(math.max(event.level, 0), 1000)
+        local worm_raffle = {}
+        local tiers =
+        {
+            { 'small', round(1000 - level * 1.75, 6) },
+            { 'medium', round(level <= 500 and level or 1000 - level, 6) },
+            { 'big', round(math.max(level - 500, 0) * 2, 6) },
+            { 'behemoth', round(math.max(level - 800, 0) * 3, 6) }
+        }
+        local worm_elements = { 'explosive', 'fire', 'piercing', 'poison', 'electric' }
 
-                if level > 500 then
-                    worm_raffle['medium-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['big-worm-turret'] = round((level - 500) * 2, 6)
+        for _, tier in ipairs(tiers) do
+            local size, weight = tier[1], tier[2]
+            if weight > 0 then
+                local names = {}
+                local name = size .. '-worm-turret'
+                if prototypes.entity[name] then
+                    names[#names + 1] = name
                 end
-                if level > 800 then
-                    worm_raffle['behemoth-worm-turret'] = round((level - 800) * 3, 6)
-                end
-                for k, _ in pairs(worm_raffle) do
-                    if worm_raffle[k] < 0 then
-                        worm_raffle[k] = 0
+                if is_modded then
+                    local custom_size = size == 'behemoth' and 'big' or size
+                    if size ~= 'big' then
+                        for _, element in ipairs(worm_elements) do
+                            name = 'mtn-addon-' .. custom_size .. '-' .. element .. '-worm-turret'
+                            if prototypes.entity[name] then
+                                names[#names + 1] = name
+                            end
+                        end
                     end
                 end
-            else
-                WD.set(
-                    'worm_raffle',
-                    {
-                        ['small-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['mtn-addon-small-explosive-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['mtn-addon-small-fire-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['mtn-addon-small-piercing-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['mtn-addon-small-poison-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['mtn-addon-small-electric-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['medium-worm-turret'] = round(level, 6),
-                        ['big-worm-turret'] = 0,
-                        ['behemoth-worm-turret'] = 0
-                    }
-                )
-                local worm_raffle = WD.get('worm_raffle') --[[@as table]]
-
-                if level > 500 then
-                    worm_raffle['mtn-addon-medium-explosive-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['mtn-addon-medium-fire-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['mtn-addon-medium-piercing-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['mtn-addon-medium-poison-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['mtn-addon-medium-electric-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['medium-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['big-worm-turret'] = round((level - 500) * 2, 6)
-                end
-                if level > 800 then
-                    worm_raffle['mtn-addon-big-explosive-worm-turret'] = round((level - 800) * 3, 6)
-                    worm_raffle['mtn-addon-big-fire-worm-turret'] = round((level - 800) * 3, 6)
-                    worm_raffle['mtn-addon-big-piercing-worm-turret'] = round((level - 800) * 3, 6)
-                    worm_raffle['mtn-addon-big-poison-worm-turret'] = round((level - 800) * 3, 6)
-                    worm_raffle['mtn-addon-big-electric-worm-turret'] = round((level - 800) * 3, 6)
-                    worm_raffle['behemoth-worm-turret'] = round((level - 800) * 3, 6)
-                end
-                for k, _ in pairs(worm_raffle) do
-                    if worm_raffle[k] < 0 then
-                        worm_raffle[k] = 0
-                    end
+                for _, variant in ipairs(names) do
+                    worm_raffle[variant] = weight / #names
                 end
             end
         end
-    )
+        WD.set('worm_raffle', worm_raffle)
+    end)
 
 local function do_artillery_turrets_targets()
     local art_table = this.art_table
@@ -1849,6 +1848,13 @@ end
 function Public.set_threat_values()
     WD.set('threat_values',
         {
+            ['mtn-addon-small-flanker-biter'] = 1,
+            ['mtn-addon-medium-flanker-biter'] = 4,
+            ['mtn-addon-big-flanker-biter'] = 16,
+            ['mtn-addon-small-armored-biter'] = 1,
+            ['mtn-addon-medium-armored-biter'] = 4,
+            ['mtn-addon-big-armored-biter'] = 16,
+            ['mtn-addon-behemoth-armored-biter'] = 64,
             ['biter-spawner'] = 128,
             ['spitter-spawner'] = 128,
             ['behemoth-biter'] = 64,
@@ -2102,6 +2108,13 @@ function Public.set_threat_values()
     local unit_settings = WD.get('unit_settings')
     unit_settings.scale_units_by_health =
     {
+        ['mtn-addon-small-flanker-biter'] = 1,
+        ['mtn-addon-medium-flanker-biter'] = 0.75,
+        ['mtn-addon-big-flanker-biter'] = 0.5,
+        ['mtn-addon-small-armored-biter'] = 1,
+        ['mtn-addon-medium-armored-biter'] = 0.75,
+        ['mtn-addon-big-armored-biter'] = 0.5,
+        ['mtn-addon-behemoth-armored-biter'] = 0.25,
         ['small-wriggler-pentapod'] = 1,
         ['medium-wriggler-pentapod'] = 0.75,
         ['big-wriggler-pentapod'] = 0.5,

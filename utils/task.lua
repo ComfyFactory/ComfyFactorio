@@ -243,6 +243,14 @@ function Task.queue_task(func_token, params, weight)
     Queue_push(task_queue, { func_token = func_token, params = params, weight = weight })
 end
 
+function Task.get_queue_tasks(func_token)
+    local pending = {}
+    for _, task in Queue.pairs(task_queue) do
+        if task.func_token == func_token then pending[#pending + 1] = task.params end
+    end
+    return pending
+end
+
 function Task.get_queue_speed()
     return primitives.task_queue_speed
 end

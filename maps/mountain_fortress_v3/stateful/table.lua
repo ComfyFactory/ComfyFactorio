@@ -598,6 +598,18 @@ local rockets_launched_token =
         end
     )
 
+local ctf_token =
+    Task.register(
+        function ()
+            local objective = this.objectives.ctf
+            local completed = objective.actual >= objective.expected
+            return completed, { 'stateful.ctf', objective.expected },
+                { completed and 'stateful.done' or 'stateful.not_done', objective.actual, objective.expected },
+                { 'stateful.ctf_tooltip' },
+                { completed and 'stateful.tooltip_completed' or 'stateful.tooltip_not_completed' }
+        end
+    )
+
 local function scale(setting, limit, factor)
     factor = factor or 1.05
     local scale_value = floor(setting * (factor ^ this.rounds_survived))
@@ -930,6 +942,11 @@ local function get_random_objectives()
             discord = 'Launch rockets'
         }
     }
+
+    if prototypes and prototypes.entity and prototypes.item
+        and prototypes.entity['mtn-addon-mission-flag-post-medium'] and prototypes.item['mtn-addon-mission-flag'] then
+        items[#items + 1] = { name = 'ctf', token = ctf_token, discord = 'Capture the flag' }
+    end
 
     shuffle(items)
     shuffle(items)
@@ -1901,6 +1918,21 @@ function Public.save_settings_before_reset()
     end
 end
 
+function Public.record_flag_delivery(run_id, mission_id, generation)
+    if not this.flag_deliveries then
+        this.flag_deliveries = this.bonus_objectives and this.bonus_objectives.ctf or { actual = 0, deliveries = {} }
+    end
+    local ledger = this.flag_deliveries
+    local identity = tostring(run_id) .. ':' .. tostring(mission_id) .. ':' .. tostring(generation)
+    if ledger.deliveries[identity] then return false end
+    ledger.deliveries[identity] = true
+    ledger.actual = ledger.actual + 1
+    if this.objectives and this.objectives.ctf then
+        this.objectives.ctf.actual = ledger.actual
+    end
+    return true
+end
+
 function Public.reset_stateful(refresh_gui, clear_buffs)
     this.test_mode = false
 
@@ -2113,6 +2145,13 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 
     this.objectives_time_spent = {}
     this.objectives_completed_count = 0
+    this.bonus_objectives = nil
+    this.flag_deliveries = { actual = 0, deliveries = {} }
+    this.objectives.ctf =
+    {
+        actual = 0,
+        expected = math.min(10, 3 + math.max(0, floor(tonumber(this.rounds_survived) or 0)))
+    }
 
     this.collection =
     {

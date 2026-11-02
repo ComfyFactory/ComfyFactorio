@@ -1,10 +1,12 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Task = require 'utils.task_token'
+local Token = require 'utils.token'
 local Public = {}
 
 local math_floor = math.floor
 local table_shuffle_table = table.shuffle_table
+local removal_observers = {}
 
 local this =
 {
@@ -12,6 +14,7 @@ local this =
     disabled = false,
     reverse_disabled = false
 }
+
 Global.register(
     this,
     function (tbl)
@@ -136,6 +139,29 @@ local directions =
     end
 }
 
+function Public.register_removal_observer(observer)
+    assert(type(observer) == 'number' and type(Token.get(observer)) == 'function', 'Expected a removal observer token')
+    removal_observers[#removal_observers + 1] = observer
+end
+
+local function observe_removal(entity)
+    local completions = {}
+    if entity.valid then
+        for _, observer in ipairs(removal_observers) do
+            local completion = Token.get(observer)(entity)
+            if completion then
+                completions[#completions + 1] = completion
+            end
+        end
+    end
+    return function ()
+        if entity.valid then return end
+        for _, completion in ipairs(completions) do
+            completion()
+        end
+    end
+end
+
 local function print_debug(a)
     if not this.debug then
         return
@@ -257,11 +283,13 @@ local function progress()
             local entities = this.specific_entities.entities
             for _, e in pairs(surface.find_entities_filtered({ area = { { position[1] - 4, position[2] - 2 }, { position[1] + 4, position[2] + 2 } } })) do
                 custom_callback(e)
+                local removed = observe_removal(e)
                 if e.valid and entities[e.name] and e.health then
                     e.die()
                 elseif e.valid then
                     e.destroy()
                 end
+                removed()
             end
         end
         surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)
@@ -307,11 +335,13 @@ local function progress_reverse()
             local entities = this.specific_entities.entities
             for _, e in pairs(surface.find_entities_filtered({ area = { { position[1] - 4, position[2] - 2 }, { position[1] + 4, position[2] + 2 } } })) do
                 custom_callback(e)
+                local removed = observe_removal(e)
                 if entities[e.name] and e.valid and e.health then
                     e.die()
                 elseif e.valid then
                     e.destroy()
                 end
+                removed()
             end
         end
         surface.set_tiles({ { name = 'out-of-map', position = tile.position } }, true)

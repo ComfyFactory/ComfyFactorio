@@ -2,52 +2,38 @@ local Public = require 'modules.wave_defense.table'
 local Task = require 'utils.task_token'
 local round = math.round
 
-function Public.wave_defense_roll_biter_name(raffle)
-    local biter_raffle = raffle or Public.get('biter_raffle') --[[@as table]]
-    local max_chance = 0
-    for _, v in pairs(biter_raffle) do
-        max_chance = max_chance + v
+local function roll_weighted_name(raffle)
+    local total = 0
+    for _, weight in pairs(raffle) do
+        if weight > 0 then
+            total = total + weight
+        end
     end
-    local r = math.random(0, math.floor(max_chance))
-    local current_chance = 0
-    for k, v in pairs(biter_raffle) do
-        current_chance = current_chance + v
-        if r <= current_chance then
-            return k
+    if total <= 0 then
+        return
+    end
+    local roll = math.random() * total
+    local cumulative = 0
+    for name, weight in pairs(raffle) do
+        if weight > 0 then
+            cumulative = cumulative + weight
+            if roll < cumulative then
+                return name
+            end
         end
     end
 end
 
-function Public.wave_defense_roll_boss_name()
-    local boss_raffle = Public.get('boss_raffle') --[[@as table]]
-    local max_chance = 0
-    for _, v in pairs(boss_raffle) do
-        max_chance = max_chance + v
-    end
-    local r = math.random(0, math.floor(max_chance))
-    local current_chance = 0
-    for k, v in pairs(boss_raffle) do
-        current_chance = current_chance + v
-        if r <= current_chance then
-            return k
-        end
-    end
+function Public.wave_defense_roll_biter_name(raffle)
+    return roll_weighted_name(raffle or Public.get('biter_raffle'))
+end
+
+function Public.wave_defense_roll_boss_name(raffle)
+    return roll_weighted_name(raffle or Public.get('boss_raffle'))
 end
 
 function Public.wave_defense_roll_spitter_name(raffle)
-    local spitter_raffle = raffle or Public.get('spitter_raffle') --[[@as table]]
-    local max_chance = 0
-    for _, v in pairs(spitter_raffle) do
-        max_chance = max_chance + v
-    end
-    local r = math.random(0, math.floor(max_chance))
-    local current_chance = 0
-    for k, v in pairs(spitter_raffle) do
-        current_chance = current_chance + v
-        if r <= current_chance then
-            return k
-        end
-    end
+    return roll_weighted_name(raffle or Public.get('spitter_raffle'))
 end
 
 function Public.wave_defense_set_unit_raffle(level)
@@ -153,18 +139,7 @@ function Public.wave_defense_roll_worm_name(exclude)
     end
 
 
-    local max_chance = 0
-    for _, v in pairs(worm_raffle) do
-        max_chance = max_chance + v
-    end
-    local r = math.random(0, math.floor(max_chance))
-    local current_chance = 0
-    for k, v in pairs(worm_raffle) do
-        current_chance = current_chance + v
-        if r <= current_chance then
-            return k
-        end
-    end
+    return roll_weighted_name(worm_raffle)
 end
 
 function Public.wave_defense_set_worm_raffle(level)

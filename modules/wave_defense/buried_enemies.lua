@@ -85,6 +85,7 @@ local function spawn_biters(data)
     if entity_name then
         unit_to_create = entity_name
     end
+    if not unit_to_create then return end
 
     local modified_unit_health = Public.get('modified_unit_health')
     local modified_boss_unit_health = Public.get('modified_boss_unit_health')
@@ -115,6 +116,7 @@ local function spawn_worms(data)
     Public.wave_defense_set_worm_raffle(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
 
     local unit_to_create = Public.wave_defense_roll_worm_name(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
+    if not unit_to_create then return end
 
     local unit = surface.create_entity({ name = unit_to_create, position = position })
     local unit_settings = Public.get('unit_settings')

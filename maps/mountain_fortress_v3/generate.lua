@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local RelayStation = require 'maps.mountain_fortress_v3.relay_station'
 local Task = require 'utils.task_token'
 local WD = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
@@ -451,7 +452,7 @@ local function do_place_entities(data)
                     if e.note then -- small-worm-turret, medium-worm-turret, big-worm-turret, behemoth-worm-turret
                         local modified_unit_health = WD.get('modified_unit_health')
                         local unit_settings = WD.get('unit_settings')
-                        local final_health = round(modified_unit_health.current_value * unit_settings.scale_worms_by_health[entity.name], 3)
+                        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_worms_by_health[entity.name] or 1), 3)
                         if final_health < 1 then
                             final_health = 1
                         end
@@ -503,6 +504,7 @@ local function run_chart_update(data)
 end
 
 local function map_gen_action(data)
+    if data.relay_generation and data.relay_generation ~= RelayStation.surface_generation(data.surface) then return false end
     local state = data.y
 
     if state < 32 then
@@ -583,6 +585,7 @@ local function map_gen_action(data)
         return true
     elseif state == 41 then
         run_chart_update(data)
+        RelayStation.chunk_ready(data.surface, data.area.left_top, data.relay_generation)
         return false
     end
 end
@@ -615,6 +618,7 @@ local function schedule_chunk(event)
         yv = -0,
         xv = 0,
         y = 0,
+        relay_generation = RelayStation.surface_generation(surface),
         x = area.left_top.x,
         area = area,
         top_x = area.left_top.x,
@@ -658,6 +662,7 @@ local function force_do_chunk(event)
     {
         yv = -0,
         xv = 0,
+        relay_generation = RelayStation.surface_generation(surface),
         area = area,
         top_x = area.left_top.x,
         top_y = area.left_top.y,
@@ -689,6 +694,27 @@ local function force_do_chunk(event)
     do_place_decoratives(data)
     do_place_markets(data)
     do_place_treasure(data)
+    RelayStation.chunk_ready(data.surface, data.area.left_top, data.relay_generation)
+end
+
+function Public.recover_relay_chunks(surface, generation, probe)
+    if Public.get('stop_chunk') or Public.get('final_battle') then return false end
+    if not surface.get_chunks then return false end
+    if probe then return true end
+    local pending = {}
+    for _, data in pairs(Task.get_queue_tasks(map_gen_action_token)) do
+        if data.surface and data.surface.index == surface.index then
+            local top = data.area.left_top
+            pending[math.floor(top.x / 32) .. ':' .. math.floor(top.y / 32)] = true
+
+        end
+    end
+    for chunk in surface.get_chunks() do
+        if not pending[chunk.x .. ':' .. chunk.y] and surface.is_chunk_generated(chunk) then
+            RelayStation.chunk_ready(surface, { x = chunk.x * 32, y = chunk.y * 32 }, generation)
+        end
+    end
+    return true
 end
 
 local function on_chunk(event)

@@ -728,7 +728,7 @@ spells[#spells + 1] =
     cooldown = 200,
     enabled = true,
     sprite = 'entity/small-biter',
-    tooltip = 'Spawns a small biter',
+    tooltip = 'Spawns a friendly small biter',
     callback = function (data)
         return create_entity(data)
     end
@@ -744,7 +744,7 @@ spells[#spells + 1] =
     cooldown = 200,
     enabled = true,
     sprite = 'entity/small-spitter',
-    tooltip = 'Spawns a small spitter',
+    tooltip = 'Spawns a friendly small spitter',
     callback = function (data)
         return create_entity(data)
     end
@@ -760,7 +760,7 @@ spells[#spells + 1] =
     cooldown = 300,
     enabled = true,
     sprite = 'entity/medium-biter',
-    tooltip = 'Spawns a medium biter',
+    tooltip = 'Spawns a friendly medium biter',
     callback = function (data)
         return create_entity(data)
     end
@@ -776,7 +776,7 @@ spells[#spells + 1] =
     cooldown = 300,
     enabled = true,
     sprite = 'entity/medium-spitter',
-    tooltip = 'Spawns a medium spitter',
+    tooltip = 'Spawns a friendly medium spitter',
     callback = function (data)
         return create_entity(data)
     end
@@ -793,7 +793,7 @@ spells[#spells + 1] =
     enabled = false,
     log_spell = true,
     sprite = 'entity/biter-spawner',
-    tooltip = 'Spawns a biter spawner',
+    tooltip = 'Spawns a friendly biter spawner',
     callback = function (data)
         return create_entity(data)
     end
@@ -810,7 +810,61 @@ spells[#spells + 1] =
     enabled = false,
     log_spell = true,
     sprite = 'entity/spitter-spawner',
-    tooltip = 'Spawns a spitter spawner',
+    tooltip = 'Spawns a friendly spitter spawner',
+    callback = function (data)
+        return create_entity(data)
+    end
+}
+spells[#spells + 1] =
+{
+    name = { 'entity-name.small-worm-turret' },
+    entityName = 'small-worm-turret',
+    level = 40,
+    biter = true,
+    type = 'entity',
+    mana_cost = 150,
+    cooldown = 600,
+    enabled = true,
+    enforce_cooldown = true,
+    log_spell = true,
+    sprite = 'entity/small-worm-turret',
+    tooltip = 'Spawns a friendly small worm',
+    callback = function (data)
+        return create_entity(data)
+    end
+}
+spells[#spells + 1] =
+{
+    name = { 'entity-name.medium-worm-turret' },
+    entityName = 'medium-worm-turret',
+    level = 70,
+    biter = true,
+    type = 'entity',
+    mana_cost = 300,
+    cooldown = 900,
+    enabled = true,
+    enforce_cooldown = true,
+    log_spell = true,
+    sprite = 'entity/medium-worm-turret',
+    tooltip = 'Spawns a friendly medium worm',
+    callback = function (data)
+        return create_entity(data)
+    end
+}
+spells[#spells + 1] =
+{
+    name = { 'entity-name.big-worm-turret' },
+    entityName = 'big-worm-turret',
+    level = 100,
+    biter = true,
+    type = 'entity',
+    mana_cost = 500,
+    cooldown = 1200,
+    enabled = true,
+    enforce_cooldown = true,
+    log_spell = true,
+    sprite = 'entity/big-worm-turret',
+    tooltip = 'Spawns a friendly big worm',
     callback = function (data)
         return create_entity(data)
     end

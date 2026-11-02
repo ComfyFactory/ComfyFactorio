@@ -653,6 +653,9 @@ local function spawn_worm(surface, position, is_boss_worm)
     local boosted_health = BiterHealthBooster.get('biter_health_boost')
 
     local name = Public.wave_defense_roll_worm_name()
+    if not name then
+        return false
+    end
 
     local old_position = position
 

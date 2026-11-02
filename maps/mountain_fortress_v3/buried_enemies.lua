@@ -66,6 +66,7 @@ local function spawn_biters(data)
         return false
     end
     local position = data.position
+    if not position then return false end
     local h = floor(abs(Orient.progression(position)))
 
     local max_biters = Public.get('biters')
@@ -82,7 +83,7 @@ local function spawn_biters(data)
     end
 
     local unit_to_create
-    WD.wave_defense_set_unit_raffle(h * 0.20)
+    WD.wave_defense_set_unit_raffle(data.difficulty or h * 0.20)
 
     if random(1, 3) == 1 then
         unit_to_create = WD.wave_defense_roll_spitter_name()
@@ -90,14 +91,11 @@ local function spawn_biters(data)
         unit_to_create = WD.wave_defense_roll_biter_name()
     end
 
-    if string.find(unit_to_create, 'demolisher') then
-        return false
-    end
-
     if not unit_to_create then
         Server.output_script_data('buried_enemies - unit_to_create was nil?')
-        return
+        return false
     end
+    if string.find(unit_to_create, 'demolisher') then return false end
 
     local modified_unit_health = WD.get('modified_unit_health')
     local modified_boss_unit_health = WD.get('modified_boss_unit_health')
@@ -105,12 +103,13 @@ local function spawn_biters(data)
     local unit_settings = WD.get('unit_settings')
 
     local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy' })
+    if not (unit and unit.valid) then return false end
     max_biters.amount = max_biters.amount + 1
 
     if random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
     else
-        local final_health = round(modified_unit_health.current_value * unit_settings.scale_units_by_health[unit.name], 3)
+        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_units_by_health[unit.name] or 1), 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -216,7 +215,8 @@ local function spawn_worms(data)
     end
 end
 
-function Public.buried_biter(surface, position, count, force)
+
+function Public.buried_biter(surface, position, count, force, options)
     if not (surface and surface.valid) then
         return
     end
@@ -242,28 +242,18 @@ function Public.buried_biter(surface, position, count, force)
         this[game.tick + t][#this[game.tick + t] + 1] =
         {
             callback = 'create_particles',
-            data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05) }
+            data = { surface = surface, position = { x = position.x, y = position.y }, amount = math.ceil(t * 0.05),
+                cancellation = options and options.cancellation }
         }
-
-        if t == 60 then
-            if count == 1 then
-                this[game.tick + t][#this[game.tick + t] + 1] =
-                {
-                    callback = 'spawn_biters',
-                    data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
-                }
-            else
-                local tick = 2
-                for _ = 1, count do
-                    this[game.tick + t][#this[game.tick + t] + 1 + tick] =
-                    {
-                        callback = 'spawn_biters',
-                        data = { surface = surface, position = { x = position.x, y = position.y }, count = count or 1, force = force or 'enemy' }
-                    }
-                    tick = tick + 2
-                end
-            end
-        end
+    end
+    for i = 1, count do
+        local tick = game.tick + 60 + (i - 1) * 2
+        this[tick] = this[tick] or {}
+        this[tick][#this[tick] + 1] = {
+            callback = 'spawn_biters',
+            data = { surface = surface, position = { x = position.x, y = position.y }, force = force or 'enemy',
+                difficulty = options and options.difficulty, cancellation = options and options.cancellation }
+        }
     end
 end
 
@@ -370,7 +360,7 @@ local function on_tick()
         local callback = token.callback
         local data = token.data
         local cbl = callbacks[callback]
-        if callbacks[callback] then
+        if cbl and not (data.cancellation and data.cancellation.cancelled) then
             cbl(data)
         end
     end

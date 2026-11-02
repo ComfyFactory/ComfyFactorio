@@ -9,6 +9,13 @@ local random = math.random
 
 local coin_yield =
 {
+    ['mtn-addon-small-flanker-biter'] = 1,
+    ['mtn-addon-medium-flanker-biter'] = 2,
+    ['mtn-addon-big-flanker-biter'] = 3,
+    ['mtn-addon-small-armored-biter'] = 1,
+    ['mtn-addon-medium-armored-biter'] = 2,
+    ['mtn-addon-big-armored-biter'] = 3,
+    ['mtn-addon-behemoth-armored-biter'] = 5,
     ['behemoth-biter'] = 5,
     ['behemoth-spitter'] = 5,
     ['behemoth-worm-turret'] = 10,

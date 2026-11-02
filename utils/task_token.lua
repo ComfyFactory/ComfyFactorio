@@ -15,6 +15,7 @@ Public.set_timeout_in_ticks_text = Task.set_timeout_in_ticks_text
 Public.set_timeout_in_ticks_text_to_player = Task.set_timeout_in_ticks_text_to_player
 Public.set_timeout = Task.set_timeout
 Public.queue_task = Task.queue_task
+Public.get_queue_tasks = Task.get_queue_tasks
 Public.get_queue_speed = Task.get_queue_speed
 Public.set_queue_speed = Task.set_queue_speed
 

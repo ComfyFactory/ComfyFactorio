@@ -173,6 +173,7 @@ function Public.reset_table(migrate)
         ['pipe'] = true
     }
     this.tweaked_crafting_items_enabled = true
+    this.pets = {}
     if not migrate then
         this.rpg_t = {}
     end

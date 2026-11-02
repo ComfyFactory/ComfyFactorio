@@ -10,6 +10,7 @@ local StatData = require 'utils.datastore.statistics'
 local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
 local Color = require 'utils.color_presets'
+local Token = require 'utils.token'
 
 StatData.add_normalize('spells', 'Spells casted')
 
@@ -28,6 +29,26 @@ local round = math.round
 local floor = math.floor
 local random = math.random
 local sqrt = math.sqrt
+
+local spell_cast_validators = {}
+
+function Public.register_spell_cast_validator(validator)
+    assert(type(validator) == 'number' and type(Token.get(validator)) == 'function', 'Expected a spell validator token')
+    spell_cast_validators[#spell_cast_validators + 1] = validator
+end
+
+function Public.validate_spell_cast(player)
+    for _, validator in ipairs(spell_cast_validators) do
+        local allowed, message = Token.get(validator)(player)
+        if allowed == false then
+            if message and not SpamProtection.is_spamming(player, nil, 'RPG spell cast blocked') then
+                Public.display_notification(player, message, Color.warning)
+            end
+            return false
+        end
+    end
+    return true
+end
 
 local function on_gui_click(event)
     if not event then
@@ -970,6 +991,43 @@ local function tame_unit_effects(player, entity)
         alignment = 'center',
         scale_with_zoom = false
     }
+
+    if entity.type == 'unit' then
+        entity.ai_settings.allow_destroy_when_commands_fail = false
+    end
+
+    local pets = Public.get('pets')
+    if not pets then
+        pets = {}
+        Public.set('pets', pets)
+    end
+
+    local count = 0
+    local oldest_index = nil
+    local oldest_tick = nil
+    local n = #pets
+    for i = 1, n do
+        local pet = pets[i]
+        if pet.player_index == player.index and pet.entity.valid then
+            count = count + 1
+            local pet_tick = pet.tick or 0
+            if not oldest_tick or pet_tick < oldest_tick then
+                oldest_tick = pet_tick
+                oldest_index = i
+            end
+        end
+    end
+
+    if count >= 10 and oldest_index then
+        local old = pets[oldest_index]
+        if old.entity.valid then
+            old.entity.destroy()
+        end
+        pets[oldest_index] = pets[n]
+        pets[n] = nil
+    end
+
+    pets[#pets + 1] = { entity = entity, player_index = player.index, tick = game.tick }
 end
 
 local function on_player_used_capsule_custom(event)
@@ -983,10 +1041,6 @@ local function on_player_used_capsule_custom(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player, nil, 'RPG - on_player_used_capsule_custom')
-    if is_spamming then
-        return
-    end
     local projectile_types = Public.get_projectiles
 
     if not player.character or not player.character.valid then
@@ -1007,6 +1061,15 @@ local function on_player_used_capsule_custom(event)
 
     local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_t then
+        return
+    end
+
+    if not Public.validate_spell_cast(player) then
+        return
+    end
+
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'RPG - on_player_used_capsule_custom')
+    if is_spamming then
         return
     end
 
@@ -1201,6 +1264,10 @@ local function on_player_used_capsule(event)
         return
     end
 
+    if not Public.validate_spell_cast(player) then
+        return
+    end
+
     local mana = rpg_t.mana
     local surface = player.surface
 
@@ -1365,6 +1432,40 @@ local function tick()
             regen_mana_player(players)
         end
         Public.update_cooldown(players)
+
+        local pets = Public.get('pets')
+        if pets then
+            local n = #pets
+            local kept = 0
+            for i = 1, n do
+                local pet = pets[i]
+                local entity = pet.entity
+                local player = entity.valid and game.get_player(pet.player_index)
+                if entity.valid and player and player.valid then
+                    kept = kept + 1
+                    pets[kept] = pet
+                    local character = player.character
+                    if entity.type == 'unit' and character and character.valid and character.surface == entity.surface then
+                        local dx = character.position.x - entity.position.x
+                        local dy = character.position.y - entity.position.y
+                        local dist = dx * dx + dy * dy
+                        local commandable = entity.commandable
+                        if commandable and commandable.valid and (dist > 6400 or (not commandable.command and dist > 4)) then
+                            commandable.set_command({
+                                type = defines.command.go_to_location,
+                                destination_entity = character,
+                                radius = 2,
+                                distraction = defines.distraction.by_enemy,
+                                pathfind_flags = { cache = false, low_priority = true }
+                            })
+                        end
+                    end
+                end
+            end
+            for i = kept + 1, n do
+                pets[i] = nil
+            end
+        end
     end
 end
 

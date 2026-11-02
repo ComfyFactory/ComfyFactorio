@@ -378,10 +378,10 @@ local function connect_power_pole(entity, wagon_area_left_top_y)
     for _, pole in pairs(surface.find_entities_filtered({ area = area, name = entity.name })) do
         if pole.position.y < wagon_area_left_top_y then
             local source_wire = entity.get_wire_connector(defines.wire_connector_id.pole_copper, false)
-                        local target_wire = pole.get_wire_connector(defines.wire_connector_id.pole_copper, false)
-                        if source_wire and target_wire then
-                            source_wire.connect_to(target_wire, false, defines.wire_origin.script)
-                        end
+            local target_wire = pole.get_wire_connector(defines.wire_connector_id.pole_copper, false)
+            if source_wire and target_wire then
+                source_wire.connect_to(target_wire, false, defines.wire_origin.script)
+            end
             return
         end
     end

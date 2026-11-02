@@ -70,4 +70,54 @@ if _DEBUG then
                 game.write_file('dump.lua', v, false)
             end
         )
+
+
+    Commands.new('check_storage', 'Check for dumdum lua funcs.')
+        :require_admin()
+        :callback(
+            function (player)
+                local seen, identities = {}, {}
+                local count, serial = 0, 0
+                local function report(message)
+                    log(message)
+                    if player then player.print(message) end
+                end
+                local function label(key)
+                    local kind = type(key)
+                    if kind == 'string' then
+                        if key:match('^[%a_][%w_]*$') then return '.' .. key end
+                        return '[' .. string.format('%q', key) .. ']'
+                    end
+                    if kind == 'number' or kind == 'boolean' then return '[' .. tostring(key) .. ']' end
+                    if not identities[key] then
+                        serial = serial + 1
+                        identities[key] = serial
+                    end
+                    return '[<' .. kind .. '#' .. identities[key] .. '>]'
+                end
+                local function scan(value, path)
+                    if count >= 20 then return end
+                    local kind = type(value)
+                    if kind == 'function' then
+                        count = count + 1
+                        report('[Storage check] Function at ' .. path)
+                        return
+                    end
+                    if kind ~= 'table' or seen[value] or type(rawget(value, '__self')) == 'userdata' then return end
+                    seen[value] = true
+                    for key, child in next, value do
+                        local suffix = label(key)
+                        scan(key, path .. '.<key' .. suffix .. '>')
+                        scan(child, path .. suffix)
+                        if count >= 20 then return end
+                    end
+                end
+                scan(storage, 'storage')
+                if count == 20 then
+                    report('[Storage check] Stopped at 20 functions')
+                else
+                    report('[Storage check] Complete: ' .. count .. ' lua functions found.')
+                end
+            end
+        )
 end

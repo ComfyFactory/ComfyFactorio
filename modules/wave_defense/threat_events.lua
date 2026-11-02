@@ -50,24 +50,16 @@ local slowly_spawn_biters_token =
                 return
             end
             local position = { data.position.x + (-4 + math.random(0, 8)), data.position.y + (-4 + math.random(0, 8)) }
-            local biter
+            local name
             if math.random(1, 4) == 1 then
-                biter = surface.create_entity(
-                    {
-                        name = Public.wave_defense_roll_spitter_name(),
-                        position = position,
-                        force = 'enemy'
-                    }
-                )
+                name = Public.wave_defense_roll_spitter_name(data.spitter_raffle)
             else
-                biter = surface.create_entity(
-                    {
-                        name = Public.wave_defense_roll_biter_name(),
-                        position = position,
-                        force = 'enemy'
-                    }
-                )
+                name = Public.wave_defense_roll_biter_name(data.biter_raffle)
             end
+            if not name then
+                return
+            end
+            local biter = surface.create_entity({ name = name, position = position, force = 'enemy' })
             if biter and biter.valid then
                 raise(ServerCommands.events.on_entity_created, { entity = biter, boss_unit = false })
             end
@@ -104,7 +96,7 @@ local function remove_unit(entity)
     if biter_health_boost_units[unit_number] then
         m = 1 / biter_health_boost_units[unit_number][2]
     end
-    local active_threat_loss = math.round(threat_values[entity.name] * m, 2)
+    local active_threat_loss = math.round((threat_values[entity.name] or 1) * m, 2)
     local active_biter_threat = Public.get('active_biter_threat')
     Public.set('active_biter_threat', active_biter_threat - active_threat_loss)
     local active_biter_count = Public.get('active_biter_count')
@@ -314,7 +306,7 @@ function Public.build_worm()
     local position = unit.surface.find_non_colliding_position('assembling-machine-1', unit.position, 8, 1)
     Public.wave_defense_set_worm_raffle(wave_number)
     local worm = Public.wave_defense_roll_worm_name()
-    if not position then
+    if not worm or not position then
         return
     end
 
@@ -351,7 +343,7 @@ function Public.build_worm()
     unit.surface.create_entity({ name = 'blood-explosion-huge', position = unit.position })
     remove_unit(unit)
     destroy_tracked_entity(unit)
-    Public.set('threat', threat - threat_values[worm])
+    Public.set('threat', threat - (threat_values[worm] or 0))
 end
 
 function Public.build_worm_custom()
@@ -386,7 +378,7 @@ function Public.build_worm_custom()
     local position = unit.surface.find_non_colliding_position('assembling-machine-1', unit.position, 8, 1)
     Public.wave_defense_set_worm_raffle(wave_number)
     local worm = Public.wave_defense_roll_worm_name()
-    if not position then
+    if not worm or not position then
         return
     end
 
@@ -487,13 +479,21 @@ local function spawn_unit_spawner_inhabitants(entity)
         count = 128
     end
     Public.wave_defense_set_unit_raffle(wave_number)
+    local biter_raffle = {}
+    local spitter_raffle = {}
+    for name, weight in pairs(Public.get('biter_raffle')) do
+        biter_raffle[name] = weight
+    end
+    for name, weight in pairs(Public.get('spitter_raffle')) do
+        spitter_raffle[name] = weight
+    end
     local tick_to_spawn = 10
     for _ = 1, count, 1 do
         tick_to_spawn = tick_to_spawn + random(1, 10)
         if tick_to_spawn > 200 then
             tick_to_spawn = 10
         end
-        Task.set_timeout_in_ticks(tick_to_spawn, slowly_spawn_biters_token, { surface = entity.surface, position = entity.position })
+        Task.set_timeout_in_ticks(tick_to_spawn, slowly_spawn_biters_token, { surface = entity.surface, position = entity.position, biter_raffle = biter_raffle, spitter_raffle = spitter_raffle })
     end
 end
 
