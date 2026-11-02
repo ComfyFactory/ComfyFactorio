@@ -13,6 +13,7 @@ local Global = require 'utils.global'
 local Market = require 'maps.cave_miner_v2.market'
 local Terrain = require 'maps.cave_miner_v2.terrain'
 local Map_info = require 'modules.map_info'
+local math = require 'utils.math.math'
 
 require 'modules.satellite_score'
 require 'modules.hunger'
@@ -20,8 +21,6 @@ require 'modules.no_deconstruction_of_neutral_entities'
 require 'modules.rocks_broken_paint_tiles'
 require 'modules.rocks_heal_over_time'
 require 'modules.rocks_yield_ore_veins'
-
-local math_floor = math.floor
 
 local cave_miner = {}
 Global.register(
@@ -64,7 +63,7 @@ local function on_player_changed_position(event)
     if not player.character.valid then
         return
     end
-    Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, { x = math_floor(player.position.x), y = math_floor(player.position.y) }, 11)
+    Functions.reveal(cave_miner, game.surfaces.nauvis, game.surfaces.cave_miner_source, { x = math.floor(player.position.x), y = math.floor(player.position.y) }, 11)
 end
 
 local function on_chunk_generated(event)

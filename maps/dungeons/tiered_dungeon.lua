@@ -23,6 +23,7 @@ local Panel = require 'utils.gui.config'
 Panel.get('gui_config').spaghett.noop = true
 local Collapse = require 'modules.collapse'
 local Changelog = require 'modules.changelog'
+local math = require 'utils.math.math'
 require 'maps.dungeons.boss_arena'
 require 'modules.melee_mode'
 
@@ -40,9 +41,6 @@ Biomes.rainbow = require 'maps.dungeons.biome_rainbow'
 Biomes.treasure = require 'maps.dungeons.biome_treasure'
 Biomes.market = require 'maps.dungeons.biome_market'
 Biomes.laboratory = require 'maps.dungeons.biome_laboratory'
-
-local math_random = math.random
-local math_round = math.round
 
 local function enable_hard_rooms(position, surface_index)
     local dungeon_table = DungeonsTable.get_dungeontable()
@@ -139,7 +137,7 @@ local function draw_depth_gui()
             'dungeons_tiered.depth_tooltip',
             Functions.get_dungeon_evolution_factor(surface.index) * 100,
             forceshp[enemy_force.index] * 100,
-            math_round(enemy_force.get_ammo_damage_modifier('melee') * 100 + 100, 1),
+            math.round(enemy_force.get_ammo_damage_modifier('melee') * 100 + 100, 1),
             Functions.get_base_loot_value(surface.index),
             dungeontable.treasures[surface.index],
             techs
@@ -162,7 +160,7 @@ local function expand(surface, position)
     local dungeontable = DungeonsTable.get_dungeontable()
     local forceshp = BiterHealthBooster.get('biter_health_boost_forces')
     local room
-    local roll = math_random(1, 100)
+    local roll = math.random(1, 100)
     if roll > 96 then
         room = Room_generator.get_room(surface, position, 'big')
     elseif roll > 88 then
@@ -190,7 +188,7 @@ local function expand(surface, position)
         if room.room_tiles[1] then
             Research.unlock_research(surface.index)
         end
-    elseif math_random(1, 256) == 1 then
+    elseif math.random(1, 256) == 1 then
         Biomes['market'](surface, room)
     else
         local name = get_biome(position, surface.index)
@@ -221,7 +219,7 @@ local function expand(surface, position)
         forceshp[force.index] = 1 + evo * 2
     end
 
-    forceshp[force.index] = math_round(forceshp[force.index], 2)
+    forceshp[force.index] = math.round(forceshp[force.index], 2)
     draw_depth_gui()
 end
 
@@ -317,12 +315,12 @@ local function on_entity_spawned(event)
         bonus_unit.ai_settings.allow_try_return_to_spawner = true
         bonus_unit.ai_settings.allow_destroy_when_commands_fail = true
 
-        if math_random(1, 256) == 1 then
+        if math.random(1, 256) == 1 then
             BiterHealthBooster.add_boss_unit(bonus_unit, forceshp[force.index] * 8, 0.25)
         end
     end
 
-    if math_random(1, 256) == 1 then
+    if math.random(1, 256) == 1 then
         BiterHealthBooster.add_boss_unit(unit, forceshp[force.index] * 8, 0.25)
     end
 end
@@ -452,7 +450,7 @@ local function on_entity_damaged(event)
     if event.cause.force.index ~= 2 then
         return
     end --Enemy Force
-    if math_random(1, 256) == 1 then
+    if math.random(1, 256) == 1 then
         return
     end
     if entity.name ~= 'big-rock' then
@@ -507,7 +505,7 @@ end
 
 local function get_map_gen_settings()
     local settings = {
-        ['seed'] = math_random(1, 1000000),
+        ['seed'] = math.random(1, 1000000),
         ['water'] = 0,
         ['starting_area'] = 1,
         ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },

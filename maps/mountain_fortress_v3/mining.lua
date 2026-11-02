@@ -2,11 +2,8 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local Event = require 'utils.event'
 local Misc = require 'utils.commands.misc'
+local Math = require 'utils.math.math'
 require 'modules.check_fullness'
-
-local random = math.random
-local floor = math.floor
-local sqrt = math.sqrt
 
 local max_spill = 60
 
@@ -273,8 +270,8 @@ local particles =
 }
 
 local function create_particles(surface, name, position, amount, cause_position)
-    local d1 = (-100 + random(0, 200)) * 0.0004
-    local d2 = (-100 + random(0, 200)) * 0.0004
+    local d1 = (-100 + Math.random(0, 200)) * 0.0004
+    local d2 = (-100 + Math.random(0, 200)) * 0.0004
 
     name = name or 'leaf-particle'
 
@@ -284,7 +281,7 @@ local function create_particles(surface, name, position, amount, cause_position)
     end
 
     for _ = 1, amount, 1 do
-        local m = random(4, 10)
+        local m = Math.random(4, 10)
         local m2 = m * 0.005
 
         surface.create_particle(
@@ -296,8 +293,8 @@ local function create_particles(surface, name, position, amount, cause_position)
                 height = 0,
                 movement =
                 {
-                    (m2 - (random(0, m) * 0.01)) + d1,
-                    (m2 - (random(0, m) * 0.01)) + d2
+                    (m2 - (Math.random(0, m) * 0.01)) + d1,
+                    (m2 - (Math.random(0, m) * 0.01)) + d2
                 }
             }
         )
@@ -382,7 +379,7 @@ local function get_amount(data)
     local rocks_yield_ore_distance_modifier = mining_utils.rocks_yield_ore_distance_modifier
     local rocks_yield_ore_base_amount = mining_utils.rocks_yield_ore_base_amount
     local rocks_yield_ore_maximum_amount = mining_utils.rocks_yield_ore_maximum_amount
-    local distance_to_center = floor(sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
+    local distance_to_center = Math.floor(Math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2))
     local type_modifier = 1
     local amount
     local second_amount
@@ -412,7 +409,7 @@ local function get_amount(data)
     end
 
     amount = base_amount + (distance_to_center * distance_modifier)
-    second_amount = floor((second_base_amount + (distance_to_center * distance_modifier)) / 3)
+    second_amount = Math.floor((second_base_amount + (distance_to_center * distance_modifier)) / 3)
     if amount > maximum_amount then
         amount = maximum_amount
     end
@@ -420,9 +417,9 @@ local function get_amount(data)
         second_amount = maximum_amount
     end
 
-    local m = (70 + random(0, 60)) * 0.01
+    local m = (70 + Math.random(0, 60)) * 0.01
 
-    amount = floor(amount * type_modifier * m * 0.7)
+    amount = Math.floor(amount * type_modifier * m * 0.7)
 
     return amount, second_amount
 end
@@ -435,11 +432,11 @@ function Public.entity_died_randomness(data)
     local surface = data.surface
     local harvest
 
-    harvest = harvest_raffle_ores[random(1, size_of_ore_raffle)]
+    harvest = harvest_raffle_ores[Math.random(1, size_of_ore_raffle)]
 
     local position = { x = entity.position.x, y = entity.position.y }
 
-    surface.spill_item_stack({ position = position, stack = { name = harvest, count = random(1, 5), quality = 'normal' } })
+    surface.spill_item_stack({ position = position, stack = { name = harvest, count = Math.random(1, 5), quality = 'normal' } })
 
     local particle = particles[harvest]
     create_particles(surface, particle, position, 16, { x = entity.position.x, y = entity.position.y })
@@ -453,18 +450,18 @@ local function randomness(data)
     local harvest_amount
 
     harvest_amount = get_amount(data) * data.multiplier
-    harvest_amount = math.floor(harvest_amount)
+    harvest_amount = Math.floor(harvest_amount)
 
     if valid_trees[entity.name] then
         harvest = valid_trees[entity.name]
         if harvest == 'wood' then
-            harvest_amount = random(1, 20)
+            harvest_amount = Math.random(1, 20)
         end
     else
         if data.mid then
-            harvest = harvest_raffle_mid_ores[random(1, size_of_mid_ore_raffle)]
+            harvest = harvest_raffle_mid_ores[Math.random(1, size_of_mid_ore_raffle)]
         else
-            harvest = harvest_raffle_ores[random(1, size_of_ore_raffle)]
+            harvest = harvest_raffle_ores[Math.random(1, size_of_ore_raffle)]
         end
     end
 
@@ -522,12 +519,12 @@ local function randomness_scrap(data)
     local player = data.player
     local spill_items_to_surface = Public.get('spill_items_to_surface')
 
-    local harvest = scrap_raffle[random(1, size_of_scrap_raffle)]
+    local harvest = scrap_raffle[Math.random(1, size_of_scrap_raffle)]
     local amount_bonus = game.forces.player.mining_drill_productivity_bonus * 2
-    local r1 = math.ceil(scrap_yield_amounts[harvest] * (0.3 + (amount_bonus * 0.3)))
-    local r2 = math.ceil(scrap_yield_amounts[harvest] * (1.7 + (amount_bonus * 1.7)))
-    local harvest_amount = math.random(r1, r2) * data.multiplier
-    harvest_amount = math.floor(harvest_amount)
+    local r1 = Math.ceil(scrap_yield_amounts[harvest] * (0.3 + (amount_bonus * 0.3)))
+    local r2 = Math.ceil(scrap_yield_amounts[harvest] * (1.7 + (amount_bonus * 1.7)))
+    local harvest_amount = Math.random(r1, r2) * data.multiplier
+    harvest_amount = Math.floor(harvest_amount)
 
     if blacklisted_ores_for_quality[harvest] then
         data.quality = 'normal'
@@ -582,12 +579,12 @@ local function randomness_fulgora_ruin(data)
     local player = data.player
     local spill_items_to_surface = Public.get('spill_items_to_surface')
 
-    local harvest = fulgora_ruin_raffle[random(1, size_of_fulgora_ruin_raffle)]
+    local harvest = fulgora_ruin_raffle[Math.random(1, size_of_fulgora_ruin_raffle)]
     local amount_bonus = game.forces.player.mining_drill_productivity_bonus * 2
-    local r1 = math.ceil(fulgora_ruin_yield_amounts[harvest] * (0.3 + (amount_bonus * 0.3)))
-    local r2 = math.ceil(fulgora_ruin_yield_amounts[harvest] * (1.7 + (amount_bonus * 1.7)))
-    local harvest_amount = math.random(r1, r2) * data.multiplier
-    harvest_amount = math.floor(harvest_amount)
+    local r1 = Math.ceil(fulgora_ruin_yield_amounts[harvest] * (0.3 + (amount_bonus * 0.3)))
+    local r2 = Math.ceil(fulgora_ruin_yield_amounts[harvest] * (1.7 + (amount_bonus * 1.7)))
+    local harvest_amount = Math.random(r1, r2) * data.multiplier
+    harvest_amount = Math.floor(harvest_amount)
 
     if blacklisted_ores_for_quality[harvest] then
         data.quality = 'normal'

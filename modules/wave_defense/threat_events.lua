@@ -4,6 +4,7 @@ local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Token = require 'utils.token'
 local Task = require 'utils.task_token'
 local Misc = require 'utils.commands.misc'
+local Math = require 'utils.math.math'
 
 local raise = Event.raise
 
@@ -24,9 +25,6 @@ local function destroy_tracked_entity(entity)
 
     entity.destroy()
 end
-
-local round = math.round
-local random = math.random
 
 local immunity_spawner =
     Token.register(
@@ -49,9 +47,9 @@ local slowly_spawn_biters_token =
             if not data.position then
                 return
             end
-            local position = { data.position.x + (-4 + math.random(0, 8)), data.position.y + (-4 + math.random(0, 8)) }
+            local position = { data.position.x + (-4 + Math.random(0, 8)), data.position.y + (-4 + Math.random(0, 8)) }
             local name
-            if math.random(1, 4) == 1 then
+            if Math.random(1, 4) == 1 then
                 name = Public.wave_defense_roll_spitter_name(data.spitter_raffle)
             else
                 name = Public.wave_defense_roll_biter_name(data.biter_raffle)
@@ -96,7 +94,7 @@ local function remove_unit(entity)
     if biter_health_boost_units[unit_number] then
         m = 1 / biter_health_boost_units[unit_number][2]
     end
-    local active_threat_loss = math.round((threat_values[entity.name] or 1) * m, 2)
+    local active_threat_loss = Math.round((threat_values[entity.name] or 1) * m, 2)
     local active_biter_threat = Public.get('active_biter_threat')
     Public.set('active_biter_threat', active_biter_threat - active_threat_loss)
     local active_biter_count = Public.get('active_biter_count')
@@ -133,7 +131,7 @@ local place_nest_near_unit_group = function ()
     if not group.members[1] then
         return
     end
-    local unit = group.members[random(1, #group.members)]
+    local unit = group.members[Math.random(1, #group.members)]
     if not unit.valid then
         return
     end
@@ -151,7 +149,7 @@ local place_nest_near_unit_group = function ()
     end
 
     local name = 'biter-spawner'
-    if random(1, 3) == 1 then
+    if Math.random(1, 3) == 1 then
         name = 'spitter-spawner'
     end
 
@@ -179,7 +177,7 @@ local place_nest_near_unit_group = function ()
 
     local spawner = unit.surface.create_entity({ name = name, position = position, force = unit.force })
     spawner.destructible = false
-    local immunity_delay = random(100, 200)
+    local immunity_delay = Math.random(100, 200)
     Task.set_timeout_in_ticks(immunity_delay, immunity_spawner, { entity = spawner })
 
     if boss then
@@ -200,7 +198,7 @@ end
 
 Public.place_custom_nest = function (surface, position, force)
     local name = 'biter-spawner'
-    if random(1, 3) == 1 then
+    if Math.random(1, 3) == 1 then
         name = 'spitter-spawner'
     end
 
@@ -229,7 +227,7 @@ Public.place_custom_nest = function (surface, position, force)
 
     local spawner = surface.create_entity({ name = name, position = position, force = force })
     spawner.destructible = false
-    local immunity_delay = random(100, 200)
+    local immunity_delay = Math.random(100, 200)
     Task.set_timeout_in_ticks(immunity_delay, immunity_spawner, { entity = spawner })
 
     BiterHealthBooster.add_boss_unit(spawner, modified_boss_unit_health.current_value, 0.5)
@@ -268,7 +266,7 @@ function Public.build_worm()
     end
     local worm_building_chance = Public.get('worm_building_chance') --[[@as integer]]
 
-    if not final_battle and random(1, worm_building_chance) ~= 1 then
+    if not final_battle and Math.random(1, worm_building_chance) ~= 1 then
         return
     end
 
@@ -295,7 +293,7 @@ function Public.build_worm()
     if not group.members[1] then
         return
     end
-    local unit = group.members[random(1, #group.members)]
+    local unit = group.members[Math.random(1, #group.members)]
     if not unit.valid then
         return
     end
@@ -332,7 +330,7 @@ function Public.build_worm()
     if boss then
         BiterHealthBooster.add_boss_unit(u, modified_boss_unit_health.current_value, 0.5)
     else
-        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_worms_by_health[worm] and unit_settings.scale_worms_by_health[worm] or 1), 3)
+        local final_health = Math.round(modified_unit_health.current_value * (unit_settings.scale_worms_by_health[worm] and unit_settings.scale_worms_by_health[worm] or 1), 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -430,11 +428,11 @@ local function shred_simple_entities(entity)
     if #simple_entities > 1 then
         table.shuffle_table(simple_entities)
     end
-    local r = math.floor(threat * 0.00004)
+    local r = Math.floor(threat * 0.00004)
     if r < 1 then
         r = 1
     end
-    local count = math.random(1, r)
+    local count = Math.random(1, r)
     --local count = 1
     local damage_dealt = 0
     for i = 1, count, 1 do
@@ -452,7 +450,7 @@ local function shred_simple_entities(entity)
         return
     end
     local simple_entity_shredding_cost_modifier = Public.get('simple_entity_shredding_cost_modifier')
-    local threat_cost = math.floor(damage_dealt * simple_entity_shredding_cost_modifier)
+    local threat_cost = Math.floor(damage_dealt * simple_entity_shredding_cost_modifier)
     if threat_cost < 1 then
         threat_cost = 1
     end
@@ -474,7 +472,7 @@ local function spawn_unit_spawner_inhabitants(entity)
     end
 
     local wave_number = Public.get('wave_number')
-    local count = 8 + math.floor(wave_number * 0.1)
+    local count = 8 + Math.floor(wave_number * 0.1)
     if count > 128 then
         count = 128
     end
@@ -489,7 +487,7 @@ local function spawn_unit_spawner_inhabitants(entity)
     end
     local tick_to_spawn = 10
     for _ = 1, count, 1 do
-        tick_to_spawn = tick_to_spawn + random(1, 10)
+        tick_to_spawn = tick_to_spawn + Math.random(1, 10)
         if tick_to_spawn > 200 then
             tick_to_spawn = 10
         end
@@ -518,18 +516,18 @@ local function on_entity_died(event)
         end
         if disable_threat_below_zero then
             local threat = Public.get('threat')
-            local sub = math.round(threat - threat_values[entity.name] * biter_health_boost, 2)
+            local sub = Math.round(threat - threat_values[entity.name] * biter_health_boost, 2)
 
             if sub <= 0 or threat <= 0 then
                 Public.set('threat', 0)
                 remove_unit(entity)
                 goto continue
             end
-            Public.set('threat', math.round(threat - threat_values[entity.name] * biter_health_boost, 2))
+            Public.set('threat', Math.round(threat - threat_values[entity.name] * biter_health_boost, 2))
             remove_unit(entity)
         else
             local threat = Public.get('threat')
-            Public.set('threat', math.round(threat - threat_values[entity.name] * biter_health_boost, 2))
+            Public.set('threat', Math.round(threat - threat_values[entity.name] * biter_health_boost, 2))
             remove_unit(entity)
         end
         ::continue::
@@ -540,7 +538,7 @@ local function on_entity_died(event)
             if entity.health then
                 if threat_values[entity.name] then
                     local threat = Public.get('threat')
-                    Public.set('threat', math.round(threat - threat_values[entity.name] * biter_health_boost, 2))
+                    Public.set('threat', Math.round(threat - threat_values[entity.name] * biter_health_boost, 2))
                 end
                 spawn_unit_spawner_inhabitants(entity)
             end

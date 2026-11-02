@@ -47,11 +47,9 @@ local Misc = require 'utils.commands.misc'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local RPG_Progression = require 'utils.datastore.rpg_prestige_data'
 local RobotLimits = require 'modules.robot_limits'
+local Math = require 'utils.math.math'
 
-
-local floor = math.floor
 local remove = table.remove
-local abs = math.abs
 RPG.disable_cooldowns_on_spells()
 Gui.mod_gui_button_enabled = true
 Gui.button_style = 'mod_gui_button'
@@ -217,7 +215,7 @@ local lock_locomotive_positions = function ()
     end
 
     local locomotive_positions = Public.get('locomotive_pos')
-    local p = { x = floor(locomotive.position.x), y = floor(locomotive.position.y) }
+    local p = { x = Math.floor(locomotive.position.x), y = Math.floor(locomotive.position.y) }
     local success = is_position_near_tbl(locomotive.position, locomotive_positions.tbl)
     if not success and not check_position(locomotive_positions.tbl, p) then
         locomotive_positions.tbl[#locomotive_positions.tbl + 1] = { x = p.x, y = p.y }
@@ -236,22 +234,22 @@ local compare_collapse_and_train = function ()
         return
     end
 
-    local c_y = abs(Orient.progression(collapse_pos))
-    local t_y = abs(Orient.progression(locomotive.position))
-    local result = abs(c_y - t_y)
+    local c_y = Math.abs(Orient.progression(collapse_pos))
+    local t_y = Math.abs(Orient.progression(locomotive.position))
+    local result = Math.abs(c_y - t_y)
     local gap_between_zones = Public.get('gap_between_zones')
     local pre_final_battle = Public.get('pre_final_battle')
     if pre_final_battle then
         local reverse_collapse_pos = Collapse.get_reverse_position()
         if reverse_collapse_pos then
-            local r_c_y = abs(Orient.progression(reverse_collapse_pos))
-            local reverse_result = abs(r_c_y - t_y)
+            local r_c_y = Math.abs(Orient.progression(reverse_collapse_pos))
+            local reverse_result = Math.abs(r_c_y - t_y)
             if reverse_result > 200 then
                 Collapse.reverse_start_now(true, false)
                 Collapse.set_speed(1)
                 local reverse_amount = 40
                 if Orient.is_horizontal() then
-                    reverse_amount = math.floor(reverse_amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
+                    reverse_amount = Math.floor(reverse_amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
                 end
                 Collapse.set_amount(reverse_amount)
             else
@@ -267,7 +265,7 @@ local compare_collapse_and_train = function ()
             Collapse.set_speed(1)
             local catchup_amount = 40
             if Orient.is_horizontal() then
-                catchup_amount = math.floor(catchup_amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
+                catchup_amount = Math.floor(catchup_amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
             end
             Collapse.set_amount(catchup_amount)
         else
@@ -287,7 +285,7 @@ local compare_collapse_and_train = function ()
         Collapse.set_speed(1)
         local catchup_amount = 10
         if Orient.is_horizontal() then
-            catchup_amount = math.floor(catchup_amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
+            catchup_amount = Math.floor(catchup_amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
         end
         Collapse.set_amount(catchup_amount)
         Collapse.set_force_mode(true)

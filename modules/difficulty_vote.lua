@@ -2,6 +2,7 @@ local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
+local Math = require 'utils.math.math'
 
 local this = {
     difficulties = {

@@ -2,8 +2,7 @@
 -- Use storage.biter_health_boost or storage.biter_health_boost_forces to modify their health.
 -- 1 = vanilla health, 2 = 200% vanilla health
 -- do not use values below 1
-local math_floor = math.floor
-local math_round = math.round
+local Math = require 'utils.math.math'
 local Public = {}
 
 local entity_types = {
@@ -78,8 +77,8 @@ function Public.add_unit(unit, health_multiplier)
         health_multiplier = storage.biter_health_boost
     end
     storage.biter_health_boost_units[unit.unit_number] = {
-        math_floor(unit.max_health * health_multiplier),
-        math_round(1 / health_multiplier, 5)
+        Math.floor(unit.max_health * health_multiplier),
+        Math.round(1 / health_multiplier, 5)
     }
     clean_table()
 end
@@ -91,10 +90,10 @@ function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
     if not health_bar_size then
         health_bar_size = 0.5
     end
-    local health = math_floor(unit.max_health * health_multiplier)
+    local health = Math.floor(unit.max_health * health_multiplier)
     storage.biter_health_boost_units[unit.unit_number] = {
         health,
-        math_round(1 / health_multiplier, 5),
+        Math.round(1 / health_multiplier, 5),
         { max_health = health, healthbar_id = create_boss_healthbar(unit, health_bar_size), last_update = game.tick }
     }
     clean_table()

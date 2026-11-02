@@ -10,10 +10,6 @@ local Tactics = require 'modules.wave_defense.tactics'
 
 Collapse.read_tables_only = true
 
-local random = math.random
-local floor = math.floor
-local sqrt = math.sqrt
-local round = math.round
 local raise = Event.raise
 local check_if_near_target
 
@@ -74,7 +70,7 @@ end
 local function shuffle_distance(tbl, position)
     local size = #tbl
     for i = size, 1, -1 do
-        local rand = random(size)
+        local rand = Math.random(size)
         if is_closer(tbl[i].position, tbl[rand].position, position) and i > rand then
             tbl[i], tbl[rand] = tbl[rand], tbl[i]
         end
@@ -260,7 +256,7 @@ local function refresh_active_unit_threat()
         end
     end
     local biter_health_boost = BiterHealthBooster.get('biter_health_boost')
-    Public.set('active_biter_threat', round(biter_threat * biter_health_boost, 2))
+    Public.set('active_biter_threat', Math.round(biter_threat * biter_health_boost, 2))
     Public.debug_print('refresh_active_unit_threat - new value ' .. active_biter_threat)
     if generated_units.unit_group_pos.index > 500 then
         generated_units.unit_group_pos.positions = {}
@@ -308,7 +304,7 @@ local function time_out_biters()
             Public.set('active_biter_count', active_biter_count - 1)
             local entity = biter.entity
             if entity and entity.valid then
-                Public.set('active_biter_threat', active_biter_threat - round(threat_values[entity.name] * biter_health_boost, 2))
+                Public.set('active_biter_threat', active_biter_threat - Math.round(threat_values[entity.name] * biter_health_boost, 2))
                 if valid_enemy_forces[entity.force.name] then
                     destroy_tracked_entity(entity)
                 end
@@ -336,7 +332,7 @@ local function get_random_close_spawner()
     end
     local spawner
     for _ = 1, get_random_close_spawner_attempts, 1 do
-        local spawner_2 = compacted[random(1, #compacted)]
+        local spawner_2 = compacted[Math.random(1, #compacted)]
         if spawner_2 and spawner_2.valid then
             if not spawner or (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
                 spawner = spawner_2
@@ -365,7 +361,7 @@ local function get_random_character()
     if not characters[1] then
         return
     end
-    return characters[random(1, #characters)]
+    return characters[Math.random(1, #characters)]
 end
 
 local function set_main_target()
@@ -429,7 +425,7 @@ local function set_enemy_evolution()
     end
 
     if threat > 50000 then
-        biter_health_boost = round(biter_health_boost + (threat - 50000) * 0.000033, 3)
+        biter_health_boost = Math.round(biter_health_boost + (threat - 50000) * 0.000033, 3)
     end
 
     BiterHealthBooster.set('biter_health_boost', biter_health_boost)
@@ -516,7 +512,7 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
     local function get_biter_name()
         local name
         local roll_boss = (fs and fs.random_bosses or is_boss_biter and wave_number > 1000)
-        local roll_spitter = (only_spitters or random(1, 100) > 73)
+        local roll_spitter = (only_spitters or Math.random(1, 100) > 73)
 
         if roll_boss then
             name = Public.wave_defense_roll_boss_name()
@@ -541,18 +537,18 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
 
     local old_position = position
     if Public.get('enable_random_spawn_positions') then
-        local offset_x = random(1, 10)
-        local offset_y = random(1, 10)
+        local offset_x = Math.random(1, 10)
+        local offset_y = Math.random(1, 10)
         if Public.get('spawn_along_x') then
             position =
             {
                 x = position.x + offset_x,
-                y = (random(1, 3) == 1) and (-1 * (position.y + offset_y)) or (position.y + offset_y)
+                y = (Math.random(1, 3) == 1) and (-1 * (position.y + offset_y)) or (position.y + offset_y)
             }
         else
             position =
             {
-                x = (random(1, 3) == 1) and (-1 * (position.x + offset_x)) or (position.x + offset_x),
+                x = (Math.random(1, 3) == 1) and (-1 * (position.x + offset_x)) or (position.x + offset_x),
                 y = position.y + offset_y
             }
         end
@@ -596,7 +592,7 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
 
         local modified = Public.get('modified_unit_health')
         local scale = unit_settings.scale_units_by_health[biter.name] or 1
-        local final_health = math.max(1, round(modified.current_value * scale, 3))
+        local final_health = Math.max(1, Math.round(modified.current_value * scale, 3))
 
         Public.debug_print_health('final_health - unit: ' .. biter.name .. ' with h-m: ' .. final_health)
         BiterHealthBooster.add_unit(biter, final_health)
@@ -643,7 +639,7 @@ local function spawn_biter(surface, position, fs, is_boss_biter, unit_settings, 
     Public.set('active_biter_count', Public.get('active_biter_count') + 1)
 
     local threat = (threat_values[name] or 1) * boosted_health
-    Public.set('active_biter_threat', Public.get('active_biter_threat') + round(threat, 2))
+    Public.set('active_biter_threat', Public.get('active_biter_threat') + Math.round(threat, 2))
 
     return biter
 end
@@ -663,16 +659,16 @@ local function spawn_worm(surface, position, is_boss_worm)
 
     if enable_random_spawn_positions then
         if Public.get('spawn_along_x') then
-            if random(1, 3) == 1 then
-                position = { x = (position.x + random(1, 10)), y = (-1 * (position.y + random(1, 10))) }
+            if Math.random(1, 3) == 1 then
+                position = { x = (position.x + Math.random(1, 10)), y = (-1 * (position.y + Math.random(1, 10))) }
             else
-                position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
+                position = { x = (position.x + Math.random(1, 10)), y = (position.y + Math.random(1, 10)) }
             end
         else
-            if random(1, 3) == 1 then
-                position = { x = (-1 * (position.x + random(1, 10))), y = (position.y + random(1, 10)) }
+            if Math.random(1, 3) == 1 then
+                position = { x = (-1 * (position.x + Math.random(1, 10))), y = (position.y + Math.random(1, 10)) }
             else
-                position = { x = (position.x + random(1, 10)), y = (position.y + random(1, 10)) }
+                position = { x = (position.x + Math.random(1, 10)), y = (position.y + Math.random(1, 10)) }
             end
         end
     end
@@ -698,7 +694,7 @@ local function spawn_worm(surface, position, is_boss_worm)
     if (increase_health_per_wave and (wave_number >= boost_units_when_wave_is_above)) and not is_boss_worm then
         local modified_unit_health = Public.get('modified_unit_health')
         local unit_settings = Public.get('unit_settings')
-        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_worms_by_health[worm.name] and unit_settings.scale_worms_by_health[worm.name] or 1), 3)
+        local final_health = Math.round(modified_unit_health.current_value * (unit_settings.scale_worms_by_health[worm.name] and unit_settings.scale_worms_by_health[worm.name] or 1), 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -911,7 +907,7 @@ local function set_next_wave()
     end
 
     local threat = Public.get('threat')
-    Public.set('threat', threat + floor(threat_gain))
+    Public.set('threat', threat + Math.floor(threat_gain))
 
     local wave_enforced = Public.get('wave_enforced')
     local next_wave = Public.get('next_wave')
@@ -1003,8 +999,8 @@ local function get_side_targets(group)
         return
     end
     local target_position = side_target.position
-    local distance_to_target = floor(sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
-    local steps = floor(distance_to_target / step_length) + 1
+    local distance_to_target = Math.floor(Math.sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
+    local steps = Math.floor(distance_to_target / step_length) + 1
 
     for _ = 1, steps, 1 do
         local old_position = group_position
@@ -1055,12 +1051,12 @@ local function get_main_command(group)
     Public.debug_print('get_main_command - starting')
 
     local target_position = Public.get_attack_destination(group.surface, target.position)
-    local distance_to_target = floor(sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
-    local steps = floor(distance_to_target / step_length) + 1
+    local distance_to_target = Math.floor(Math.sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
+    local steps = Math.floor(distance_to_target / step_length) + 1
     local vector =
     {
-        round((target_position.x - group_position.x) / steps, 3),
-        round((target_position.y - group_position.y) / steps, 3)
+        Math.round((target_position.x - group_position.x) / steps, 3),
+        Math.round((target_position.y - group_position.y) / steps, 3)
     }
 
     Public.debug_print('get_commmands - to main target x' .. target_position.x .. ' y' .. target_position.y)
@@ -1248,6 +1244,9 @@ local function give_side_commands_to_group()
 end
 
 local function give_main_command_to_group()
+    if Public.get('game_lost') then
+        return
+    end
     local target = Public.get('target')
     if not valid(target) then
         Event.raise(ServerCommands.events.on_primary_target_missing)
@@ -1293,7 +1292,7 @@ local function process_group_tactics()
 
     local cursor = generated_units.tactics_cursor or 0
     local target = Public.get('target')
-    for _ = 1, math.min(4, #ids) do
+    for _ = 1, Math.min(4, #ids) do
         cursor = cursor % #ids + 1
         local group = groups[ids[cursor]]
         if Tactics.update_group_tactics(group, target, game.tick) then
@@ -1344,7 +1343,7 @@ local function process_pending_spawns()
             or check_if_near_target(stream.position) then
             finish_spawn_stream(generated_units, id, stream)
         elseif game.tick >= stream.next_spawn_tick then
-            local count = math.min(stream.batch_size, stream.remaining)
+            local count = Math.min(stream.batch_size, stream.remaining)
             local spawned = spawn_group_members(group, stream.surface, stream.position, count, nil, false,
                 stream.unit_settings, nil, stream.context)
             stream.remaining = stream.remaining - spawned
@@ -1352,7 +1351,7 @@ local function process_pending_spawns()
             if spawned < count or stream.remaining <= 0 then
                 finish_spawn_stream(generated_units, id, stream)
             else
-                stream.next_spawn_tick = game.tick + random(60, 120)
+                stream.next_spawn_tick = game.tick + Math.random(60, 120)
             end
         end
     end
@@ -1440,7 +1439,7 @@ local function spawn_unit_group(fs, only_bosses)
     generated_units.unit_group_pos.positions[unit_group.unique_id] = { position = unit_group.position, index = 0 }
 
     local avg_size = Public.get('average_unit_group_size')
-    local group_size = floor(avg_size * Public.group_size_modifier_raffle[random(1, Public.group_size_modifier_raffle_size)])
+    local group_size = Math.floor(avg_size * Public.group_size_modifier_raffle[Math.random(1, Public.group_size_modifier_raffle_size)])
     event_data.group_size = group_size
 
     local function spawn_units(count, boss, only_spitters)
@@ -1452,7 +1451,7 @@ local function spawn_unit_group(fs, only_bosses)
     if not fs or not fs.random_bosses then
         if not boss_wave and not only_bosses then
             if not fs then
-                local batch_size = math.max(1, math.ceil(group_size / random(4, 8)))
+                local batch_size = Math.max(1, Math.ceil(group_size / Math.random(4, 8)))
                 local context =
                 {
                     wave_number = wave_number,
@@ -1462,7 +1461,7 @@ local function spawn_unit_group(fs, only_bosses)
                 }
                 local unit_settings = table.deep_copy(event_data.unit_settings)
                 event_data.incremental = true
-                local spawned = spawn_group_members(unit_group, surface, spawn_position, math.min(batch_size, group_size),
+                local spawned = spawn_group_members(unit_group, surface, spawn_position, Math.min(batch_size, group_size),
                     nil, false, unit_settings, nil, context)
                 if spawned == batch_size and spawned < group_size then
                     stream =
@@ -1475,7 +1474,7 @@ local function spawn_unit_group(fs, only_bosses)
                         event_data = event_data,
                         batch_size = batch_size,
                         remaining = group_size - spawned,
-                        next_spawn_tick = game.tick + random(60, 120)
+                        next_spawn_tick = game.tick + Math.random(60, 120)
                     }
                 end
             else
@@ -1485,10 +1484,10 @@ local function spawn_unit_group(fs, only_bosses)
 
         if boss_wave or only_bosses then
             event_data.boss_wave = true
-            local count = Math.clamp(random(1, floor(wave_number * 0.01) + 2), 4, 16)
+            local count = Math.clamp(Math.random(1, Math.floor(wave_number * 0.01) + 2), 4, 16)
             event_data.spawn_count = count
 
-            local only_spitters = (random(1, 2) == 1)
+            local only_spitters = (Math.random(1, 2) == 1)
             es_settings.only_spitters = only_spitters and true or nil
             es_settings.wave_number = wave_number
 
@@ -1507,7 +1506,7 @@ local function spawn_unit_group(fs, only_bosses)
     generated_units.unit_groups[unit_group.unique_id] = unit_group
     Public.set('unit_groups_size', Public.get('unit_groups_size') + 1)
 
-    if random(1, 2) == 1 then
+    if Math.random(1, 2) == 1 then
         Public.set('random_group', unit_group)
     end
 
@@ -1591,7 +1590,7 @@ local function spawn_unit_group_simple(fs)
     generated_units.unit_groups[unit_group.unique_id] = unit_group
     local unit_groups_size = Public.get('unit_groups_size')
     Public.set('unit_groups_size', unit_groups_size + 1)
-    if random(1, 2) == 1 then
+    if Math.random(1, 2) == 1 then
         Public.set('random_group', unit_group)
     end
     return true

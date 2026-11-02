@@ -8,6 +8,7 @@ local Event = require 'utils.event'
 local table = require 'utils.table'
 local RPG = require 'modules.rpg.table'
 local Color = require 'utils.color_presets'
+local Math = require 'utils.math.math'
 
 
 local Public = {}
@@ -32,7 +33,6 @@ local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 local try_get_all_data = Server.try_get_all_data
 local concat = table.concat
-local round = math.round
 
 Global.register(
     this,
@@ -64,7 +64,7 @@ local function get_progression(player)
 
     local player_xp = RPG.get_value_from_player(player.index, 'xp')
     if player_xp then
-        return round(player_xp * 0.003)
+        return Math.round(player_xp * 0.003)
     end
 end
 
@@ -155,7 +155,7 @@ local try_upload_data_token =
                     return
                 end
 
-                new_xp = round(new_xp, 0)
+                new_xp = Math.round(new_xp, 0)
 
                 set_data(this.settings.dataset, key, new_xp)
                 this.data[key] = new_xp

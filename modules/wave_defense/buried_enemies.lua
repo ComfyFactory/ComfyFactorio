@@ -2,6 +2,7 @@ local Public = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local Math = require 'utils.math.math'
 
 local this = {}
 
@@ -12,15 +13,9 @@ Global.register(
     end
 )
 
-local round = math.round
-local floor = math.floor
-local random = math.random
-local abs = math.abs
-local sqrt = math.sqrt
-
 local spawn_amount_rolls = {}
 for a = 48, 1, -1 do
-    spawn_amount_rolls[#spawn_amount_rolls + 1] = floor(a ^ 5)
+    spawn_amount_rolls[#spawn_amount_rolls + 1] = Math.floor(a ^ 5)
 end
 
 local random_particles =
@@ -41,17 +36,17 @@ local function create_particles(data)
         return
     end
     for _ = 1, amount, 1 do
-        local m = random(6, 12)
+        local m = Math.random(6, 12)
         local m2 = m * 0.005
 
         surface.create_particle(
             {
-                name = random_particles[random(1, size_random_particles)],
+                name = random_particles[Math.random(1, size_random_particles)],
                 position = position,
                 frame_speed = 0.1,
                 vertical_speed = 0.1,
                 height = 0.1,
-                movement = { m2 - (random(0, m) * 0.01), m2 - (random(0, m) * 0.01) }
+                movement = { m2 - (Math.random(0, m) * 0.01), m2 - (Math.random(0, m) * 0.01) }
             }
         )
     end
@@ -61,9 +56,9 @@ local function spawn_biters(data)
     local surface = data.surface
     local position = data.position
     local entity_name = data.entity_name
-    local h = floor(abs(position.y))
+    local h = Math.floor(Math.abs(position.y))
     if Public.get('spawn_along_x') then
-        h = floor(abs(position.x))
+        h = Math.floor(Math.abs(position.x))
     end
 
     if not position then
@@ -76,7 +71,7 @@ local function spawn_biters(data)
 
     local unit_to_create
 
-    if random(1, 3) == 1 then
+    if Math.random(1, 3) == 1 then
         unit_to_create = Public.wave_defense_roll_spitter_name()
     else
         unit_to_create = Public.wave_defense_roll_biter_name()
@@ -94,10 +89,10 @@ local function spawn_biters(data)
 
     local unit = surface.create_entity({ name = unit_to_create, position = position, force = data.force or 'enemy' })
 
-    if random(1, 30) == 1 then
+    if Math.random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
     else
-        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_units_by_health[unit.name] and unit_settings.scale_units_by_health[unit.name] or 1), 3)
+        local final_health = Math.round(modified_unit_health.current_value * (unit_settings.scale_units_by_health[unit.name] and unit_settings.scale_units_by_health[unit.name] or 1), 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -113,18 +108,18 @@ local function spawn_worms(data)
 
     local surface = data.surface
     local position = data.position
-    Public.wave_defense_set_worm_raffle(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
+    Public.wave_defense_set_worm_raffle(Math.sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
 
-    local unit_to_create = Public.wave_defense_roll_worm_name(sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
+    local unit_to_create = Public.wave_defense_roll_worm_name(Math.sqrt(position.x ^ 2 + position.y ^ 2) * 0.20)
     if not unit_to_create then return end
 
     local unit = surface.create_entity({ name = unit_to_create, position = position })
     local unit_settings = Public.get('unit_settings')
 
-    if random(1, 30) == 1 then
+    if Math.random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, modified_boss_unit_health.current_value, 0.38)
     else
-        local final_health = round(modified_unit_health.current_value * (unit_settings.scale_worms_by_health[unit.name] and unit_settings.scale_worms_by_health[unit.name] or 1), 3)
+        local final_health = Math.round(modified_unit_health.current_value * (unit_settings.scale_worms_by_health[unit.name] and unit_settings.scale_worms_by_health[unit.name] or 1), 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -152,7 +147,7 @@ function Public.buried_biter(surface, position, max, entity_name, force)
     local amount = 8
 
     local a = 0
-    max = max or random(4, 6)
+    max = max or Math.random(4, 6)
 
     local ticks = amount * 30
     ticks = ticks + 90

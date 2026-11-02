@@ -4,6 +4,7 @@ local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 local SessionData = require 'utils.datastore.session_data'
 local Commands = require 'utils.commands'
+local Math = require 'utils.math.math'
 
 local this =
 {
@@ -44,7 +45,6 @@ Global.register(
 local Public = {}
 local insert = table.insert
 local unpack = table.unpack
-local round = math.round
 local container_frame_autofill = Gui.uid_name()
 local player_toggled_autofill_on_container_gui_click = Gui.uid_name()
 local autofill_main_label = '[color=yellow][Autofill][/color]: '
@@ -280,13 +280,13 @@ end
 
 local function check_tier(turret_ammo_name, chest_item_name)
     if this.valid_ammo[chest_item_name] and this.valid_ammo[turret_ammo_name] then
-        if turret_ammo_name and this.valid_ammo[chest_item_name] and this.valid_ammo[turret_ammo_name] and round(this.valid_ammo[chest_item_name].priority) > round(this.valid_ammo[turret_ammo_name].priority) then
+        if turret_ammo_name and this.valid_ammo[chest_item_name] and this.valid_ammo[turret_ammo_name] and Math.round(this.valid_ammo[chest_item_name].priority) > Math.round(this.valid_ammo[turret_ammo_name].priority) then
             return true
         else
             return false
         end
     elseif this.valid_fuel[chest_item_name] and this.valid_fuel[turret_ammo_name] then
-        if turret_ammo_name and this.valid_fuel[chest_item_name] and this.valid_fuel[turret_ammo_name] and round(this.valid_fuel[chest_item_name].priority) > round(this.valid_fuel[turret_ammo_name].priority) then
+        if turret_ammo_name and this.valid_fuel[chest_item_name] and this.valid_fuel[turret_ammo_name] and Math.round(this.valid_fuel[chest_item_name].priority) > Math.round(this.valid_fuel[turret_ammo_name].priority) then
             return true
         else
             return false
@@ -658,7 +658,7 @@ Public.get_priorities = function ()
             this.valid_ammo[prototype.name] =
             {
                 valid = true,
-                priority = round(priority),
+                priority = Math.round(priority),
                 category = prototype.ammo_category.name
             }
         end

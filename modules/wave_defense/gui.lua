@@ -1,8 +1,7 @@
 local Public = require 'modules.wave_defense.table'
 local Gui = require 'utils.gui'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
-
-local floor = math.floor
+local Math = require 'utils.math.math'
 
 local function get_top_frame_custom(player, name)
     if Gui.get_mod_gui_top_frame() then
@@ -83,7 +82,7 @@ local function get_threat_gain()
     if past_index < 1 then
         past_index = 1
     end
-    local gain = floor((threat_log[threat_log_index] - threat_log[past_index]) / 15)
+    local gain = Math.floor((threat_log[threat_log_index] - threat_log[past_index]) / 15)
     return gain
 end
 
@@ -121,7 +120,7 @@ function Public.update_gui(player)
     local threat = Public.get('threat')
     local enable_threat_log = Public.get('enable_threat_log')
     if max_active_biters and max_active_biters > 0 then
-        max_active_biters = math.round(max_active_biters, 0)
+        max_active_biters = Math.round(max_active_biters, 0)
     end
 
     gui.label.caption = { 'wave_defense.gui_2' }
@@ -129,10 +128,10 @@ function Public.update_gui(player)
         gui.wave_number.caption = wave_number
         if wave_number == 0 then
             gui.label.caption = { 'wave_defense.gui_1' }
-            gui.wave_number.caption = floor((next_wave - game.tick) / 60) + 1 .. 's'
+            gui.wave_number.caption = Math.floor((next_wave - game.tick) / 60) + 1 .. 's'
         else
-            gui.label.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
-            gui.wave_number.tooltip = 'Next pause will occur in: ' .. floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
+            gui.label.tooltip = 'Next pause will occur in: ' .. Math.floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
+            gui.wave_number.tooltip = 'Next pause will occur in: ' .. Math.floor((Public.get('next_pause_interval') - game.tick) / 60 / 60) + 1 .. ' minute(s)'
         end
         local interval = next_wave - last_wave
         local value = 0
@@ -148,7 +147,7 @@ function Public.update_gui(player)
     else
         gui.label.caption = { 'wave_defense.gui_4' }
         gui.label.tooltip = 'Wave: ' .. wave_number
-        local pause_for = floor((paused_waves_for - game.tick) / 60) + 1
+        local pause_for = Math.floor((paused_waves_for - game.tick) / 60) + 1
         if pause_for < 0 then
             pause_for = 0
         end
@@ -172,7 +171,7 @@ function Public.update_gui(player)
     gui.threat.caption = { 'wave_defense.gui_3' }
     gui.threat.tooltip = { 'wave_defense.tooltip_1', biter_health_boost * 100, max_active_biters }
     ---@diagnostic disable-next-line: param-type-mismatch
-    gui.threat_value.caption = floor(threat)
+    gui.threat_value.caption = Math.floor(threat)
     gui.threat_value.tooltip =
     {
         'wave_defense.tooltip_1',
@@ -190,14 +189,14 @@ function Public.update_gui(player)
 
         if gain >= 0 then
             gui.threat_gains.caption = ' (+' .. gain .. ')'
-            local g = 255 - floor(gain / d)
+            local g = 255 - Math.floor(gain / d)
             if g < 0 then
                 g = 0
             end
             gui.threat_gains.style.font_color = { 255, g, 0 }
         else
             gui.threat_gains.caption = ' (' .. gain .. ')'
-            local r = 255 - floor(math.abs(gain) / d)
+            local r = 255 - Math.floor(Math.abs(gain) / d)
             if r < 0 then
                 r = 0
             end

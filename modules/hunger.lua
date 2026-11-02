@@ -1,7 +1,8 @@
 -- hunger module by mewmew --
 local Public = {}
 local Gui = require 'utils.gui'
-local P = require 'utils.player_modifiers'
+local PlayerModifiers = require 'utils.player_modifiers'
+local math = require 'utils.math.math'
 
 local starve_messages = { ' ran out of foodstamps.', ' starved.', ' should not have skipped breakfast today.' }
 
@@ -178,12 +179,12 @@ function Public.hunger_update(player, food_value)
     end
 
     if player_hunger_buff[storage.player_hunger[player.name]] < 0 then
-        P.update_single_modifier(player, 'character_running_speed_modifier', 'hunger', player_hunger_buff[storage.player_hunger[player.name]] * 0.75)
+        PlayerModifiers.update_single_modifier(player, 'character_running_speed_modifier', 'hunger', player_hunger_buff[storage.player_hunger[player.name]] * 0.75)
     else
-        P.update_single_modifier(player, 'character_running_speed_modifier', 'hunger', player_hunger_buff[storage.player_hunger[player.name]] * 0.15)
+        PlayerModifiers.update_single_modifier(player, 'character_running_speed_modifier', 'hunger', player_hunger_buff[storage.player_hunger[player.name]] * 0.15)
     end
-    P.update_single_modifier(player, 'character_mining_speed_modifier', 'hunger', player_hunger_buff[storage.player_hunger[player.name]])
-    P.update_player_modifiers(player)
+    PlayerModifiers.update_single_modifier(player, 'character_mining_speed_modifier', 'hunger', player_hunger_buff[storage.player_hunger[player.name]])
+    PlayerModifiers.update_player_modifiers(player)
 
     update_hunger_gui(player)
 end

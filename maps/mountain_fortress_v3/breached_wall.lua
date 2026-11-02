@@ -10,10 +10,8 @@ local Color = require 'utils.color_presets'
 local Session = require 'utils.datastore.session_data'
 local Modifiers = require 'utils.player_modifiers'
 local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
+local Math = require 'utils.math.math'
 
-local floor = math.floor
-local abs = math.abs
-local random = math.random
 local sub = string.sub
 local zone_settings = Public.zone_settings
 
@@ -250,7 +248,7 @@ local function update_locomotive_barrier()
     end
 
     local gap = Public.get('gap_between_locomotive')
-    local boundary = math.max(300, abs(Orient.progression(locomotive.position)) + gap.neg_gap)
+    local boundary = Math.max(300, Math.abs(Orient.progression(locomotive.position)) + gap.neg_gap)
     local half_width = Orient.zone_width() / 2
     local surface = locomotive.surface
     for _, sign in ipairs({ -1, 1 }) do
@@ -276,11 +274,11 @@ local check_distance_between_player_and_locomotive = function (player)
     gap_between_locomotive.highest_pos = locomotive.position
     gap_between_locomotive = Public.get('gap_between_locomotive')
 
-    local p_y = abs(Orient.progression(position))
+    local p_y = Math.abs(Orient.progression(position))
     if p_y < 300 then
         return
     end
-    local t_y = abs(Orient.progression(gap_between_locomotive.highest_pos))
+    local t_y = Math.abs(Orient.progression(gap_between_locomotive.highest_pos))
 
     local locomotive_distance_too_far = p_y - t_y > gap_between_locomotive.neg_gap
 
@@ -312,7 +310,7 @@ local check_tiles = function (player)
     if tile and tile.name == 'red-refined-concrete' then
         local rpg_t = RPG.get_value_from_player(player.index)
         if rpg_t and rpg_t.volcanic_zone then
-            if random(1, 32) == 1 then
+            if Math.random(1, 32) == 1 then
                 Public.buried_enemies.buried_biter(player.physical_surface, p)
             end
         end
@@ -320,7 +318,7 @@ local check_tiles = function (player)
     if tile and tile.name == 'hazard-concrete-right' then
         local rpg_t = RPG.get_value_from_player(player.index)
         if rpg_t and rpg_t.tech_zone then
-            if random(1, 32) == 1 then
+            if Math.random(1, 32) == 1 then
                 Public.buried_enemies.buried_tech(player.physical_surface, p)
             end
         end
@@ -335,7 +333,7 @@ local compare_player_pos = function (player)
         return
     end
 
-    local zone = floor((abs(Orient.progression(p) / zone_settings.zone_depth)) % adjusted_zones.size) + 1
+    local zone = Math.floor((Math.abs(Orient.progression(p) / zone_settings.zone_depth)) % adjusted_zones.size) + 1
     local rpg_t = RPG.get_value_from_player(index)
 
     local max_zone = RPG.get_value_from_player(index, 'max_zone')
@@ -431,8 +429,8 @@ local compare_player_and_train = function (player, entity)
     gap_between_zones.highest_pos = locomotive.position
     gap_between_zones = Public.get('gap_between_zones')
 
-    local c_y = abs(Orient.progression(position))
-    local t_y = abs(Orient.progression(gap_between_zones.highest_pos))
+    local c_y = Math.abs(Orient.progression(position))
+    local t_y = Math.abs(Orient.progression(gap_between_zones.highest_pos))
 
     local spidertron_warning_position = gap_between_zones.neg_gap + 50
     local locomotive_distance_too_far = c_y - t_y > spidertron_warning_position
@@ -494,7 +492,7 @@ local function distance(player)
 
     check_tiles(player)
 
-    local distance_to_center = floor(abs(Orient.progression(p)))
+    local distance_to_center = Math.floor(Math.abs(Orient.progression(p)))
     local adjusted_zones = Public.get('adjusted_zones')
     if adjusted_zones.reversed then
         if distance_to_center < zone_settings.zone_depth * bonus + 32 then
@@ -561,10 +559,10 @@ local function distance(player)
                     local spider_tooltip = 'BiterStunner 9000'
                     local rng
                     if bw then
-                        rng = random(30000, 80000)
+                        rng = Math.random(30000, 80000)
                         spider_tooltip = spider_tooltip .. ' (Exclusive sale!)'
                     else
-                        rng = random(70000, 120000)
+                        rng = Math.random(70000, 120000)
                     end
                     main_market_items['spidertron'] =
                     {

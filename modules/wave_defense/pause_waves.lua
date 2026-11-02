@@ -7,12 +7,11 @@ local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
 local Alert = require 'utils.alert'
 local Commands = require 'utils.commands'
+local Math = require 'utils.math.math'
 
 local main_frame_name = Gui.uid_name()
 local save_button_name = Gui.uid_name()
 local discard_button_name = Gui.uid_name()
-local random = math.random
-local floor = math.floor
 
 local random_greetings = {
     'Dear defender',
@@ -136,7 +135,7 @@ local function pause_waves_state(state)
         Public.set('paused', true)
         Public.set('last_pause', game.tick)
         Public.set('paused_waves_for', game.tick + pause_wave_in_ticks)
-        local pause_for = floor(pause_wave_in_ticks / 60 / 60)
+        local pause_for = Math.floor(pause_wave_in_ticks / 60 / 60)
         local message = ({ 'wave_defense.pause_waves', pause_for })
         Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.75)
 
@@ -158,7 +157,7 @@ end
 local pause_waves_state_token = Token.register(pause_waves_state)
 
 function Public.toggle_pause_wave()
-    local greeting = random_greetings[random(1, random_greetings_size)]
+    local greeting = random_greetings[Math.random(1, random_greetings_size)]
 
     local players = game.connected_players
     for i = 1, #players do

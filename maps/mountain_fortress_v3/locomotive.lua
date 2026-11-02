@@ -12,13 +12,11 @@ local Color = require 'utils.color_presets'
 local Modifiers = require 'utils.player_modifiers'
 local Core = require 'utils.core'
 local Task = require 'utils.task_token'
+local Math = require 'utils.math.math'
 
 local zone_settings = Public.zone_settings
 
 local rpg_main_frame = RPG.main_frame_name
-local random = math.random
-local floor = math.floor
-local round = math.round
 local sub = string.sub
 local playtime_required_to_drive_train = 108000 --30 minutes
 
@@ -85,7 +83,7 @@ local function add_random_loot_to_main_market(rarity)
     end
 
     for _, v in pairs(items) do
-        local price = v.price[1].count + random(1, 15) * rarity
+        local price = v.price[1].count + Math.random(1, 15) * rarity
         local value = v.price[1].name
         local stack = 1
         if v.offer.item == 'coin' then
@@ -115,8 +113,8 @@ local function death_effects(player)
     for _ = 1, 5, 1 do
         local p =
         {
-            (position.x + 0.4) + (b * -1 + math.random(0, b * 20) * 0.1),
-            position.y + (b * -1 + math.random(0, b * 20) * 0.1)
+            (position.x + 0.4) + (b * -1 + Math.random(0, b * 20) * 0.1),
+            position.y + (b * -1 + Math.random(0, b * 20) * 0.1)
         }
 
         player.create_local_flying_text(
@@ -204,17 +202,17 @@ local function hurt_players_outside_of_aura()
                     if entity and entity.valid then
                         death_effects(player)
                         player.physical_surface.create_entity({ name = 'fire-flame', position = position })
-                        if random(1, 3) == 1 then
+                        if Math.random(1, 3) == 1 then
                             player.physical_surface.create_entity({ name = 'medium-scorchmark', position = position, force = 'neutral' })
                         end
-                        local max_health = floor(player.character.max_health + player.character_health_bonus + player.force.character_health_bonus)
+                        local max_health = Math.floor(player.character.max_health + player.character_health_bonus + player.force.character_health_bonus)
                         local vehicle = player.physical_vehicle
                         if vehicle and vehicle.valid and non_valid_vehicles[vehicle.type] then
                             player.driving = false
                         end
                         if death_mode then
                             if entity.name == 'character' then
-                                game.print(player.name .. messages[random(1, #messages)], { color = { r = 200, g = 0, b = 0 } })
+                                game.print(player.name .. messages[Math.random(1, #messages)], { color = { r = 200, g = 0, b = 0 } })
                             end
                             if entity.valid then
                                 entity.die()
@@ -242,7 +240,7 @@ local function hurt_players_outside_of_aura()
                             if entity.valid then
                                 if entity.health - damage <= 0 then
                                     if entity.name == 'character' then
-                                        game.print(player.name .. messages[random(1, #messages)], { color = { r = 200, g = 0, b = 0 } })
+                                        game.print(player.name .. messages[Math.random(1, #messages)], { color = { r = 200, g = 0, b = 0 } })
                                     end
                                 end
                             end
@@ -310,7 +308,7 @@ local function give_passive_xp(data)
                         local f = player.gui.screen[rpg_main_frame]
                         local d = Gui.get_data(f)
                         if d and d.exp_gui and d.exp_gui.valid then
-                            d.exp_gui.caption = floor(rpg[player.index].xp)
+                            d.exp_gui.caption = Math.floor(rpg[player.index].xp)
                         end
                     end
                 else
@@ -389,7 +387,7 @@ local function refill_fish()
     if not locomotive_cargo.valid then
         return
     end
-    locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = random(2, 5) })
+    locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = Math.random(2, 5) })
 end
 
 local function set_carriages()
@@ -470,7 +468,7 @@ local function check_health(locomotive_health, locomotive_max_health)
 
     local health_text = Public.get('health_text')
     if health_text and health_text.valid then
-        health_text.text = 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health)
+        health_text.text = 'HP: ' .. Math.round(locomotive_health) .. ' / ' .. Math.round(locomotive_max_health)
     end
 
     local carriages = Public.get('carriages')

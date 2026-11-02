@@ -5,6 +5,7 @@ local Utils = require 'utils.common'
 local Global = require 'utils.global'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
+local Math = require 'utils.math.math'
 
 local this =
 {
@@ -25,7 +26,6 @@ local Public = {}
 
 local max_keepalive = 54000 -- 15 minutes
 local remove = table.remove
-local round = math.round
 local default_radius = 5
 
 local armor_names =
@@ -92,7 +92,7 @@ local function char_callback(callback)
 end
 
 local function get_near_position(entity)
-    return { x = round(entity.position.x, 0), y = round(entity.position.y, 0) }
+    return { x = Math.round(entity.position.x, 0), y = Math.round(entity.position.y, 0) }
 end
 
 local function is_mining_target_taken(selected)

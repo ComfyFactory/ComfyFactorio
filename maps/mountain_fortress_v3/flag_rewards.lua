@@ -1,5 +1,6 @@
 local WD = require 'modules.wave_defense.table'
 local RPG = require 'modules.rpg.main'
+local Math = require 'utils.math.math'
 local Public = {}
 
 local coins = { 2000, 5000, 10000 }
@@ -39,7 +40,7 @@ function Public.create(legacy)
         end
     end
     assert(#available > 0, 'Flag rewards require an ammo, repair or circuit item prototype')
-    local selected = available[legacy and 1 or math.random(#available)]
+    local selected = available[legacy and 1 or Math.random(#available)]
     return { tier = tier, wave = wave, coins = coins[tier], xp = xp[tier],
         item = selected[1], count = selected[2] }
 end

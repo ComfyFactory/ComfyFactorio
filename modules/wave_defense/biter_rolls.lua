@@ -1,6 +1,6 @@
 local Public = require 'modules.wave_defense.table'
 local Task = require 'utils.task_token'
-local round = math.round
+local Math = require 'utils.math.math'
 
 local function roll_weighted_name(raffle)
     local total = 0
@@ -12,7 +12,7 @@ local function roll_weighted_name(raffle)
     if total <= 0 then
         return
     end
-    local roll = math.random() * total
+    local roll = Math.random() * total
     local cumulative = 0
     for name, weight in pairs(raffle) do
         if weight > 0 then
@@ -45,8 +45,8 @@ function Public.wave_defense_set_unit_raffle(level)
         Public.set(
             'biter_raffle',
             {
-                ['small-biter'] = round(1000 - level * 1.75, 6),
-                ['medium-biter'] = round(level, 6),
+                ['small-biter'] = Math.round(1000 - level * 1.75, 6),
+                ['medium-biter'] = Math.round(level, 6),
                 ['big-biter'] = 0,
                 ['behemoth-biter'] = 0
             }
@@ -55,8 +55,8 @@ function Public.wave_defense_set_unit_raffle(level)
         Public.set(
             'spitter_raffle',
             {
-                ['small-spitter'] = round(1000 - level * 1.75, 6),
-                ['medium-spitter'] = round(level, 6),
+                ['small-spitter'] = Math.round(1000 - level * 1.75, 6),
+                ['medium-spitter'] = Math.round(level, 6),
                 ['big-spitter'] = 0,
                 ['behemoth-spitter'] = 0
             }
@@ -65,8 +65,8 @@ function Public.wave_defense_set_unit_raffle(level)
         Public.set(
             'boss_raffle',
             {
-                ['behemoth-biter'] = round(1000 - level * 1.75, 6),
-                ['behemoth-spitter'] = round(level, 6),
+                ['behemoth-biter'] = Math.round(1000 - level * 1.75, 6),
+                ['behemoth-spitter'] = Math.round(level, 6),
             }
         )
 
@@ -74,18 +74,18 @@ function Public.wave_defense_set_unit_raffle(level)
         local spitter_raffle = Public.get('spitter_raffle') --[[@as table]]
         local boss_raffle = Public.get('boss_raffle') --[[@as table]]
         if level > 500 then
-            biter_raffle['medium-biter'] = round(500 - (level - 500), 6)
-            spitter_raffle['medium-spitter'] = round(500 - (level - 500), 6)
-            biter_raffle['big-biter'] = round((level - 500) * 2, 6)
-            spitter_raffle['big-spitter'] = round((level - 500) * 2, 6)
-            boss_raffle['behemoth-biter'] = round((level - 500) * 2, 6)
-            boss_raffle['behemoth-spitter'] = round((level - 500) * 2, 6)
+            biter_raffle['medium-biter'] = Math.round(500 - (level - 500), 6)
+            spitter_raffle['medium-spitter'] = Math.round(500 - (level - 500), 6)
+            biter_raffle['big-biter'] = Math.round((level - 500) * 2, 6)
+            spitter_raffle['big-spitter'] = Math.round((level - 500) * 2, 6)
+            boss_raffle['behemoth-biter'] = Math.round((level - 500) * 2, 6)
+            boss_raffle['behemoth-spitter'] = Math.round((level - 500) * 2, 6)
         end
         if level > 800 then
-            biter_raffle['behemoth-biter'] = round((level - 800) * 2.75, 6)
-            spitter_raffle['behemoth-spitter'] = round((level - 800) * 2.75, 6)
-            boss_raffle['behemoth-biter'] = round((level - 800) * 2.75, 6)
-            boss_raffle['behemoth-spitter'] = round((level - 800) * 2.75, 6)
+            biter_raffle['behemoth-biter'] = Math.round((level - 800) * 2.75, 6)
+            spitter_raffle['behemoth-spitter'] = Math.round((level - 800) * 2.75, 6)
+            boss_raffle['behemoth-biter'] = Math.round((level - 800) * 2.75, 6)
+            boss_raffle['behemoth-spitter'] = Math.round((level - 800) * 2.75, 6)
         end
         for k, _ in pairs(biter_raffle) do
             if biter_raffle[k] < 0 then
@@ -151,8 +151,8 @@ function Public.wave_defense_set_worm_raffle(level)
         Public.set(
             'worm_raffle',
             {
-                ['small-worm-turret'] = round(1000 - level * 1.75, 6),
-                ['medium-worm-turret'] = round(level, 6),
+                ['small-worm-turret'] = Math.round(1000 - level * 1.75, 6),
+                ['medium-worm-turret'] = Math.round(level, 6),
                 ['big-worm-turret'] = 0,
                 ['behemoth-worm-turret'] = 0
             }
@@ -160,11 +160,11 @@ function Public.wave_defense_set_worm_raffle(level)
         local worm_raffle = Public.get('worm_raffle') --[[@as table]]
 
         if level > 500 then
-            worm_raffle['medium-worm-turret'] = round(500 - (level - 500), 6)
-            worm_raffle['big-worm-turret'] = round((level - 500) * 2, 6)
+            worm_raffle['medium-worm-turret'] = Math.round(500 - (level - 500), 6)
+            worm_raffle['big-worm-turret'] = Math.round((level - 500) * 2, 6)
         end
         if level > 800 then
-            worm_raffle['behemoth-worm-turret'] = round((level - 800) * 3, 6)
+            worm_raffle['behemoth-worm-turret'] = Math.round((level - 800) * 3, 6)
         end
         for k, _ in pairs(worm_raffle) do
             if worm_raffle[k] < 0 then

@@ -6,9 +6,8 @@
 
 local Global = require 'utils.global'
 local Event = require 'utils.event'
+local Math = require 'utils.math.math'
 local Public = {}
-
-local math_round = math.round
 
 local fhb = {}
 Global.register(
@@ -28,7 +27,7 @@ function Public.set_health_modifier(force_index, modifier)
     if not fhb[force_index] then
         fhb[force_index] = {}
     end
-    fhb[force_index].m = math_round(1 / modifier, 4)
+    fhb[force_index].m = Math.round(1 / modifier, 4)
 end
 
 function Public.reset_tables()

@@ -1,8 +1,4 @@
 local Public = {}
-local log10 = math.log10
-local random = math.random
-local max = math.max
-local round = math.round
 
 local MT = require 'maps.oarc.table'
 local MtUtils = require 'maps.oarc.ms_utils'
@@ -10,6 +6,7 @@ local Utils = require 'utils.utils'
 local Event = require 'utils.event'
 local Surface = require 'utils.surface'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local Math = require 'utils.math.math'
 
 local biters =
 {
@@ -278,8 +275,8 @@ local function spawn_enemy_with_health_boost(town, biter)
         unit_type = 'worms'
     end
 
-    if random(1, 30) == 1 then
-        local final_health = round(modified_unit_health * (unit_settings[unit_type][biter.name] + 1), 3)
+    if Math.random(1, 30) == 1 then
+        local final_health = Math.round(modified_unit_health * (unit_settings[unit_type][biter.name] + 1), 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -287,7 +284,7 @@ local function spawn_enemy_with_health_boost(town, biter)
 
         BiterHealthBooster.add_boss_unit(biter, final_health, 0.38)
     else
-        local final_health = round(modified_unit_health * unit_settings[unit_type][biter.name], 3)
+        local final_health = Math.round(modified_unit_health * unit_settings[unit_type][biter.name], 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -319,12 +316,12 @@ local function is_on_tick_check_enabled()
 end
 
 local function create_unit_group(town, surface, position)
-    if random(1, 32) ~= 1 then
+    if Math.random(1, 32) ~= 1 then
         return
     end
 
     local group = surface.create_unit_group({ position = position })
-    local to_add = random(1, 10)
+    local to_add = Math.random(1, 10)
     local count = 0
 
     local area =
@@ -464,7 +461,7 @@ local function get_unit_size(evolution)
     end
     -- 10%
     if (evolution >= 0.1 and evolution < 0.2) then
-        local r = random()
+        local r = Math.random()
         if r < 0.6 then
             return 1
         end
@@ -472,7 +469,7 @@ local function get_unit_size(evolution)
     end
     -- 20%
     if (evolution >= 0.2 and evolution < 0.3) then
-        local r = random()
+        local r = Math.random()
         if r < 0.8 then
             if r < 0.4 then
                 return 1
@@ -484,7 +481,7 @@ local function get_unit_size(evolution)
     end
     -- 30%
     if (evolution >= 0.3 and evolution < 0.4) then
-        local r = random()
+        local r = Math.random()
         if r < 0.6 then
             if r < 0.3 then
                 return 1
@@ -496,7 +493,7 @@ local function get_unit_size(evolution)
     end
     -- 40%
     if (evolution >= 0.4 and evolution < 0.5) then
-        local r = random()
+        local r = Math.random()
         if r < 0.4 then
             if r < 0.2 then
                 return 1
@@ -508,7 +505,7 @@ local function get_unit_size(evolution)
     end
     -- 50%
     if (evolution >= 0.5 and evolution < 0.6) then
-        local r = random()
+        local r = Math.random()
         if r < 0.9 then
             if r < 0.3 then
                 if r < 0.15 then
@@ -523,7 +520,7 @@ local function get_unit_size(evolution)
     end
     -- 60%
     if (evolution >= 0.60 and evolution < 0.70) then
-        local r = random()
+        local r = Math.random()
         if r < 0.9 then
             if r < 0.15 then
                 if r < 0.075 then
@@ -538,7 +535,7 @@ local function get_unit_size(evolution)
     end
     -- 70%
     if (evolution >= 0.70 and evolution < 0.80) then
-        local r = random()
+        local r = Math.random()
         if r < 0.985 then
             if r < 0.125 then
                 return 2
@@ -550,7 +547,7 @@ local function get_unit_size(evolution)
     end
     -- 80%
     if (evolution >= 0.80 and evolution < 0.90) then
-        local r = random()
+        local r = Math.random()
         if r < 0.75 then
             if r < 0.25 then
                 return 2
@@ -562,7 +559,7 @@ local function get_unit_size(evolution)
     end
     -- 90%
     if (evolution >= 0.90 and evolution < 1) then
-        local r = random()
+        local r = Math.random()
         if r < 0.5 then
             return 3
         end
@@ -585,7 +582,7 @@ end
 -- calculate the relative evolution based on evolution factor (0.0-1.0) and distance factor (0.0-1.0)
 local function calculate_relative_evolution(evolution_factor, distance_factor)
     -- distance factor will be from 0.0 to 1.0 but drop off dramatically towards zero
-    local log_distance_factor = log10(distance_factor * 10 + 1)
+    local log_distance_factor = Math.log10(distance_factor * 10 + 1)
     local evo = log_distance_factor * evolution_factor
     if evo < 0.0 then
         evo = 0.0
@@ -616,7 +613,7 @@ local function get_relative_biter_evolution(town, position)
         end
         local evo = calculate_relative_evolution(town.evolution.biters, distance_factor)
         -- get the highest of the relative evolutions of each town
-        relative_evolution = max(relative_evolution, evo)
+        relative_evolution = Math.max(relative_evolution, evo)
     end
 
     return relative_evolution
@@ -642,7 +639,7 @@ local function get_relative_spitter_evolution(town, position)
         end
         local evo = calculate_relative_evolution(town.evolution.spitters, distance_factor)
         -- get the highest of the relative evolutions of each town
-        relative_evolution = max(relative_evolution, evo)
+        relative_evolution = Math.max(relative_evolution, evo)
     end
 
     return relative_evolution
@@ -668,7 +665,7 @@ local function get_relative_worm_evolution(town, position)
         end
         local evo = calculate_relative_evolution(town.evolution.worms, distance_factor)
         -- get the highest of the relative evolutions of each town
-        relative_evolution = max(relative_evolution, evo)
+        relative_evolution = Math.max(relative_evolution, evo)
     end
     return relative_evolution
 end
@@ -714,7 +711,7 @@ local function set_biter_type(entity)
     local surface = entity.surface
 
     if unit_size > 1 then
-        unit_size = random(1, unit_size)
+        unit_size = Math.random(1, unit_size)
     end
 
     local near_position = get_nearby_location(position, surface, 5, biters[unit_size])
@@ -768,7 +765,7 @@ local function set_spitter_type(entity)
     local surface = entity.surface
 
     if unit_size > 1 then
-        unit_size = random(1, unit_size)
+        unit_size = Math.random(1, unit_size)
     end
 
     if entity.valid then
@@ -1019,7 +1016,7 @@ local function send_attack_group()
 
             local unit_size = get_unit_size(evo)
             if unit_size > 1 then
-                unit_size = random(1, unit_size)
+                unit_size = Math.random(1, unit_size)
             end
 
             local group_size = 6 + (unit_size * 6)

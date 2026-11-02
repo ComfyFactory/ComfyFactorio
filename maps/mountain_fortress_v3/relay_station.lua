@@ -2,6 +2,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local WPT = require 'maps.mountain_fortress_v3.table'
 local Orent = require 'maps.mountain_fortress_v3.orientation'
+local Math = require 'utils.math.math'
 local Public = {}
 
 local name = 'mtn-addon-abandoned-relay-station'
@@ -29,13 +30,13 @@ local function available()
 end
 
 local function select_variant(depth)
-    local progress = math.min(1, math.max(0, (depth - settings.first) / (settings.spacing * 8)))
+    local progress = Math.min(1, Math.max(0, (depth - settings.first) / (settings.spacing * 8)))
     local weights = { 80 - 65 * progress, 18 + 22 * progress, 2 + 43 * progress }
     local total = 0
     for i, variant in ipairs(variants) do
         if prototypes.entity[variant.name] and weights[i] > 0 then total = total + weights[i] end
     end
-    local roll = math.random() * total
+    local roll = Math.random() * total
     local selected
     for i, variant in ipairs(variants) do
         if prototypes.entity[variant.name] and weights[i] > 0 then
@@ -69,19 +70,19 @@ local function completion(surface, x, y)
     local lateral = Orent.lateral { x = x * 32, y = y * 32 } / 32
     local depth = Orent.progression { x = x * 32, y = y * 32 } / 32
     if loco and loco.valid and loco.surface.index == surface.index then
-        local center = math.floor(Orent.lateral(loco.position) / 32)
+        local center = Math.floor(Orent.lateral(loco.position) / 32)
         local radius = 0
         for _, variant in ipairs(variants) do
             local box = prototypes and prototypes.entity[variant.name] and prototypes.entity[variant.name].collision_box
             if box then
-                radius = math.max(radius, math.abs(box.left_top.x), math.abs(box.left_top.y), math.abs(box.right_bottom.x), math.abs(box.right_bottom.y))
+                radius = Math.max(radius, Math.abs(box.left_top.x), Math.abs(box.left_top.y), Math.abs(box.right_bottom.x), Math.abs(box.right_bottom.y))
             end
         end
-        local margin = math.min(31, math.ceil((128 + radius) / 32) + 1)
+        local margin = Math.min(31, Math.ceil((128 + radius) / 32) + 1)
         for column in pairs(chunks) do
-            if math.abs(column - center) > margin then chunks[column] = nil end
+            if Math.abs(column - center) > margin then chunks[column] = nil end
         end
-        if math.abs(lateral - center) > margin then
+        if Math.abs(lateral - center) > margin then
             return
         end
     end
@@ -98,7 +99,7 @@ local function completion(surface, x, y)
         local range = ranges[index]
         if last + 1 < range[1] then break end
         if first <= range[2] + 1 then
-            first, last = math.min(first, range[1]), math.max(last, range[2])
+            first, last = Math.min(first, range[1]), Math.max(last, range[2])
             table.remove(ranges, index)
         else
             index = index + 1
@@ -106,10 +107,10 @@ local function completion(surface, x, y)
     end
     if #ranges >= 64 then
         local center = loco and loco.valid and Orent.progression(loco.position) / 32 or 0
-        local distance = math.max(first - center, center - last, 0)
+        local distance = Math.max(first - center, center - last, 0)
         local farthest, maximum
         for i, range in ipairs(ranges) do
-            local gap = math.max(range[1] - center, center - range[2], 0)
+            local gap = Math.max(range[1] - center, center - range[2], 0)
             if not maximum or gap > maximum then farthest, maximum = i, gap end
         end
         if distance >= maximum then return end
@@ -140,7 +141,7 @@ local function compact_ready()
         end
     end
     for _, site in pairs(this.sites) do
-        if site.band then this.closed_through = math.max(this.closed_through or -2, site.band - 1) end
+        if site.band then this.closed_through = Math.max(this.closed_through or -2, site.band - 1) end
     end
     this.readiness_version = 1
 end
@@ -185,7 +186,7 @@ function Public.chunk_ready(surface, top, generation)
         return
     end
     compact_ready()
-    completion(surface, math.floor(top.x / 32), math.floor(top.y / 32))
+    completion(surface, Math.floor(top.x / 32), Math.floor(top.y / 32))
 end
 
 local function safe(surface, pos, force, selected)
@@ -195,10 +196,10 @@ local function safe(surface, pos, force, selected)
     if not chunks then return false, 'missing_ready' end
     local box = prototype.collision_box
     local left, right = box.left_top, box.right_bottom
-    local x1, y1 = math.floor(pos.x + left.x), math.floor(pos.y + left.y)
-    local x2, y2 = math.ceil(pos.x + right.x), math.ceil(pos.y + right.y)
-    for x = math.floor(x1 / 32), math.floor(x2 / 32) do
-        for y = math.floor(y1 / 32), math.floor(y2 / 32) do
+    local x1, y1 = Math.floor(pos.x + left.x), Math.floor(pos.y + left.y)
+    local x2, y2 = Math.ceil(pos.x + right.x), Math.ceil(pos.y + right.y)
+    for x = Math.floor(x1 / 32), Math.floor(x2 / 32) do
+        for y = Math.floor(y1 / 32), Math.floor(y2 / 32) do
             local lateral = Orent.lateral { x = x, y = y }
             local depth = Orent.progression { x = x, y = y }
             local complete = false
@@ -228,7 +229,7 @@ local function place(site, loco, debug)
         local depth = debug and (-Orent.sign() * Orent.progression(loco.position) + 24 + step * 8)
             or (settings.first + site.band * settings.spacing + step * 16)
         for offset = 0, 21 do
-            local lateral = (48 + math.floor(offset / 2) * 8) * (offset % 2 == 0 and 1 or -1)
+            local lateral = (48 + Math.floor(offset / 2) * 8) * (offset % 2 == 0 and 1 or -1)
             local pos = Orent.world(Orent.lateral(loco.position) + lateral, -Orent.sign() * depth)
             site.candidates = site.candidates + 1
             local ok, reason = safe(surface, pos, loco.force, site.name)
@@ -302,11 +303,11 @@ local function tick()
     local surface = loco.surface
     if surface.index ~= WPT.get('active_surface_index') or this.retired[surface.index] then return end
     local depth = -Orent.sign() * Orent.progression(loco.position)
-    local band = math.floor((depth + settings.ahead - settings.first) / settings.spacing)
+    local band = Math.floor((depth + settings.ahead - settings.first) / settings.spacing)
     local debug = _DEBUG and band < 0
     if debug then band = -1 end
     if band < 0 and not debug then return end
-    this.closed_through = math.max(this.closed_through or -2, band - 1)
+    this.closed_through = Math.max(this.closed_through or -2, band - 1)
     for key, old in pairs(this.sites) do
         if old.band and old.band <= this.closed_through and old.phase ~= 'placed' then
             if old.registration then this.registrations[old.registration] = nil end

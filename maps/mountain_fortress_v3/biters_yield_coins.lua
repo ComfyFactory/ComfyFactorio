@@ -3,9 +3,8 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local RPG = require 'modules.rpg.main'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local StatData = require 'utils.datastore.statistics'
+local Math = require 'utils.math.math'
 local insert = table.insert
-local floor = math.floor
-local random = math.random
 
 local coin_yield =
 {
@@ -199,11 +198,11 @@ local entities_that_earn_coins =
 
 local function check_quality()
     local quality_list = Public.get('quality_list')
-    local quality_level = random(1, #quality_list)
+    local quality_level = Math.random(1, #quality_list)
     local quality = quality_list[quality_level]
 
-    if random(1, 2) == 1 then
-        return quality[random(1, #quality)]
+    if Math.random(1, 2) == 1 then
+        return quality[Math.random(1, #quality)]
     end
 
     return 'normal'
@@ -235,7 +234,7 @@ local function get_coin_count(entity)
         return coin_count, quality
     end
     local m = 1 / biter_health_boost_units[unit_number][2]
-    coin_count = floor(coin_count * m)
+    coin_count = Math.floor(coin_count * m)
     if coin_count < 1 then
         return 1
     end
@@ -315,7 +314,7 @@ local function on_entity_died(event)
                     forest_zone = RPG.get_value_from_player(p.index, 'forest_zone')
                 end
                 if forest_zone then
-                    if random(1, 12) == 1 then
+                    if Math.random(1, 12) == 1 then
                         player.insert({ name = 'coin', count = coin_count, quality = quality })
                         if p then
                             StatData.get_data(p.index):increase('coins', coin_count)

@@ -16,6 +16,7 @@ local Beam = require 'modules.render_beam'
 local Discord = require 'utils.discord'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
+local Math = require 'utils.math.math'
 
 local this =
 {
@@ -30,9 +31,6 @@ local this =
     time_to_reset = 60
 }
 
-local random = math.random
-local round = math.round
-local floor = math.floor
 local deep_copy = table.deep_copy
 local dataset = 'scenario_settings'
 local dataset_key = 'mtn_v3'
@@ -390,7 +388,7 @@ local function get_random_quality()
     end
 
     local quality_list = quality_per_level[best_key]
-    return quality_list[random(1, #quality_list)]
+    return quality_list[Math.random(1, #quality_list)]
 end
 
 local function on_market_item_purchased(event)
@@ -612,20 +610,20 @@ local ctf_token =
 
 local function scale(setting, limit, factor)
     factor = factor or 1.05
-    local scale_value = floor(setting * (factor ^ this.rounds_survived))
+    local scale_value = Math.floor(setting * (factor ^ this.rounds_survived))
     if limit and scale_value >= limit then
         return limit
     end
-    return floor(scale_value)
+    return Math.floor(scale_value)
 end
 
 local function scale_lin(setting, limit, factor)
     factor = factor or 1.05
-    local scale_value = math.floor(setting + (factor * this.rounds_survived))
+    local scale_value = Math.floor(setting + (factor * this.rounds_survived))
     if limit and scale_value >= limit then
         return limit
     end
-    return floor(scale_value)
+    return Math.floor(scale_value)
 end
 
 local function make_entry(item)
@@ -640,12 +638,12 @@ local function make_entry(item)
 
     local quality = get_random_quality()
     local multiplier = quality_multiplier[quality] or 1
-    local count = math.floor(item[2] * multiplier)
+    local count = Math.floor(item[2] * multiplier)
 
     return
     {
         name = item[1],
-        count = math.max(1, count),
+        count = Math.max(1, count),
         quality = quality
     }
 end
@@ -1599,7 +1597,7 @@ local function grant_non_limit_reached_buff(count)
     end
 
     local result = {}
-    for i = 1, math.min(count, #valid_buffs) do
+    for i = 1, Math.min(count, #valid_buffs) do
         result[i] = valid_buffs[i]
     end
     return result
@@ -1690,7 +1688,7 @@ local function apply_startup_settings(settings)
         return
     end
 
-    current_date = round(Utils.convert_date(current_date.year, current_date.month, current_date.day))
+    current_date = Math.round(Utils.convert_date(current_date.year, current_date.month, current_date.day))
 
     local server_name_matches = Server.check_server_name(Public.discord_name)
 
@@ -1700,7 +1698,7 @@ local function apply_startup_settings(settings)
         return
     end
     local stored_date_raw = Server.get_current_date(false, true, stored_date)
-    local converted_stored_date = round(Utils.convert_date(stored_date_raw.year, stored_date_raw.month, stored_date_raw.day))
+    local converted_stored_date = Math.round(Utils.convert_date(stored_date_raw.year, stored_date_raw.month, stored_date_raw.day))
     local time_to_reset = (current_date - converted_stored_date)
     this.time_to_reset = this.reset_after - time_to_reset
     if time_to_reset and time_to_reset >= this.reset_after then
@@ -1962,7 +1960,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             {
                 actual = 0,
                 expected = 10,
-                damage_type = damage_types[random(1, #damage_types)]
+                damage_type = damage_types[Math.random(1, #damage_types)]
             },
             handcrafted_items =
             {
@@ -2027,7 +2025,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
             {
                 actual = 0,
                 expected = scale(10000, 400000, 1.03),
-                damage_type = damage_types[random(1, #damage_types)]
+                damage_type = damage_types[Math.random(1, #damage_types)]
             }
         end
         if not this.objectives.handcrafted_items or (this.objectives_completed ~= nil and this.objectives_completed.handcrafted_items) then
@@ -2150,7 +2148,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
     this.objectives.ctf =
     {
         actual = 0,
-        expected = math.min(10, 3 + math.max(0, floor(tonumber(this.rounds_survived) or 0)))
+        expected = Math.min(10, 3 + Math.max(0, Math.floor(tonumber(this.rounds_survived) or 0)))
     }
 
     this.collection =

@@ -13,9 +13,7 @@ VITALITY > character_health_bonus
 
 Modified by Gerkiz *-*
 ]]
-local math_random = math.random
-local math_sqrt = math.sqrt
-local math_floor = math.floor
+local Math = require 'utils.math.math'
 local Global = require 'utils.global'
 local Tabs = require 'utils.gui'
 local P = require 'utils.player_modifiers'
@@ -106,8 +104,8 @@ local function level_up_effects(player)
     player.create_local_flying_text { text = '+LVL', position = player.physical_position, color = level_up_floating_text_color, time_to_live = 120 }
     local b = 0.75
     for _ = 1, 5, 1 do
-        local p = { (position.x + 0.4) + (b * -1 + math_random(0, b * 20) * 0.1), position.y + (b * -1 + math_random(0, b * 20) * 0.1) }
-        player.create_local_flying_text({ text = '✚', position = p, color = { 255, math_random(0, 100), 0 }, time_to_live = 120 })
+        local p = { (position.x + 0.4) + (b * -1 + Math.random(0, b * 20) * 0.1), position.y + (b * -1 + Math.random(0, b * 20) * 0.1) }
+        player.create_local_flying_text({ text = '✚', position = p, color = { 255, Math.random(0, 100), 0 }, time_to_live = 120 })
     end
     player.play_sound { path = 'utility/achievement_unlocked', volume_modifier = 0.40 }
 end
@@ -124,7 +122,7 @@ local function get_one_punch_chance(player)
     if rpg_t[player.index].strength < 100 then
         return 0
     end
-    local chance = math.round(rpg_t[player.index].strength * 0.007, 1)
+    local chance = Math.random(rpg_t[player.index].strength * 0.007, 1)
     if chance > 100 then
         chance = 100
     end
@@ -188,22 +186,22 @@ end
 
 local function update_player_stats(player)
     local strength = rpg_t[player.index].strength - 10
-    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', math.round(strength * 0.1, 3))
-    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', math.round(strength * 0.007, 3))
+    P.update_single_modifier(player, 'character_inventory_slots_bonus', 'rpg', Math.random(strength * 0.1, 3))
+    P.update_single_modifier(player, 'character_mining_speed_modifier', 'rpg', Math.random(strength * 0.007, 3))
 
     local magic = rpg_t[player.index].magic - 10
     local v = magic * 0.15
-    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', math.round(v, 3))
-    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', math.round(v, 3))
-    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', math.round(v, 3))
-    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', math.round(v * 0.5, 3))
-    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', math.round(v * 0.25, 3))
-    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', math.round(v * 0.15, 3))
+    P.update_single_modifier(player, 'character_build_distance_bonus', 'rpg', Math.random(v, 3))
+    P.update_single_modifier(player, 'character_item_drop_distance_bonus', 'rpg', Math.random(v, 3))
+    P.update_single_modifier(player, 'character_reach_distance_bonus', 'rpg', Math.random(v, 3))
+    P.update_single_modifier(player, 'character_loot_pickup_distance_bonus', 'rpg', Math.random(v * 0.5, 3))
+    P.update_single_modifier(player, 'character_item_pickup_distance_bonus', 'rpg', Math.random(v * 0.25, 3))
+    P.update_single_modifier(player, 'character_resource_reach_distance_bonus', 'rpg', Math.random(v * 0.15, 3))
 
     local dexterity = rpg_t[player.index].dexterity - 10
-    P.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', math.round(dexterity * 0.002, 3))
-    P.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', math.round(dexterity * 0.015, 3))
-    P.update_single_modifier(player, 'character_health_bonus', 'rpg', math.round((rpg_t[player.index].vitality - 10) * 6, 3))
+    P.update_single_modifier(player, 'character_running_speed_modifier', 'rpg', Math.random(dexterity * 0.002, 3))
+    P.update_single_modifier(player, 'character_crafting_speed_modifier', 'rpg', Math.random(dexterity * 0.015, 3))
+    P.update_single_modifier(player, 'character_health_bonus', 'rpg', Math.random((rpg_t[player.index].vitality - 10) * 6, 3))
     P.update_player_modifiers(player)
 end
 
@@ -550,7 +548,7 @@ local function level_up(player)
 end
 
 local function gain_xp(player, amount)
-    amount = math.round(amount, 2)
+    amount = Math.random(amount, 2)
     rpg_t[player.index].xp = rpg_t[player.index].xp + amount
     rpg_t[player.index].xp_since_last_floaty_text = rpg_t[player.index].xp_since_last_floaty_text + amount
     if player.gui.left.rpg then
@@ -889,13 +887,13 @@ local function on_entity_damaged(event)
             damage = damage - damage * event.entity.prototype.resistances.physical.percent
         end
     end
-    damage = math.round(damage, 3)
+    damage = Math.random(damage, 3)
     if damage < 1 then
         damage = 1
     end
 
     --Cause a one punch.
-    if math_random(0, 999) < get_one_punch_chance(event.cause.player) * 10 then
+    if Math.random(0, 999) < get_one_punch_chance(event.cause.player) * 10 then
         one_punch(event.cause, event.entity, damage)
         if event.entity.valid then
             event.entity.die(event.entity.force.name, event.cause)
@@ -904,12 +902,12 @@ local function on_entity_damaged(event)
     end
 
     --Floating messages and particle effects.
-    if math_random(1, 7) == 1 then
-        damage = damage * math_random(250, 350) * 0.01
+    if Math.random(1, 7) == 1 then
+        damage = damage * Math.random(250, 350) * 0.01
         event.cause.player.create_local_flying_text({ text = '‼' .. math.floor(damage), position = event.entity.position, color = { 255, 0, 0 }, time_to_live = 90, speed = 2 })
         event.cause.surface.create_entity({ name = 'blood-explosion-huge', position = event.entity.position })
     else
-        damage = damage * math_random(100, 125) * 0.01
+        damage = damage * Math.random(100, 125) * 0.01
         event.cause.player.create_local_flying_text({ text = math.floor(damage), position = event.entity.position, color = { 150, 150, 150 }, time_to_live = 90, speed = 2 })
     end
 
@@ -940,7 +938,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_player_repaired_entity(event)
-    if math_random(1, 4) ~= 1 then
+    if Math.random(1, 4) ~= 1 then
         return
     end
     local player = game.players[event.player_index]
@@ -963,7 +961,7 @@ local function on_player_rotated_entity(event)
 end
 
 local function on_player_changed_position(event)
-    if math_random(1, 64) ~= 1 then
+    if Math.random(1, 64) ~= 1 then
         return
     end
     local player = game.players[event.player_index]
@@ -1002,7 +1000,7 @@ local function on_pre_player_mined_item(event)
     rpg_t[player.index].last_mined_entity_position.x = entity.position.x
     rpg_t[player.index].last_mined_entity_position.y = entity.position.y
 
-    local distance_multiplier = math_floor(math_sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
+    local distance_multiplier = Math.floor(Math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
 
     local xp_amount
     if entity.type == 'resource' then

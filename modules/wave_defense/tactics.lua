@@ -1,4 +1,5 @@
 local WD = require 'modules.wave_defense.table'
+local Math = require 'utils.math.math'
 
 local Public = {}
 local priorities = { character = 1, turret = 2, ['ammo-turret'] = 2, ['electric-turret'] = 2, ['fluid-turret'] = 2, wall = 3 }
@@ -92,7 +93,7 @@ function Public.update_group_tactics(group, target, tick)
     state.next_scan = tick + 180
     local entities = group.surface.find_entities_filtered({ position = group.position, radius = 24, limit = 16, type = types })
     local best, best_priority, best_distance
-    for i = 1, math.min(#entities, 16) do
+    for i = 1, Math.min(#entities, 16) do
         local entity = entities[i]
         if eligible(group, entity) then
             local priority = priorities[entity.type]
@@ -117,7 +118,7 @@ function Public.add_tactical_waypoint(commands, group, destination)
         or not (group and group.valid and destination and type(destination.x) == 'number' and type(destination.y) == 'number') then
         return commands
     end
-    local distance = math.sqrt(distance_squared(group.position, destination))
+    local distance = Math.sqrt(distance_squared(group.position, destination))
     if distance < 64 then
         return commands
     end
@@ -127,7 +128,7 @@ function Public.add_tactical_waypoint(commands, group, destination)
     end
     local state = get_state(generated, group, game and game.tick or 0)
     if state.flank_side == nil then
-        local choice = math.random(1, 8)
+        local choice = Math.random(1, 8)
         state.flank_side = choice == 1 and -1 or (choice == 2 and 1 or 0)
     end
     if state.flank_side == 0 or state.flank_planned then

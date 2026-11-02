@@ -8,6 +8,7 @@ local WPT = require 'maps.mountain_fortress_v3.table'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local Math = require 'utils.math.math'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -1037,9 +1038,9 @@ function Public.kill_car(entity)
 
     local gps_tag = string.format('[gps=%.1f,%.1f,%s]', entity_position.x, entity_position.y, entity_surface.name)
 
-    game.print(module_tag .. owner.name .. messages[math.random(1, #messages)] .. ' ' .. gps_tag)
+    game.print(module_tag .. owner.name .. messages[Math.random(1, #messages)] .. ' ' .. gps_tag)
 
-    Server.to_discord_bold(table.concat { '*** ', '[Personal Vehicle] ***', owner.name .. messages[math.random(1, #messages)] .. ' ', gps_tag })
+    Server.to_discord_bold(table.concat { '*** ', '[Personal Vehicle] ***', owner.name .. messages[Math.random(1, #messages)] .. ' ', gps_tag })
 
     local player_gui_data = IC.get('player_gui_data')
     if player_gui_data[owner.name] then
@@ -1592,7 +1593,7 @@ function Public.use_door_with_entity(player, door)
             car.entity.minable_flag = true
         end
         local surface = car.entity.surface
-        local x_vector = (door.position.x / math.abs(door.position.x)) * 2
+        local x_vector = (door.position.x / Math.abs(door.position.x)) * 2
         local position = { car.entity.position.x + x_vector, car.entity.position.y }
         local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
         if car.entity.type == 'car' or car.entity.name == 'spidertron' then

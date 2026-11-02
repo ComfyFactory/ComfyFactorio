@@ -1,5 +1,6 @@
 local Global = require 'utils.global'
 local Public = require 'maps.mountain_fortress_v3.table'
+local Math = require 'utils.math.math'
 
 local this =
 {
@@ -151,8 +152,8 @@ Global.register(
     end
 )
 
-local random = math.random
-local floor = math.floor
+local random = Math.random
+local floor = Math.floor
 
 local blacklist =
 {
@@ -376,8 +377,8 @@ function Public.shuffle_prices()
         if data and type(data) == 'table' then
             for recipe_index, category in pairs(data) do
                 local ref_category = ref_data[recipe_index]
-                local max = math.round(ref_category.value * 1.5)
-                local min = math.round(ref_category.value * 0.5)
+                local max = Math.round(ref_category.value * 1.5)
+                local min = Math.round(ref_category.value * 0.5)
                 local v = random(min, max)
                 if v then
                     category.value = v

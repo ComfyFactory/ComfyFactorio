@@ -4,6 +4,7 @@ local P = require 'utils.player_modifiers'
 local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 local SpamProtection = require 'utils.spam_protection'
+local Math = require 'utils.math.math'
 
 --RPG Modules
 local Public = require 'modules.rpg.table'
@@ -35,9 +36,6 @@ local spell6_button_name = Public.spell6_button_name
 local spell7_button_name = Public.spell7_button_name
 local spell8_button_name = Public.spell8_button_name
 local cooldown_indicator_name = Public.cooldown_indicator_name
-
-local round = math.round
-local floor = math.floor
 
 function Public.draw_gui_char_button(player)
     local rpg_extra = Public.get('rpg_extra')
@@ -276,7 +274,7 @@ local function draw_main_frame(player, location)
     end
 
     add_gui_description(scroll_table, ({ 'rpg_gui.experience_name' }), 100)
-    local exp_gui = add_gui_stat(scroll_table, floor(rpg_t.xp), 125, ({ 'rpg_gui.gain_info_tooltip' }))
+    local exp_gui = add_gui_stat(scroll_table, Math.floor(rpg_t.xp), 125, ({ 'rpg_gui.gain_info_tooltip' }))
     data.exp_gui = exp_gui
 
     add_gui_description(scroll_table, ' ', 75)
@@ -335,10 +333,10 @@ local function draw_main_frame(player, location)
     add_gui_description(left_bottom_table, ' ', 40)
 
     add_gui_description(left_bottom_table, ({ 'rpg_gui.life_name' }), w1, ({ 'rpg_gui.life_tooltip' }))
-    local health_gui = add_gui_stat(left_bottom_table, floor(player.character.health), w2, ({ 'rpg_gui.life_increase' }))
+    local health_gui = add_gui_stat(left_bottom_table, Math.floor(player.character.health), w2, ({ 'rpg_gui.life_increase' }))
     data.health = health_gui
     local proto_char = prototypes.entity.character.get_max_health('normal')
-    add_gui_stat(left_bottom_table, floor(proto_char + player.character_health_bonus + player.force.character_health_bonus), w2, ({ 'rpg_gui.life_maximum' }))
+    add_gui_stat(left_bottom_table, Math.floor(proto_char + player.character_health_bonus + player.force.character_health_bonus), w2, ({ 'rpg_gui.life_maximum' }))
 
     local shield = 0
     local shield_max = 0
@@ -349,8 +347,8 @@ local function draw_main_frame(player, location)
     local i = player.character.get_inventory(defines.inventory.character_armor)
     if not i.is_empty() then
         if i[1].grid then
-            shield = floor(i[1].grid.shield)
-            shield_max = floor(i[1].grid.max_shield)
+            shield = Math.floor(i[1].grid.shield)
+            shield_max = Math.floor(i[1].grid.max_shield)
             shield_desc_tip = ({ 'rpg_gui.shield_tooltip' })
             shield_tip = ({ 'rpg_gui.shield_current' })
             shield_max_tip = ({ 'rpg_gui.shield_max' })
@@ -391,17 +389,17 @@ local function draw_main_frame(player, location)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({ 'rpg_gui.mining_name' }), w1)
-    local mining_speed_value = round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100) .. '%'
+    local mining_speed_value = Math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100) .. '%'
     add_gui_stat(right_bottom_table, mining_speed_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({ 'rpg_gui.slot_name' }), w1)
-    local slot_bonus_value = '+ ' .. round(player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus)
+    local slot_bonus_value = '+ ' .. Math.round(player.force.character_inventory_slots_bonus + player.character_inventory_slots_bonus)
     add_gui_stat(right_bottom_table, slot_bonus_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({ 'rpg_gui.melee_name' }), w1)
-    local melee_damage_value = round(100 * (1 + Public.get_melee_modifier(player))) .. '%'
+    local melee_damage_value = Math.round(100 * (1 + Public.get_melee_modifier(player))) .. '%'
     local melee_damage_tooltip
     if rpg_extra.enable_aoe_punch then
         melee_damage_tooltip = (
@@ -443,17 +441,17 @@ local function draw_main_frame(player, location)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({ 'rpg_gui.crafting_speed' }), w1)
-    local crafting_speed_value = round((player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100) .. '%'
+    local crafting_speed_value = Math.round((player.force.manual_crafting_speed_modifier + player.character_crafting_speed_modifier + 1) * 100) .. '%'
     add_gui_stat(right_bottom_table, crafting_speed_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({ 'rpg_gui.running_speed' }), w1)
-    local running_speed_value = round((player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100) .. '%'
+    local running_speed_value = Math.round((player.force.character_running_speed_modifier + player.character_running_speed_modifier + 1) * 100) .. '%'
     add_gui_stat(right_bottom_table, running_speed_value, w2)
 
     add_gui_description(right_bottom_table, ' ', w0)
     add_gui_description(right_bottom_table, ({ 'rpg_gui.health_bonus_name' }), w1)
-    local health_bonus_value = '+ ' .. round((player.force.character_health_bonus + player.character_health_bonus))
+    local health_bonus_value = '+ ' .. Math.round((player.force.character_health_bonus + player.character_health_bonus))
     local health_tooltip = ({ 'rpg_gui.health_tooltip', Public.get_heal_modifier(player) })
     add_gui_stat(right_bottom_table, health_bonus_value, w2, health_tooltip)
 
@@ -461,11 +459,11 @@ local function draw_main_frame(player, location)
 
     if rpg_extra.enable_mana then
         add_gui_description(right_bottom_table, ({ 'rpg_gui.mana_bonus' }), w1)
-        local mana_bonus_value = '+ ' .. (floor(Public.get_mana_modifier(player) * 10) / 10)
+        local mana_bonus_value = '+ ' .. (Math.floor(Public.get_mana_modifier(player) * 10) / 10)
         local mana_bonus_tooltip = (
             {
                 'rpg_gui.mana_regen_bonus',
-                (floor(Public.get_mana_modifier(player) * 10) / 10)
+                (Math.floor(Public.get_mana_modifier(player) * 10) / 10)
             })
         add_gui_stat(right_bottom_table, mana_bonus_value, w2, mana_bonus_tooltip)
     end

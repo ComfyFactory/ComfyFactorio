@@ -8,14 +8,12 @@ local Alert = require 'utils.alert'
 local Task = require 'utils.task_token'
 local StatData = require 'utils.datastore.statistics'
 local Commands = require 'utils.commands'
+local Math = require 'utils.math.math'
 
 local zone_settings = Public.zone_settings
 local shuffle = table.shuffle_table
-local random = math.random
 local deep_copy = table.deep_copy
-local floor = math.floor
 local insert = table.insert
-local abs = math.abs
 
 local modifier_cooldown = 108000 -- 30 minutes
 
@@ -152,7 +150,7 @@ local function get_random_weighted(weighted_table, weight_index)
         total_weight = total_weight + w[weight_index]
     end
 
-    local index = random() * total_weight
+    local index = Math.random() * total_weight
     local weight_sum = 0
     for k, w in pairs(weighted_table) do
         weight_sum = weight_sum + w[weight_index]
@@ -173,16 +171,16 @@ local function init_price_check(locomotive)
         size = adjusted_zones.size
     end
 
-    local zone = floor((abs(Orient.progression(locomotive.position) / zone_settings.zone_depth)) % size) + 1
+    local zone = Math.floor((Math.abs(Orient.progression(locomotive.position) / zone_settings.zone_depth)) % size) + 1
 
-    local roll = 48 + abs(Orient.progression(locomotive.position)) * 1.75
-    roll = roll * random(25, 1337) * 0.01
+    local roll = 48 + Math.abs(Orient.progression(locomotive.position)) * 1.75
+    roll = roll * Math.random(25, 1337) * 0.01
     roll = roll * zone
 
     local item_stacks = {}
     local roll_count = 2
     for _ = 1, roll_count, 1 do
-        for _, stack in pairs(Public.roll(floor(roll / roll_count), 2)) do
+        for _, stack in pairs(Public.roll(Math.floor(roll / roll_count), 2)) do
             if not item_stacks[stack.name] then
                 item_stacks[stack.name] = stack.count
             else
@@ -327,9 +325,9 @@ local mc_random_rewards =
 
             mc_rewards.temp_boosts.xp = true
             Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'xp' })
-            local rng = random(2048, 10240)
+            local rng = Math.random(2048, 10240)
             local scale_factor = 0.5 + (zone / 20)
-            rng = floor(rng * scale_factor)
+            rng = Math.floor(rng * scale_factor)
             RPG.add_to_global_pool(rng)
             local message = ({ 'locomotive.xp_bonus', player.name })
             Alert.alert_all_players(15, message, nil, 'achievement/tech-maniac', nil, 'minor', 'xp')
@@ -364,10 +362,10 @@ local mc_random_rewards =
 
             for _, tech in pairs(techs_to_research) do
                 if techs[tech] and techs[tech].researched then
-                    if mystical_chest.can_insert({ name = tech, count = random(200, 1500) }) then
-                        mystical_chest.insert({ name = tech, count = random(200, 1500) })
+                    if mystical_chest.can_insert({ name = tech, count = Math.random(200, 1500) }) then
+                        mystical_chest.insert({ name = tech, count = Math.random(200, 1500) })
                     else
-                        mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = tech, count = random(200, 1500) }, enable_looted = true })
+                        mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = tech, count = Math.random(200, 1500) }, enable_looted = true })
                     end
                 end
             end
@@ -404,10 +402,10 @@ local mc_random_rewards =
 
             for name, tech in pairs(ammo_to_research) do
                 if techs[tech.tech] and techs[tech.tech].researched then
-                    if mystical_chest.can_insert({ name = name, count = random(200, 400) }) then
-                        mystical_chest.insert({ name = name, count = random(200, 400) })
+                    if mystical_chest.can_insert({ name = name, count = Math.random(200, 400) }) then
+                        mystical_chest.insert({ name = name, count = Math.random(200, 400) })
                     else
-                        mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = name, count = random(200, 400) }, enable_looted = true })
+                        mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = name, count = Math.random(200, 400) }, enable_looted = true })
                     end
                 end
             end
@@ -450,7 +448,7 @@ local mc_random_rewards =
             if #markets > 0 then
                 for _, mrk in pairs(markets) do
                     if mrk and mrk.valid then
-                        Public.reroll_market(mrk, abs(Orient.progression(mrk.position)) * 0.004)
+                        Public.reroll_market(mrk, Math.abs(Orient.progression(mrk.position)) * 0.004)
                     end
                 end
             end
@@ -514,76 +512,76 @@ local mc_random_rewards =
                 return
             end
 
-            if mystical_chest.can_insert({ name = 'stone-wall', count = random(100, 240) }) then
-                mystical_chest.insert({ name = 'stone-wall', count = random(100, 240) })
+            if mystical_chest.can_insert({ name = 'stone-wall', count = Math.random(100, 240) }) then
+                mystical_chest.insert({ name = 'stone-wall', count = Math.random(100, 240) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'stone-wall', count = random(100, 240) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'stone-wall', count = Math.random(100, 240) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'gate', count = random(100, 240) }) then
-                mystical_chest.insert({ name = 'gate', count = random(100, 240) })
+            if mystical_chest.can_insert({ name = 'gate', count = Math.random(100, 240) }) then
+                mystical_chest.insert({ name = 'gate', count = Math.random(100, 240) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'gate', count = random(100, 240) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'gate', count = Math.random(100, 240) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'repair-pack', count = random(100, 240) }) then
-                mystical_chest.insert({ name = 'repair-pack', count = random(100, 240) })
+            if mystical_chest.can_insert({ name = 'repair-pack', count = Math.random(100, 240) }) then
+                mystical_chest.insert({ name = 'repair-pack', count = Math.random(100, 240) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'repair-pack', count = random(100, 240) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'repair-pack', count = Math.random(100, 240) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'gun-turret', count = random(20, 100) }) then
-                mystical_chest.insert({ name = 'gun-turret', count = random(20, 100) })
+            if mystical_chest.can_insert({ name = 'gun-turret', count = Math.random(20, 100) }) then
+                mystical_chest.insert({ name = 'gun-turret', count = Math.random(20, 100) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'gun-turret', count = random(20, 100) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'gun-turret', count = Math.random(20, 100) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'laser-turret', count = random(20, 100) }) then
-                mystical_chest.insert({ name = 'laser-turret', count = random(20, 100) })
+            if mystical_chest.can_insert({ name = 'laser-turret', count = Math.random(20, 100) }) then
+                mystical_chest.insert({ name = 'laser-turret', count = Math.random(20, 100) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'laser-turret', count = random(20, 100) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'laser-turret', count = Math.random(20, 100) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'flamethrower-turret', count = random(20, 40) }) then
-                mystical_chest.insert({ name = 'flamethrower-turret', count = random(20, 40) })
+            if mystical_chest.can_insert({ name = 'flamethrower-turret', count = Math.random(20, 40) }) then
+                mystical_chest.insert({ name = 'flamethrower-turret', count = Math.random(20, 40) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'flamethrower-turret', count = random(20, 40) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'flamethrower-turret', count = Math.random(20, 40) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'firearm-magazine', count = random(400, 800) }) then
-                mystical_chest.insert({ name = 'firearm-magazine', count = random(400, 800) })
+            if mystical_chest.can_insert({ name = 'firearm-magazine', count = Math.random(400, 800) }) then
+                mystical_chest.insert({ name = 'firearm-magazine', count = Math.random(400, 800) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'firearm-magazine', count = random(400, 800) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'firearm-magazine', count = Math.random(400, 800) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'shotgun-shell', count = random(400, 800) }) then
-                mystical_chest.insert({ name = 'shotgun-shell', count = random(400, 800) })
+            if mystical_chest.can_insert({ name = 'shotgun-shell', count = Math.random(400, 800) }) then
+                mystical_chest.insert({ name = 'shotgun-shell', count = Math.random(400, 800) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'shotgun-shell', count = random(400, 800) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'shotgun-shell', count = Math.random(400, 800) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'piercing-shotgun-shell', count = random(400, 800) }) then
-                mystical_chest.insert({ name = 'piercing-shotgun-shell', count = random(400, 800) })
+            if mystical_chest.can_insert({ name = 'piercing-shotgun-shell', count = Math.random(400, 800) }) then
+                mystical_chest.insert({ name = 'piercing-shotgun-shell', count = Math.random(400, 800) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'piercing-shotgun-shell', count = random(400, 800) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'piercing-shotgun-shell', count = Math.random(400, 800) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'combat-shotgun', count = random(10, 20) }) then
-                mystical_chest.insert({ name = 'combat-shotgun', count = random(10, 20) })
+            if mystical_chest.can_insert({ name = 'combat-shotgun', count = Math.random(10, 20) }) then
+                mystical_chest.insert({ name = 'combat-shotgun', count = Math.random(10, 20) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'combat-shotgun', count = random(10, 20) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'combat-shotgun', count = Math.random(10, 20) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'submachine-gun', count = random(10, 20) }) then
-                mystical_chest.insert({ name = 'submachine-gun', count = random(10, 20) })
+            if mystical_chest.can_insert({ name = 'submachine-gun', count = Math.random(10, 20) }) then
+                mystical_chest.insert({ name = 'submachine-gun', count = Math.random(10, 20) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'submachine-gun', count = random(10, 20) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'submachine-gun', count = Math.random(10, 20) }, enable_looted = true })
             end
 
-            if mystical_chest.can_insert({ name = 'piercing-rounds-magazine', count = random(400, 800) }) then
-                mystical_chest.insert({ name = 'piercing-rounds-magazine', count = random(400, 800) })
+            if mystical_chest.can_insert({ name = 'piercing-rounds-magazine', count = Math.random(400, 800) }) then
+                mystical_chest.insert({ name = 'piercing-rounds-magazine', count = Math.random(400, 800) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'piercing-rounds-magazine', count = random(400, 800) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'piercing-rounds-magazine', count = Math.random(400, 800) }, enable_looted = true })
             end
 
             local mystical_rewards = Public.get('mystical_rewards')
@@ -641,7 +639,7 @@ local mc_random_rewards =
             Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'prototype_data_disk' })
             Task.set_timeout_in_ticks(54000, restore_active_modifier_token, { modifier = 'prototype_data_disk' })
 
-            Public.set('prototype_data_disk_bonus', (random(50, 90) / 100))
+            Public.set('prototype_data_disk_bonus', (Math.random(50, 90) / 100))
 
             local mystical_chest = Public.get('mystical_chest')
             if not (mystical_chest and mystical_chest.valid) then
@@ -709,10 +707,10 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.oil_bonus = mystical_rewards.oil_bonus and mystical_rewards.oil_bonus + 1 or 1
 
-            if mystical_chest.can_insert({ name = 'crude-oil-barrel', count = random(200, 480) }) then
-                mystical_chest.insert({ name = 'crude-oil-barrel', count = random(200, 480) })
+            if mystical_chest.can_insert({ name = 'crude-oil-barrel', count = Math.random(200, 480) }) then
+                mystical_chest.insert({ name = 'crude-oil-barrel', count = Math.random(200, 480) })
             else
-                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'crude-oil-barrel', count = random(200, 480) }, enable_looted = true })
+                mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'crude-oil-barrel', count = Math.random(200, 480) }, enable_looted = true })
             end
 
             Alert.alert_all_players(15, 'Oil for all! Check out the mystical chest!', nil, 'achievement/tech-maniac', nil, 'global')
@@ -739,9 +737,9 @@ local mc_random_rewards =
             Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'coins' })
             local players = game.connected_players
             for i = 1, #players do
-                local rng = random(256, 1024)
+                local rng = Math.random(256, 1024)
                 local scale_factor = 0.5 + (zone / 20)
-                rng = floor(rng * scale_factor)
+                rng = Math.floor(rng * scale_factor)
                 local player = players[i]
                 if player and player.valid then
                     if player.can_insert({ name = 'coin', count = rng }) then
@@ -960,7 +958,7 @@ local function on_gui_click(event)
                 return
             end
             local adjusted_zones = Public.get('adjusted_zones')
-            local zone = floor((abs(Orient.progression(locomotive.position) / zone_settings.zone_depth)) % adjusted_zones.size) + 1
+            local zone = Math.floor((Math.abs(Orient.progression(locomotive.position) / zone_settings.zone_depth)) % adjusted_zones.size) + 1
             local success, msg = mc_random_rewards[id].func(player, zone)
             if not success then
                 return player.print(msg, { color = Color.fail })
@@ -1001,7 +999,7 @@ function Public.roll_item_stack(remaining_budget, blacklist)
 
     local item_count = 1
 
-    for c = 1, random(1, stack_size), 1 do
+    for c = 1, Math.random(1, stack_size), 1 do
         local price = c * item_worth
         if price <= remaining_budget then
             item_count = c
@@ -1028,7 +1026,7 @@ function Public.roll(budget, max_slots, blacklist)
         b = blacklist
     end
 
-    budget = floor(budget)
+    budget = Math.floor(budget)
     if budget == 0 then
         return
     end

@@ -23,14 +23,12 @@ local Score = require 'utils.gui.score'
 local Gui = require 'utils.gui'
 local FunctionColor = { r = 0.98, g = 0.66, b = 0.22 }
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local Math = require 'utils.math.math'
 
 local remove_boost_movement_speed_on_respawn
 local de = defines.events
 local is_modded = Public.is_modded
-local random = math.random
-local floor = math.floor
-local round = math.round
-local sqrt = math.sqrt
+
 local remove = table.remove
 local magic_crafters_per_tick = 3
 local magic_fluid_crafters_per_tick = 8
@@ -247,9 +245,9 @@ local custom_surface_funcs_token =
                     return
                 end
 
-                local entity = entities[random(#entities)]
+                local entity = entities[Math.random(#entities)]
                 if entity and entity.valid then
-                    local position = { x = entity.position.x + random(-120, 120), y = entity.position.y + random(-120, 120) }
+                    local position = { x = entity.position.x + Math.random(-120, 120), y = entity.position.y + Math.random(-120, 120) }
                     surface.create_entity({ name = 'lightning', position = position, force = 'enemy' })
                 end
             end
@@ -461,7 +459,7 @@ local function do_magic_crafters()
 
             local count = (tick - last_tick) * rate
 
-            local fcount = floor(count)
+            local fcount = Math.floor(count)
 
             if fcount > 1 then
                 fcount = 1
@@ -471,7 +469,7 @@ local function do_magic_crafters()
                 if entity.get_output_inventory().can_insert({ name = data.item, count = fcount, quality = data.quality }) then
                     entity.get_output_inventory().insert { name = data.item, count = fcount, quality = data.quality }
                     entity.products_finished = entity.products_finished + fcount
-                    data.last_tick = round(tick - (count - fcount) / rate)
+                    data.last_tick = Math.round(tick - (count - fcount) / rate)
                 end
             end
         end
@@ -513,7 +511,7 @@ local function do_magic_fluid_crafters()
 
             local count = (tick - last_tick) * rate
 
-            local fcount = floor(count)
+            local fcount = Math.floor(count)
 
             if fcount > 0 then
                 local fluidbox_index = data.fluidbox_index
@@ -611,7 +609,7 @@ local function do_beams_away()
 
             if not orbital_strikes[wave_number] then
                 orbital_strikes[wave_number] = true
-                Beams.new_beam_delayed(surface, random(500, 3000))
+                Beams.new_beam_delayed(surface, Math.random(500, 3000))
             end
         end
     end
@@ -809,17 +807,17 @@ local function level_weight(level, min, max, multiplier)
     end
 
     if level >= max then
-        return round((max - min) * (multiplier or 2.75), 6)
+        return Math.round((max - min) * (multiplier or 2.75), 6)
     end
 
     local progress = (level - min) / (max - min)
     local eased = progress ^ 1.25
-    return round(eased * (max - min) * (multiplier or 2.75), 6)
+    return Math.round(eased * (max - min) * (multiplier or 2.75), 6)
 end
 
 
 local function fill_raffles(level)
-    level = math.max(level, 0)
+    level = Math.max(level, 0)
     local raffles =
     {
         biter_raffle = {},
@@ -922,7 +920,7 @@ end
 
 local set_unit_raffle_token =
     Task.register(function (event)
-        local level = math.max(event.level, 0)
+        local level = Math.max(event.level, 0)
         local raffles
 
         if not is_modded then
@@ -930,24 +928,24 @@ local set_unit_raffle_token =
             {
                 biter_raffle =
                 {
-                    ['small-biter'] = round(1000 - level * 1.75, 6),
-                    ['medium-biter'] = round(level, 6),
+                    ['small-biter'] = Math.round(1000 - level * 1.75, 6),
+                    ['medium-biter'] = Math.round(level, 6),
                 },
                 spitter_raffle =
                 {
-                    ['small-spitter'] = round(1000 - level * 1.75, 6),
-                    ['medium-spitter'] = round(level, 6),
+                    ['small-spitter'] = Math.round(1000 - level * 1.75, 6),
+                    ['medium-spitter'] = Math.round(level, 6),
                 }
             }
 
             if level > 500 then
-                raffles.biter_raffle['big-biter'] = round((level - 500) * 2, 6)
-                raffles.spitter_raffle['big-spitter'] = round((level - 500) * 2, 6)
+                raffles.biter_raffle['big-biter'] = Math.round((level - 500) * 2, 6)
+                raffles.spitter_raffle['big-spitter'] = Math.round((level - 500) * 2, 6)
             end
 
             if level > 800 then
-                raffles.biter_raffle['behemoth-biter'] = round((level - 800) * 2.75, 6)
-                raffles.spitter_raffle['behemoth-spitter'] = round((level - 800) * 2.75, 6)
+                raffles.biter_raffle['behemoth-biter'] = Math.round((level - 800) * 2.75, 6)
+                raffles.spitter_raffle['behemoth-spitter'] = Math.round((level - 800) * 2.75, 6)
             end
         else
             raffles = fill_raffles(level)
@@ -973,14 +971,14 @@ local set_unit_raffle_token =
 
 local set_worm_raffle_token =
     Task.register(function (event)
-        local level = math.min(math.max(event.level, 0), 1000)
+        local level = Math.min(Math.max(event.level, 0), 1000)
         local worm_raffle = {}
         local tiers =
         {
-            { 'small', round(1000 - level * 1.75, 6) },
-            { 'medium', round(level <= 500 and level or 1000 - level, 6) },
-            { 'big', round(math.max(level - 500, 0) * 2, 6) },
-            { 'behemoth', round(math.max(level - 800, 0) * 3, 6) }
+            { 'small', Math.round(1000 - level * 1.75, 6) },
+            { 'medium', Math.round(level <= 500 and level or 1000 - level, 6) },
+            { 'big', Math.round(Math.max(level - 500, 0) * 2, 6) },
+            { 'behemoth', Math.round(Math.max(level - 800, 0) * 3, 6) }
         }
         local worm_elements = { 'explosive', 'fire', 'piercing', 'poison', 'electric' }
 
@@ -1058,7 +1056,7 @@ local function do_artillery_turrets_targets()
     outpost.last_fire_tick = now
 
     for i = 1, count do
-        local entity = entities[random(#entities)]
+        local entity = entities[Math.random(#entities)]
         if entity and entity.valid then
             local data = { position = position, entity = entity, index = index }
             Task.set_timeout_in_ticks(i * 60, artillery_target_callback, data)
@@ -1077,8 +1075,8 @@ local function add_magic_crafter_output(entity, output, distance, quality)
         entity = entity,
         quality = quality,
         last_tick = game.tick,
-        base_rate = round(rate, 8),
-        rate = round(rate, 8),
+        base_rate = Math.round(rate, 8),
+        rate = Math.round(rate, 8),
         item = output.item,
         fluidbox_index = fluidbox_index
     }
@@ -1293,7 +1291,7 @@ Public.magic_item_crafting_callback =
             local quality_buildings = Public.get_stateful('quality_buildings')
             local quality = 'normal'
 
-            if random(1, 32) == 1 then
+            if Math.random(1, 32) == 1 then
                 quality = quality_buildings or 'normal'
             end
 
@@ -1321,7 +1319,7 @@ Public.magic_item_crafting_callback =
 
             local p = entity.position
             local x, y = p.x, p.y
-            local distance = sqrt(x * x + y * y)
+            local distance = Math.sqrt(x * x + y * y)
 
             local output = callback_data.output
             if #output == 0 then
@@ -1360,7 +1358,7 @@ Public.magic_item_crafting_callback_weighted =
 
             local p = entity.position
 
-            local i = random() * weights.total
+            local i = Math.random() * weights.total
 
             local index = table.binary_search(weights, i)
             if (index < 0) then
@@ -1388,7 +1386,7 @@ Public.magic_item_crafting_callback_weighted =
             local quality_buildings = Public.get_stateful('quality_buildings')
             local quality = 'normal'
 
-            if random(1, 32) == 1 then
+            if Math.random(1, 32) == 1 then
                 quality = quality_buildings or 'normal'
             end
 
@@ -1414,7 +1412,7 @@ Public.magic_item_crafting_callback_weighted =
             end
 
             local x, y = p.x, p.y
-            local distance = sqrt(x * x + y * y)
+            local distance = Math.sqrt(x * x + y * y)
 
             local output = stack.output
             if #output == 0 then
@@ -1455,7 +1453,7 @@ function Public.do_random_loot(entity, weights, loot)
     entity.operable = false
     --entity.destructible = false
 
-    local i = random() * weights.total
+    local i = Math.random() * weights.total
 
     local index = table.binary_search(weights, i)
     if (index < 0) then
@@ -1472,7 +1470,7 @@ function Public.do_random_loot(entity, weights, loot)
     if df then
         local p = entity.position
         local x, y = p.x, p.y
-        local d = sqrt(x * x + y * y)
+        local d = Math.sqrt(x * x + y * y)
 
         count = stack.count + d * df
     else
@@ -1564,9 +1562,9 @@ local function on_wave_created(event)
 
     if wave_number % 50 == 0 then
         if wave_number >= 1500 then
-            WD.set_pause_wave_in_ticks(random(36000, 54000))
+            WD.set_pause_wave_in_ticks(Math.random(36000, 54000))
         else
-            WD.set_pause_wave_in_ticks(random(18000, 54000))
+            WD.set_pause_wave_in_ticks(Math.random(18000, 54000))
         end
     end
 end
@@ -2480,7 +2478,7 @@ end
 
 local function compute_collapse_amount(context)
     local amount = context.player_count * context.difficulty.multiply + 2
-    amount = floor(amount)
+    amount = Math.floor(amount)
 
     if amount < context.difficulty.lowest then
         amount = context.difficulty.lowest
@@ -2489,7 +2487,7 @@ local function compute_collapse_amount(context)
     end
 
     if Orient.is_horizontal() then
-        amount = floor(amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
+        amount = Math.floor(amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
         if amount < 1 then
             amount = 1
         end
@@ -2907,7 +2905,7 @@ function Public.set_spawn_position()
         end
 
         local locomotive_position = surface.find_non_colliding_position('steel-chest', sizeof, 128, 1)
-        local distance_from = floor(math2d.position.distance(locomotive_position, locomotive.position))
+        local distance_from = Math.floor(math2d.position.distance(locomotive_position, locomotive.position))
         local l_y = Orient.progression(l)
         local t_y = Orient.progression(locomotive_position)
         local c_y = Orient.progression(collapse_pos)
@@ -3189,8 +3187,8 @@ function Public.on_player_respawned(event)
 
     if player.character and player.character.valid then
         Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, { player = player })
-        player.character.health = round(player.character.health * health_values[random(1, #health_values)])
-        player.print(random_respawn_messages[random(1, #random_respawn_messages)])
+        player.character.health = Math.round(player.character.health * health_values[Math.random(1, #health_values)])
+        player.print(random_respawn_messages[Math.random(1, #random_respawn_messages)])
     end
 end
 
@@ -3374,15 +3372,15 @@ function Public.on_player_changed_position(event)
     if config_tile == 'lab-dark-2' then
         local get_tile = surface.get_tile(p.x, p.y)
         if get_tile.valid and get_tile.name == 'lab-dark-2' then
-            if random(1, 2) == 1 then
-                if random(1, 2) == 1 then
+            if Math.random(1, 2) == 1 then
+                if Math.random(1, 2) == 1 then
                     show_text('This path is not for players!', p, surface, player)
                 end
                 player.physical_surface.create_entity({ name = 'fire-flame', position = player.physical_position })
                 player.character.health = player.character.health - tile_damage
                 if player.character.health == 0 then
                     player.character.die()
-                    local message = ({ 'main.death_message_' .. random(1, 7), player.name })
+                    local message = ({ 'main.death_message_' .. Math.random(1, 7), player.name })
                     game.print(message, { color = FunctionColor })
                 end
             end
@@ -3573,7 +3571,7 @@ function Public.set_player_to_god(player)
     local spectate = Public.get('spectate')
 
     if spectate[player.index] and spectate[player.index].delay and spectate[player.index].delay > game.tick then
-        local cooldown = floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
+        local cooldown = Math.floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
         player.print('[color=blue][Spectate][/color] Retry again in ' .. cooldown, { color = Color.warning })
         return false
     end

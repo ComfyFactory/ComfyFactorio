@@ -2,6 +2,7 @@ local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local Math = require 'utils.math.math'
 
 local this =
 {
@@ -37,7 +38,7 @@ function Public.create_surface(recreate)
 
     local map_gen_settings =
     {
-        ['seed'] = math.random(10000, 99999),
+        ['seed'] = Math.random(10000, 99999),
         ['water'] = 0.001,
         ['starting_area'] = 1,
         ['cliff_settings'] = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 },
@@ -144,7 +145,7 @@ function Public.create_landing_surface()
         width = 256,
         default_enable_all_autoplace_controls = false,
         peaceful_mode = false,
-        seed = math.random(10000, 99999),
+        seed = Math.random(10000, 99999),
         starting_area = 'very-low',
         starting_points = { { x = 0, y = 0 } },
         terrain_segmentation = 'normal',

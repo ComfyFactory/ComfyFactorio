@@ -2,12 +2,12 @@ local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Global = require 'utils.global'
 local StatData = require 'utils.datastore.statistics'
+local Math = require 'utils.math.math'
 StatData.add_normalize('ore_veins', 'Ore veins located'):set_tooltip('Amount of ore veins located by the player.')
 
 local ore_patch_gap = 4
 local spawn_search_radius = 32
 local is_modded_pt2 = Public.is_modded_pt2
-local random = math.random
 
 local this =
 {
@@ -151,9 +151,9 @@ local function set_raffle()
 end
 
 local function get_amount(position)
-    local distance_to_center = math.sqrt(position.x ^ 2 + position.y ^ 2) * 2 + 1500
+    local distance_to_center = Math.sqrt(position.x ^ 2 + position.y ^ 2) * 2 + 1500
     distance_to_center = distance_to_center * this.amount_modifier
-    local m = (75 + random(0, 50)) * 0.01
+    local m = (75 + Math.random(0, 50)) * 0.01
     return distance_to_center * m
 end
 
@@ -254,7 +254,7 @@ local function draw_chain(
         { 0, 1 }
     }
 
-    local r = random(1, #ore_entities)
+    local r = Math.random(1, #ore_entities)
 
     local position =
     {
@@ -295,7 +295,7 @@ local function draw_chain(
 
                 if ore == 'mixed' then
                     name = this.mixed_ores[
-                    random(1, #this.mixed_ores)
+                    Math.random(1, #this.mixed_ores)
                     ]
                 end
 
@@ -319,8 +319,8 @@ end
 
 local function ore_vein(player, entity)
     local surface = entity.surface
-    local size = size_raffle[random(1, #size_raffle)]
-    local ore = this.raffle[random(1, #this.raffle)]
+    local size = size_raffle[Math.random(1, #size_raffle)]
+    local ore = this.raffle[Math.random(1, #this.raffle)]
     local icon
     if prototypes.entity[ore] then
         icon = '[img=entity/' .. ore .. ']'
@@ -347,7 +347,7 @@ local function ore_vein(player, entity)
 
     local name = ore
     if ore == 'mixed' then
-        name = this.mixed_ores[random(1, #this.mixed_ores)]
+        name = this.mixed_ores[Math.random(1, #this.mixed_ores)]
     end
     local ore_entities = { { name = name, position = { x = origin.x, y = origin.y }, amount = get_amount(origin) } }
 
@@ -361,10 +361,10 @@ local function ore_vein(player, entity)
         ore_patch_gap
     )
 
-    local count = random(size[2], size[3])
+    local count = Math.random(size[2], size[3])
 
     for _ = 1, 128, 1 do
-        local c = random(math.floor(size[2] * 0.25) + 1, size[2])
+        local c = Math.random(Math.floor(size[2] * 0.25) + 1, size[2])
         if count < c then
             c = count
         end
@@ -412,7 +412,7 @@ local function on_player_mined_entity(event)
         chance = chance / 2
     end
 
-    if random(1, chance) ~= 1 then
+    if Math.random(1, chance) ~= 1 then
         return
     end
 

@@ -4,12 +4,9 @@ local Public = {}
 local LootRaffle = require 'utils.functions.loot_raffle'
 local BiterRaffle = require 'utils.functions.biter_raffle'
 local bb_config = require 'maps.biter_battles_v2.config'
+local math = require 'utils.math.math'
 
 local table_insert = table.insert
-local math_floor = math.floor
-local math_random = math.random
-local math_abs = math.abs
-local math_sqrt = math.sqrt
 
 local GetNoise = require 'utils.math.get_noise'
 local simplex_noise = require 'utils.math.simplex_noise'.d2
@@ -61,7 +58,7 @@ local loot_blacklist =
 local function shuffle(tbl)
     local size = #tbl
     for i = size, 1, -1 do
-        local rand = math_random(size)
+        local rand = math.random(size)
         tbl[i], tbl[rand] = tbl[rand], tbl[i]
     end
     return tbl
@@ -123,7 +120,7 @@ local function create_mirrored_tile_chain(surface, tile, count, straightness)
     for _ = 1, count, 1 do
         local tile_placed = false
 
-        if math_random(0, 100) > straightness then
+        if math.random(0, 100) > straightness then
             modifiers = shuffle(modifiers)
         end
         for b = 1, 4, 1 do
@@ -185,9 +182,9 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness)
             local noise_1 = simplex_noise(pos.x * 0.0125, pos.y * 0.0125, seed)
             local noise_2 = simplex_noise(pos.x * 0.1, pos.y * 0.1, seed + 25000)
             local noise = noise_1 + noise_2 * 0.12
-            local distance_to_center = math_sqrt(x ^ 2 + y ^ 2)
+            local distance_to_center = math.sqrt(x ^ 2 + y ^ 2)
             local a = richness - richness_part * distance_to_center
-            if distance_to_center < radius - math_abs(noise * radius * 0.85) and a > 1 then
+            if distance_to_center < radius - math.abs(noise * radius * 0.85) and a > 1 then
                 if surface.can_place_entity({ name = name, position = pos, amount = a }) then
                     surface.create_entity { name = name, position = pos, amount = a }
                     for _, e in pairs(surface.find_entities_filtered({ position = pos, name = { 'wooden-chest', 'stone-wall', 'gun-turret' } })) do
@@ -200,13 +197,13 @@ local function draw_noise_ore_patch(position, name, surface, radius, richness)
 end
 
 function is_within_spawn_circle(pos)
-    if math_abs(pos.x) > spawn_circle_size then
+    if math.abs(pos.x) > spawn_circle_size then
         return false
     end
-    if math_abs(pos.y) > spawn_circle_size then
+    if math.abs(pos.y) > spawn_circle_size then
         return false
     end
-    if math_sqrt(pos.x ^ 2 + pos.y ^ 2) > spawn_circle_size then
+    if math.sqrt(pos.x ^ 2 + pos.y ^ 2) > spawn_circle_size then
         return false
     end
     return true
@@ -214,7 +211,7 @@ end
 
 local river_y_1 = bb_config.border_river_width * -1.5
 local river_y_2 = bb_config.border_river_width * 1.5
-local river_width_half = math_floor(bb_config.border_river_width * -0.5)
+local river_width_half = math.floor(bb_config.border_river_width * -0.5)
 function is_horizontal_border_river(pos)
     if pos.y < river_y_1 then
         return false
@@ -222,7 +219,7 @@ function is_horizontal_border_river(pos)
     if pos.y > river_y_2 then
         return false
     end
-    if pos.y >= river_width_half - (math_abs(get_noise(1, pos)) * 4) then
+    if pos.y >= river_width_half - (math.abs(get_noise(1, pos)) * 4) then
         return true
     end
     return false
@@ -256,7 +253,7 @@ local function generate_starting_area(pos, distance_to_center, surface)
     -- => We never do anything for (distance_to_center + min_noise - spawn_wall_radius) > 4.5
 
     if distance_from_spawn_wall < 0 then
-        if math_random(1, 100) > 23 then
+        if math.random(1, 100) > 23 then
             for _, tree in pairs(surface.find_entities_filtered({ type = 'tree', area = { { pos.x, pos.y }, { pos.x + 1, pos.y + 1 } } })) do
                 tree.destroy()
             end
@@ -285,23 +282,23 @@ local function generate_starting_area(pos, distance_to_center, surface)
                     e.disabled_by_script = false
                 elseif distance_from_spawn_wall > 0 and distance_from_spawn_wall < 4.5 then
                     local name = 'wooden-chest'
-                    local r_max = math_floor(math.abs(distance_from_spawn_wall)) + 2
-                    if math_random(1, 3) == 1 and not is_horizontal_border_river(pos) then
+                    local r_max = math.floor(math.abs(distance_from_spawn_wall)) + 2
+                    if math.random(1, 3) == 1 and not is_horizontal_border_river(pos) then
                         name = name .. '-remnants'
                     end
-                    if math_random(1, r_max) == 1 then
+                    if math.random(1, r_max) == 1 then
                         local e = surface.create_entity({ name = name, position = pos, force = 'neutral' })
                         e.disabled_by_script = false
                     end
                 elseif distance_from_spawn_wall > -6 and distance_from_spawn_wall < -3 then
-                    if math_random(1, 16) == 1 then
+                    if math.random(1, 16) == 1 then
                         if surface.can_place_entity({ name = 'gun-turret', position = pos }) then
                             local e = surface.create_entity({ name = 'gun-turret', position = pos, force = 'neutral' })
-                            e.insert({ name = 'firearm-magazine', count = math_random(6, 12) })
+                            e.insert({ name = 'firearm-magazine', count = math.random(6, 12) })
                             e.disabled_by_script = false
                         end
                     else
-                        if math_random(1, 24) == 1 and not is_horizontal_border_river(pos) then
+                        if math.random(1, 24) == 1 and not is_horizontal_border_river(pos) then
                             if surface.can_place_entity({ name = 'gun-turret', position = pos }) then
                                 surface.create_entity({ name = 'gun-turret-remnants', position = pos, force = 'neutral' })
                             end
@@ -320,10 +317,10 @@ local function generate_river(surface, left_top_x, left_top_y)
     for x = 0, 31, 1 do
         for y = 0, 31, 1 do
             local pos = { x = left_top_x + x, y = left_top_y + y }
-            local distance_to_center = math_sqrt(pos.x ^ 2 + pos.y ^ 2)
+            local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
             if is_horizontal_border_river(pos) and distance_to_center > spawn_circle_size - 2 then
                 surface.set_tiles({ { name = 'deepwater', position = pos } })
-                if math_random(1, 64) == 1 then
+                if math.random(1, 64) == 1 then
                     local e = surface.create_entity({ name = 'fish', position = pos })
                     e.disabled_by_script = false
                 end
@@ -335,7 +332,7 @@ end
 local scrap_vectors = {}
 for x = -8, 8, 1 do
     for y = -8, 8, 1 do
-        if math_sqrt(x ^ 2 + y ^ 2) <= 8 then
+        if math.sqrt(x ^ 2 + y ^ 2) <= 8 then
             scrap_vectors[#scrap_vectors + 1] = { x, y }
         end
     end
@@ -343,7 +340,7 @@ end
 local size_of_scrap_vectors = #scrap_vectors
 
 local function generate_extra_worm_turrets(surface, left_top)
-    local chunk_distance_to_center = math_sqrt(left_top.x ^ 2 + left_top.y ^ 2)
+    local chunk_distance_to_center = math.sqrt(left_top.x ^ 2 + left_top.y ^ 2)
     if bb_config.bitera_area_distance > chunk_distance_to_center then
         return
     end
@@ -352,9 +349,9 @@ local function generate_extra_worm_turrets(surface, left_top)
     if amount < 0 then
         return
     end
-    local floor_amount = math_floor(amount)
+    local floor_amount = math.floor(amount)
     local r = math.round(amount - floor_amount, 3) * 1000
-    if math_random(0, 999) <= r then
+    if math.random(0, 999) <= r then
         floor_amount = floor_amount + 1
     end
 
@@ -364,17 +361,17 @@ local function generate_extra_worm_turrets(surface, left_top)
 
     for _ = 1, floor_amount, 1 do
         local worm_turret_name = BiterRaffle.roll('worm', chunk_distance_to_center * 0.00015)
-        local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
+        local v = chunk_tile_vectors[math.random(1, size_of_chunk_tile_vectors)]
         local position = surface.find_non_colliding_position(worm_turret_name, { left_top.x + v[1], left_top.y + v[2] }, 8, 1)
         if position then
             local worm = surface.create_entity({ name = worm_turret_name, position = position, force = 'enemy' })
             worm.disabled_by_script = false
 
             -- add some scrap
-            for _ = 1, math_random(0, 4), 1 do
-                local vector = scrap_vectors[math_random(1, size_of_scrap_vectors)]
+            for _ = 1, math.random(0, 4), 1 do
+                local vector = scrap_vectors[math.random(1, size_of_scrap_vectors)]
                 position = { worm.position.x + vector[1], worm.position.y + vector[2] }
-                local name = wrecks[math_random(1, size_of_wrecks)]
+                local name = wrecks[math.random(1, size_of_wrecks)]
                 position = surface.find_non_colliding_position(name, position, 16, 1)
                 if position then
                     local e = surface.create_entity({ name = name, position = position, force = 'neutral' })
@@ -389,7 +386,7 @@ local bitera_area_distance = bb_config.bitera_area_distance * -1
 local biter_area_angle = 0.45
 
 local function is_biter_area(position)
-    local a = bitera_area_distance - (math_abs(position.x) * biter_area_angle)
+    local a = bitera_area_distance - (math.abs(position.x) * biter_area_angle)
     if position.y - 70 > a then
         return false
     end
@@ -417,7 +414,7 @@ local function draw_biter_area(surface, left_top_x, left_top_y)
         for y = 0, 31, 1 do
             local position = { x = left_top_x + x, y = left_top_y + y }
             if is_biter_area(position) then
-                local index = math_floor(GetNoise('bb_biterland', position, seed) * 48) % 7 + 1
+                local index = math.floor(GetNoise('bb_biterland', position, seed) * 48) % 7 + 1
                 out_of_map[i] = { name = 'out-of-map', position = position }
                 tiles[i] = { name = 'dirt-' .. index, position = position }
                 i = i + 1
@@ -429,10 +426,10 @@ local function draw_biter_area(surface, left_top_x, left_top_y)
     surface.set_tiles(tiles, true)
 
     for _ = 1, 4, 1 do
-        local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
+        local v = chunk_tile_vectors[math.random(1, size_of_chunk_tile_vectors)]
         local position = { x = left_top_x + v[1], y = left_top_y + v[2] }
         if is_biter_area(position) and surface.can_place_entity({ name = 'spitter-spawner', position = position }) then
-            if math_random(1, 4) == 1 then
+            if math.random(1, 4) == 1 then
                 local e = surface.create_entity({ name = 'spitter-spawner', position = position, force = 'enemy' })
                 e.disabled_by_script = false
             else
@@ -442,9 +439,9 @@ local function draw_biter_area(surface, left_top_x, left_top_y)
         end
     end
 
-    local e = (math_abs(left_top_y) - bb_config.bitera_area_distance) * 0.0015
-    for _ = 1, math_random(5, 10), 1 do
-        local v = chunk_tile_vectors[math_random(1, size_of_chunk_tile_vectors)]
+    local e = (math.abs(left_top_y) - bb_config.bitera_area_distance) * 0.0015
+    for _ = 1, math.random(5, 10), 1 do
+        local v = chunk_tile_vectors[math.random(1, size_of_chunk_tile_vectors)]
         local position = { x = left_top_x + v[1], y = left_top_y + v[2] }
         local worm_turret_name = BiterRaffle.roll('worm', e)
         if is_biter_area(position) and surface.can_place_entity({ name = worm_turret_name, position = position }) then
@@ -473,15 +470,15 @@ local function mixed_ore(surface, left_top_x, left_top_y)
             if surface.can_place_entity({ name = 'iron-ore', position = pos }) then
                 noise = GetNoise('bb_ore', pos, seed)
                 if noise > 0.72 then
-                    local amount = math_random(800, 1000) + math_sqrt(pos.x ^ 2 + pos.y ^ 2) * 3
-                    local i = math_floor(noise * 25 + math_abs(pos.x) * 0.05) % 4 + 1
+                    local amount = math.random(800, 1000) + math.sqrt(pos.x ^ 2 + pos.y ^ 2) * 3
+                    local i = math.floor(noise * 25 + math.abs(pos.x) * 0.05) % 4 + 1
                     surface.create_entity({ name = ores[i], position = pos, amount = amount })
                 end
             end
         end
     end
 
-    if left_top_y == -32 and math_abs(left_top_x) <= 32 then
+    if left_top_y == -32 and math.abs(left_top_x) <= 32 then
         for _, e in pairs(surface.find_entities_filtered({ area = { { -12, -12 }, { 12, 12 } } })) do
             e.destroy()
         end
@@ -496,7 +493,7 @@ function Public.generate(event)
 
     if surface.name == 'biter_battles' then
         local tiles = {}
-        if math_abs(left_top_x) > 64 or math_abs(left_top_y) > 64 then
+        if math.abs(left_top_x) > 64 or math.abs(left_top_y) > 64 then
             for k, v in pairs(loading_chunk_vectors) do
                 tiles[k] = { name = 'out-of-map', position = { left_top_x + v[1], left_top_y + v[2] } }
             end
@@ -537,7 +534,7 @@ function Public.draw_spawn_circle(surface)
     for x = spawn_circle_size * -1, -1, 1 do
         for y = spawn_circle_size * -1, -1, 1 do
             local pos = { x = x, y = y }
-            local distance_to_center = math_sqrt(pos.x ^ 2 + pos.y ^ 2)
+            local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
             if distance_to_center <= spawn_circle_size then
                 table_insert(tiles, { name = 'deepwater', position = pos })
 
@@ -561,7 +558,7 @@ function Public.draw_spawn_circle(surface)
 
     for i = 1, #tiles, 1 do
         if tiles[i].name == 'deepwater' then
-            if math_random(1, 48) == 1 then
+            if math.random(1, 48) == 1 then
                 local e = surface.create_entity({ name = 'fish', position = tiles[i].position })
                 e.disabled_by_script = false
             end
@@ -576,7 +573,7 @@ function Public.fill_water_tiles(surface)
     for x = r * -1, r, 1 do
         for y = r * -1, -4, 1 do
             local pos = { x = x, y = y }
-            local distance_to_center = math_sqrt(pos.x ^ 2 + pos.y ^ 2)
+            local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
             if distance_to_center < 550 and not is_horizontal_border_river(pos) then
                 local tile_name = surface.get_tile(pos).name
                 if tile_name == 'water' or tile_name == 'deepwater' then
@@ -594,7 +591,7 @@ function Public.draw_spawn_area(surface)
     for x = r * -1, r, 1 do
         for y = r * -1, -4, 1 do
             local pos = { x = x, y = y }
-            local distance_to_center = math_sqrt(pos.x ^ 2 + pos.y ^ 2)
+            local distance_to_center = math.sqrt(pos.x ^ 2 + pos.y ^ 2)
             generate_starting_area(pos, distance_to_center, surface)
         end
     end
@@ -615,12 +612,12 @@ function Public.generate_additional_spawn_ore(surface)
         if ore_count < 1000 or ore_count == nil then
             local pos = {}
             for _ = 1, 32, 1 do
-                pos = { x = -96 + math_random(0, 192), y = -20 - math_random(0, 96) }
+                pos = { x = -96 + math.random(0, 192), y = -20 - math.random(0, 96) }
                 if surface.can_place_entity({ name = 'coal', position = pos, amount = 1 }) then
                     break
                 end
             end
-            draw_noise_ore_patch(pos, ore, surface, math_random(18, 24), math_random(1500, 2000))
+            draw_noise_ore_patch(pos, ore, surface, math.random(18, 24), math.random(1500, 2000))
         end
     end
 end
@@ -630,11 +627,11 @@ function Public.generate_additional_rocks(surface)
     if surface.count_entities_filtered({ type = 'simple-entity', area = { { r * -1, r * -1 }, { r, 0 } } }) >= 12 then
         return
     end
-    local position = { x = -96 + math_random(0, 192), y = -40 - math_random(0, 96) }
+    local position = { x = -96 + math.random(0, 192), y = -40 - math.random(0, 96) }
     local rocks = { 'huge-rock', 'big-rock', 'big-rock', 'big-rock', 'big-sand-rock' }
-    for _ = 1, math_random(6, 10) do
-        local name = rocks[math_random(1, 5)]
-        local p = surface.find_non_colliding_position(name, { position.x + (-10 + math_random(0, 20)), position.y + (-10 + math_random(0, 20)) }, 16, 1)
+    for _ = 1, math.random(6, 10) do
+        local name = rocks[math.random(1, 5)]
+        local p = surface.find_non_colliding_position(name, { position.x + (-10 + math.random(0, 20)), position.y + (-10 + math.random(0, 20)) }, 16, 1)
         if p and p.y < -16 then
             surface.create_entity({ name = name, position = p })
         end
@@ -642,7 +639,7 @@ function Public.generate_additional_rocks(surface)
 end
 
 function Public.generate_silo(surface)
-    local pos = { x = -32 + math_random(0, 64), y = -72 }
+    local pos = { x = -32 + math.random(0, 64), y = -72 }
     local mirror_position = { x = pos.x * -1, y = pos.y * -1 }
 
     for _, t in pairs(surface.find_tiles_filtered({ area = { { pos.x - 6, pos.y - 6 }, { pos.x + 6, pos.y + 6 } }, name = { 'water', 'deepwater' } })) do
@@ -731,15 +728,15 @@ function Public.minable_wrecks(event)
     local surface = entity.surface
     local player = game.players[event.player_index]
 
-    local loot_worth = math_floor(math_abs(entity.position.x * 0.02)) + math_random(16, 32)
-    local blacklist = LootRaffle.get_tech_blacklist(math_abs(entity.position.x * 0.0001) + 0.10)
+    local loot_worth = math.floor(math.abs(entity.position.x * 0.02)) + math.random(16, 32)
+    local blacklist = LootRaffle.get_tech_blacklist(math.abs(entity.position.x * 0.0001) + 0.10)
     for k, _ in pairs(blacklist) do
         print(k)
     end
     for k, _ in pairs(loot_blacklist) do
         blacklist[k] = true
     end
-    local item_stacks = LootRaffle.roll(loot_worth, math_random(1, 3), blacklist)
+    local item_stacks = LootRaffle.roll(loot_worth, math.random(1, 3), blacklist)
 
     for k, stack in pairs(item_stacks) do
         local amount = stack.count
@@ -758,7 +755,7 @@ end
 --Landfill Restriction
 function Public.restrict_landfill(surface, inventory, tiles)
     for _, t in pairs(tiles) do
-        local distance_to_center = math_sqrt(t.position.x ^ 2 + t.position.y ^ 2)
+        local distance_to_center = math.sqrt(t.position.x ^ 2 + t.position.y ^ 2)
         local check_position = t.position
         if check_position.y > 0 then
             check_position = { x = check_position.x * -1, y = (check_position.y * -1) - 1 }

@@ -1,10 +1,7 @@
 -- by Gerkiz for Comfy
 local Public = require 'modules.wave_defense.table'
 local Event = require 'utils.event'
-
-local floor = math.floor
-local sqrt = math.sqrt
-local random = math.random
+local Math = require 'utils.math.math'
 
 local max_outstanding = 2
 local path_cooldown = 600
@@ -53,7 +50,7 @@ local function get_biter_path_params()
 end
 
 local function goal_key(pos)
-    return floor(pos.x / goal_grid) .. '_' .. floor(pos.y / goal_grid)
+    return Math.floor(pos.x / goal_grid) .. '_' .. Math.floor(pos.y / goal_grid)
 end
 
 local function is_goal_unreachable(generated_units, pos, tick)
@@ -93,13 +90,13 @@ local function get_random_character()
     if not characters[1] then
         return
     end
-    return characters[random(1, #characters)]
+    return characters[Math.random(1, #characters)]
 end
 
 local function get_lateral_positions(start, goal)
     local dx = goal.x - start.x
     local dy = goal.y - start.y
-    local len = sqrt(dx * dx + dy * dy)
+    local len = Math.sqrt(dx * dx + dy * dy)
     if len < 1 then
         len = 1
     end

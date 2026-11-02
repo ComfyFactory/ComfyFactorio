@@ -9,6 +9,7 @@ zone           - optional zone index (int)
 ]]
 
 local Global = require 'utils.global'
+local Math = require 'utils.math.math'
 local Public = {}
 
 local this =
@@ -25,7 +26,6 @@ Global.register(
 )
 
 local table_insert = table.insert
-local math_random = math.random
 
 local item_worths =
 {
@@ -389,7 +389,7 @@ local function get_zone_loot_bias(budget, zone)
         return this.zone_loot_bias[zone]
     end
 
-    local zone_factor = math.max(1, zone)
+    local zone_factor = Math.max(1, zone)
     local min_value = 1 * zone_factor ^ 1.2
     local max_value = budget * zone_factor ^ 1.2
 
@@ -434,7 +434,7 @@ end
 local function shuffle(tbl)
     local size = #tbl
     for i = size, 2, -1 do
-        local rand = math_random(i)
+        local rand = Math.random(i)
         tbl[i], tbl[rand] = tbl[rand], tbl[i]
     end
     return tbl
@@ -469,7 +469,7 @@ function Public.roll_item_stack(remaining_budget, blacklist, quality, zone)
     local item_count = 1
     local unit_price = item_worths[item_name] * zone_mult
 
-    for c = 1, math_random(1, stack_size) do
+    for c = 1, Math.random(1, stack_size) do
         if (c * unit_price) <= remaining_budget then
             item_count = c
         else

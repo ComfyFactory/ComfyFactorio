@@ -9,6 +9,7 @@ local RPG = require 'modules.rpg.main'
 local Collapse = require 'modules.collapse'
 local Alert = require 'utils.alert'
 local Token = require 'utils.token'
+local Math = require 'utils.math.math'
 local Public = {}
 
 
@@ -63,7 +64,7 @@ local function migrate()
     if this.active then
         local m = this.active
         this.missions[m.id] = m
-        this.serial = math.max(this.serial, tonumber(m.id) or 0)
+        this.serial = Math.max(this.serial, tonumber(m.id) or 0)
         this.active = nil
     end
     for _, m in pairs(this.missions) do
@@ -125,7 +126,7 @@ local function player_dying(event)
         if live_token_mission(m) and has_token(player, m) then
             Alert.alert_all_players(15, '[color=yellow][CTF][/color] ' .. player.name .. ' died carrying flag #' .. m.id
                 .. ' at ' .. location(player.character) .. '. Recover the flag from the corpse and return it before the mission deadline ('
-                .. math.ceil((m.deadline_tick - game.tick) / 60) .. ' seconds remaining).', nil, nil, nil, 'minor')
+                .. Math.ceil((m.deadline_tick - game.tick) / 60) .. ' seconds remaining).', nil, nil, nil, 'minor')
         end
     end
 end
@@ -264,7 +265,7 @@ local function spawn(loco)
     for _, distance in ipairs(distances) do
         for lateral = -96, 96, 16 do
             local pos = Orient.offset(loco.position, lateral, -Orient.sign() * distance)
-            if separated(pos, surface.index) and surface.is_chunk_generated({ x = math.floor(pos.x / 32), y = math.floor(pos.y / 32) })
+            if separated(pos, surface.index) and surface.is_chunk_generated({ x = Math.floor(pos.x / 32), y = Math.floor(pos.y / 32) })
                 and surface.can_place_entity { name = 'character', position = pos, force = loco.force }
                 and surface.can_place_entity { name = post_name, position = pos, force = loco.force } then
                 local post = surface.create_entity { name = post_name, position = pos, force = loco.force }
@@ -281,7 +282,7 @@ local function spawn(loco)
                         issued = false,
                         redeemed = false,
                         reward = Rewards.create(),
-                        deadline_tick = game.tick + math.random(15, 25) * 3600,
+                        deadline_tick = game.tick + Math.random(15, 25) * 3600,
                         force_index = loco.force.index,
                         surface_index = surface.index,
                         post_position = { x = pos.x, y = pos.y },
@@ -363,7 +364,7 @@ local function gui(player, m, loco)
     frame.tags = { mission_id = m.id }
     frame[pickup_name].tags = { mission_id = m.id }
     frame[deliver_name].tags = { mission_id = m.id }
-    frame.status.caption = (m.phase == 'available' and 'Retrieve the flag' or 'Return the flag to the train') .. '\n' .. math.ceil((m.deadline_tick - game.tick) / 3600)
+    frame.status.caption = (m.phase == 'available' and 'Retrieve the flag' or 'Return the flag to the train') .. '\n' .. Math.ceil((m.deadline_tick - game.tick) / 3600)
         .. ' min left\n' .. Rewards.describe(m.reward)
     return true
 end
@@ -387,7 +388,7 @@ local function movement(m)
         or not walking then
         return
     end
-    local distance = math.sqrt((p.x - previous.x) ^ 2 + (p.y - previous.y) ^ 2)
+    local distance = Math.sqrt((p.x - previous.x) ^ 2 + (p.y - previous.y) ^ 2)
 
     if distance > 16 then return end
     m.walked_distance = (m.walked_distance or 0) + distance
@@ -397,10 +398,10 @@ local function movement(m)
     m.encounter_distance = 0
     m.next_encounter_tick = game.tick + 180
     m.encounter_context = m.encounter_context or {}
-    local ramp = math.min(1000, (m.encounters - 1) * 40 + m.walked_distance * 0.5)
-    Buried.buried_biter(character.surface, p, math.min(4, m.encounters), nil,
+    local ramp = Math.min(1000, (m.encounters - 1) * 40 + m.walked_distance * 0.5)
+    Buried.buried_biter(character.surface, p, Math.min(4, m.encounters), nil,
         {
-            difficulty = math.floor(math.abs(Orient.progression(p))) * 0.20 + ramp,
+            difficulty = Math.floor(Math.abs(Orient.progression(p))) * 0.20 + ramp,
             cancellation = m.encounter_context
         })
 end
@@ -428,7 +429,7 @@ local function tick()
         local function distance(m)
             local pos = m.phase == 'available' and m.post_position or loco.position
             local origin = player.character and player.character.valid and player.character.position
-            if not pos or not origin then return math.huge end
+            if not pos or not origin then return Math.huge end
             return (origin.x - pos.x) ^ 2 + (origin.y - pos.y) ^ 2
         end
         table.sort(missions, function (a, b)

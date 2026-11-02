@@ -1,6 +1,7 @@
 local Public = require 'modules.rpg.table'
 local Gui = require 'utils.gui'
-local P = require 'utils.player_modifiers'
+local PlayerModifiers = require 'utils.player_modifiers'
+local Math = require 'utils.math.math'
 -- local Session = require 'utils.datastore.session_data'
 
 local settings_frame_name = Public.settings_frame_name
@@ -106,7 +107,7 @@ local function create_bonus_label(player, setting_grid, caption, tooltip, modifi
     modifier_input_style.height = 35
     modifier_input_style.vertical_align = 'center'
     local status
-    local bonus_modifier = P.get_single_disabled_modifier(player, modifier)
+    local bonus_modifier = PlayerModifiers.get_single_disabled_modifier(player, modifier)
     if bonus_modifier then
         status = false
     else
@@ -125,7 +126,7 @@ function Public.get_spell_slot_count(rpg_t)
     if not n or type(n) ~= 'number' then
         n = 8
     end
-    n = math.floor(n)
+    n = Math.floor(n)
     if n < 3 then
         n = 3
     end
@@ -423,8 +424,8 @@ function Public.update_spell_gui(player, spell_index)
     end
     local active_spell = Public.get_spell_by_name(rpg_t, rpg_t.dropdown_select_name)
     spell_table['mana-cost'].caption = active_spell.mana_cost
-    spell_table['mana'].caption = math.floor(rpg_t.mana)
-    spell_table['maxmana'].caption = math.floor(rpg_t.mana_max)
+    spell_table['mana'].caption = Math.floor(rpg_t.mana)
+    spell_table['maxmana'].caption = Math.floor(rpg_t.mana_max)
 
     Public.update_spell_gui_indicator(player)
 end
@@ -1116,7 +1117,7 @@ function Public.settings_tooltip(player)
 
         for _, entity in pairs(spells) do
             if entity.enabled then
-                local cooldown = (math.round(entity.cooldown / 60, 1)) .. 's'
+                local cooldown = (Math.round(entity.cooldown / 60, 1)) .. 's'
                 if entity.type == 'item' then
                     local text = '[item=' .. entity.entityName .. '] ▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font].  Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
                     create_input_element(normal_spell_grid, 'label', text, nil, nil, entity.tooltip)
@@ -1152,7 +1153,7 @@ function Public.settings_tooltip(player)
 
         for _, entity in pairs(spells) do
             if entity.enabled then
-                local cooldown = (math.round(entity.cooldown / 60, 1)) .. 's'
+                local cooldown = (Math.round(entity.cooldown / 60, 1)) .. 's'
                 if entity.type == 'special' then
                     local text = '▪️ Level: [font=default-bold]' .. entity.level .. '[/font] Mana: [font=default-bold]' .. entity.mana_cost .. '[/font]. Cooldown: [font=default-bold]' .. cooldown .. '[/font]'
                     create_sprite(special_spell_grid, entity.sprite, entity.name, text, entity.tooltip)

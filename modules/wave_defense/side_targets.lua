@@ -1,4 +1,5 @@
 local Public = require 'modules.wave_defense.table'
+local Math = require 'utils.math.math'
 local side_target_types = {
     ['accumulator'] = true,
     ['assembling-machine'] = true,
@@ -19,7 +20,7 @@ local side_target_types = {
 local function get_random_target()
     local side_target_count = Public.get('side_target_count')
     local side_targets = Public.get('side_targets')
-    local r = math.random(1, side_target_count)
+    local r = Math.random(1, side_target_count)
     if not side_targets[r] then
         table.remove(side_targets, r)
         Public.set('side_target_count', side_target_count - 1)

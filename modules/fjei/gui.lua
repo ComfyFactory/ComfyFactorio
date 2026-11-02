@@ -1,8 +1,7 @@
 --luacheck: ignore
 local Functions = require 'modules.fjei.functions'
 local Gui = require 'utils.gui'
-local math_ceil = math.ceil
-local math_abs = math.abs
+local Math = require 'utils.math.math'
 local table_remove = table.remove
 local table_insert = table.insert
 local main_window_width = 228
@@ -29,7 +28,7 @@ local function get_total_page_count(player)
     if not storage.fjei.player_data[player.index].size_of_filtered_list then
         Functions.set_filtered_list(player)
     end
-    local count = math_ceil(storage.fjei.player_data[player.index].size_of_filtered_list / items_per_page)
+    local count = Math.ceil(storage.fjei.player_data[player.index].size_of_filtered_list / items_per_page)
     if count < 1 then
         count = 1
     end
@@ -58,11 +57,11 @@ local function get_formatted_amount(amount)
         return amount
     end
     if amount >= 1000000 then
-        amount = math.floor(amount * 0.00001) * 0.1 .. 'm '
+        amount = Math.floor(amount * 0.00001) * 0.1 .. 'm '
         return amount
     end
     if amount >= 1000 then
-        amount = math.floor(amount * 0.01) * 0.1 .. 'k '
+        amount = Math.floor(amount * 0.01) * 0.1 .. 'k '
         return amount
     end
 end
@@ -341,7 +340,7 @@ local function draw_recipe(player, container, recipe_name)
         element_1.tooltip = str
     end
 
-    local element = tt.add({ type = 'label', caption = '◷ ' .. math.round(recipe.energy, 2) .. ' seconds crafting time' })
+    local element = tt.add({ type = 'label', caption = '◷ ' .. Math.round(recipe.energy, 2) .. ' seconds crafting time' })
     element.style.font = 'default'
     element.style.font_color = { 215, 215, 215 }
     element.style.top_margin = -4
@@ -357,7 +356,7 @@ local function draw_recipe(player, container, recipe_name)
 
         local amount = product.amount
         if not amount then
-            amount = math.round((product.amount_min + product.amount_max) * 0.5, 2)
+            amount = Math.round((product.amount_min + product.amount_max) * 0.5, 2)
         end
         amount = amount * product.probability
 
@@ -403,7 +402,7 @@ local function draw_recipe(player, container, recipe_name)
         element.style.horizontal_align = 'right'
 
         add_choose_elem_button(tt, ingredient.name)
-        if ingredient.minimum_temperature and math_abs(ingredient.minimum_temperature) < 4294967296 then
+        if ingredient.minimum_temperature and Math.abs(ingredient.minimum_temperature) < 4294967296 then
             local ttt = tt.add({ type = 'table', column_count = 1 })
             local element = ttt.add({ type = 'label', caption = get_localised_name(ingredient.name) })
             element.style.minimal_width = recipe_window_item_name_width

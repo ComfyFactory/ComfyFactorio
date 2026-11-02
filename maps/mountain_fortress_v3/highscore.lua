@@ -8,6 +8,7 @@ local Score = require 'utils.gui.score'
 local WD = require 'modules.wave_defense.table'
 local Core = require 'utils.core'
 local SpamProtection = require 'utils.spam_protection'
+local Math = require 'utils.math.math'
 
 local module_name = Gui.uid_name()
 local score_dataset = 'highscores'
@@ -16,7 +17,6 @@ local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 
 local insert = table.insert
-local random = math.random
 local this =
 {
     score_table = {},
@@ -646,11 +646,11 @@ local function show_score(data)
         i = i + 1
         local p
         if not (entry and entry.name) then
-            p = { color = { r = random(1, 255), g = random(1, 255), b = random(1, 255) } }
+            p = { color = { r = Math.random(1, 255), g = Math.random(1, 255), b = Math.random(1, 255) } }
         else
             p = game.get_player(entry.name)
             if not p then
-                p = { color = { r = random(1, 255), g = random(1, 255), b = random(1, 255) } }
+                p = { color = { r = Math.random(1, 255), g = Math.random(1, 255), b = Math.random(1, 255) } }
             end
         end
         local special_color =

@@ -3,12 +3,11 @@ local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Event = require 'utils.event'
 local WD = require 'modules.wave_defense.table'
 local Beam = require 'modules.render_beam'
+local Math = require 'utils.math.math'
 
 Public.stateful_buffs = require 'maps.mountain_fortress_v3.stateful.buffs'
 Public.stateful_gui = require 'maps.mountain_fortress_v3.stateful.gui'
 Public.stateful_blueprints = require 'maps.mountain_fortress_v3.stateful.blueprints'
-
-local random = math.random
 
 local valid_types =
 {
@@ -156,7 +155,7 @@ Event.on_nth_tick(
 
             local sizeof = #spawn_positions
 
-            local area = spawn_positions[random(1, sizeof)]
+            local area = spawn_positions[Math.random(1, sizeof)]
 
             local locomotive = Public.get('locomotive')
             if not locomotive or not locomotive.valid then
@@ -169,7 +168,7 @@ Event.on_nth_tick(
 
             WD.wave_defense_roll_boss_name()
 
-            if random(1, 2) == 1 then
+            if Math.random(1, 2) == 1 then
                 WD.set_spawn_position(area[1])
             else
                 WD.set_spawn_position(area[2])
@@ -180,7 +179,7 @@ Event.on_nth_tick(
             local scale = 32
 
             if rounds_survived >= 25 then
-                if random(1, 2) == 1 then
+                if Math.random(1, 2) == 1 then
                     random_bosses = true
                     scale = rounds_survived + 2
                 end
@@ -200,9 +199,9 @@ Event.on_nth_tick(
                     local lp = locomotive.position
                     WD.wave_defense_set_worm_raffle(WD.get('wave_number') or 1000)
                     for _ = 1, 200 do
-                        local angle = random() * 2 * math.pi
-                        local radius = 100 + random(0, 160)
-                        local pos = { x = lp.x + math.cos(angle) * radius, y = lp.y + math.sin(angle) * radius }
+                        local angle = Math.random() * 2 * Math.pi
+                        local radius = 100 + Math.random(0, 160)
+                        local pos = { x = lp.x + Math.cos(angle) * radius, y = lp.y + Math.sin(angle) * radius }
                         local nest = surface.find_non_colliding_position('small-worm-turret', pos, 16, 1)
                         if nest then
                             local worm = WD.wave_defense_roll_worm_name()
@@ -220,9 +219,9 @@ Event.on_nth_tick(
                 elseif player_count <= 10 then
                     spawn_roll = 4
                 end
-                if Public.is_modded_pt2 and random(1, spawn_roll) == 1 then
-                    local demolisher_limit = 1 + math.floor((rounds_survived or 0) / 8)
-                    local player_cap = math.ceil(player_count / 5)
+                if Public.is_modded_pt2 and Math.random(1, spawn_roll) == 1 then
+                    local demolisher_limit = 1 + Math.floor((rounds_survived or 0) / 8)
+                    local player_cap = Math.ceil(player_count / 5)
                     if player_cap < 1 then
                         player_cap = 1
                     end
@@ -235,12 +234,12 @@ Event.on_nth_tick(
                     if surface.count_entities_filtered({ name = { 'small-demolisher', 'medium-demolisher' }, limit = demolisher_limit }) < demolisher_limit then
                         local demolisher_name = 'small-demolisher'
                         if (WD.get('wave_number') or 0) >= 800 then
-                            if random(1, 4) ~= 1 then
+                            if Math.random(1, 4) ~= 1 then
                                 demolisher_name = 'medium-demolisher'
                             end
                         end
                         local spawn_pos = area[1]
-                        if random(1, 2) == 1 then
+                        if Math.random(1, 2) == 1 then
                             spawn_pos = area[2]
                         end
                         local demolisher_pos = surface.find_non_colliding_position(demolisher_name, spawn_pos, 32, 2)

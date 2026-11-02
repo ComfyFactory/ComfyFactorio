@@ -8,9 +8,8 @@ local Event = require 'utils.event'
 local Core = require 'utils.core'
 local StatData = require 'utils.datastore.statistics'
 local RPG = require 'modules.rpg.main'
+local Math = require 'utils.math.math'
 
-
-local math = math
 local ipairs = ipairs
 local table = table
 
@@ -64,7 +63,7 @@ local function highest_count(tbl)
         return winners[1]
     end
 
-    return winners[math.random(#winners)]
+    return winners[Math.random(#winners)]
 end
 
 local function clear_main_frame(player)
@@ -149,7 +148,7 @@ local function buff_main_frame(player, voted_index)
         timer_flow.add(
             {
                 type = 'button',
-                caption = math.floor((buff_selection.closing_timeout - game.tick) / 3600) .. ' minutes left until voting closes.'
+                caption = Math.floor((buff_selection.closing_timeout - game.tick) / 3600) .. ' minutes left until voting closes.'
             }
         )
     b.style.font_color = { r = 0.66, g = 0.0, b = 0.66 }
@@ -308,14 +307,14 @@ function Public.reward_goal_completion()
         return
     end
 
-    local zone = math.floor((math.abs(Orient.progression(locomotive.position) / Public.zone_settings.zone_depth)) % adjusted_zones.size) + 1
+    local zone = Math.floor((Math.abs(Orient.progression(locomotive.position) / Public.zone_settings.zone_depth)) % adjusted_zones.size) + 1
 
-    if math.random(1, 2) == 1 then
+    if Math.random(1, 2) == 1 then
         local players = game.connected_players
         for i = 1, #players do
-            local rng = math.random(2048, 8192)
+            local rng = Math.random(2048, 8192)
             local scale_factor = 0.8 + (zone / 20)
-            rng = math.floor(rng * scale_factor)
+            rng = Math.floor(rng * scale_factor)
             local player = players[i]
             if player and player.valid then
                 if player.can_insert({ name = 'coin', count = rng }) then
@@ -326,9 +325,9 @@ function Public.reward_goal_completion()
         end
         return 'Coins have been granted to the whole team'
     else
-        local rng = math.random(8192, 16384)
+        local rng = Math.random(8192, 16384)
         local scale_factor = 0.8 + (zone / 20)
-        rng = math.floor(rng * scale_factor)
+        rng = Math.floor(rng * scale_factor)
         RPG.add_to_global_pool(rng)
         return 'XP has been granted to the global pool'
     end
@@ -382,7 +381,7 @@ Event.on_nth_tick(60, function ()
                 else
                     local b = Gui.get_data(frame)
                     if b then
-                        local minutes = math.floor((buff_selection.closing_timeout - game.tick) / 3600)
+                        local minutes = Math.floor((buff_selection.closing_timeout - game.tick) / 3600)
                         local minutes_str = minutes .. ' minutes left until voting closes.'
                         if minutes == 0 then
                             minutes_str = 'Less than 1 minute left until voting closes!'

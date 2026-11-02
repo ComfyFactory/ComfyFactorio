@@ -33,6 +33,7 @@ local Core = require 'utils.core'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
 local FlagMission = require 'maps.mountain_fortress_v3.flag_mission'
 local RelayStation = require 'maps.mountain_fortress_v3.relay_station'
+local Math = require 'utils.math.math'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
@@ -54,9 +55,6 @@ local reset_messages =
     '** The train has respawned. Please keep your hands inside the wagon at all times! **',
     '** Another round, another chance to blame the collapse. Mtn Fortress has reset! **'
 }
-
-local abs = math.abs
-local random = math.random
 
 local planet_discovery_techs =
 {
@@ -497,13 +495,13 @@ function Public.create_locomotive(current_task)
 
     if adjusted_zones.reversed then
         Explosives.check_growth_below_void(false)
-        spawn_near_collapse.compare = abs(spawn_near_collapse.compare)
+        spawn_near_collapse.compare = Math.abs(spawn_near_collapse.compare)
         Collapse.set_position(Orient.world(0, Orient.spawn_len(-130)))
         Collapse.set_direction(Orient.collapse_direction())
         Public.locomotive_spawn(surface, Orient.world(-18, -25), adjusted_zones.reversed)
     else
         Explosives.check_growth_below_void(true)
-        spawn_near_collapse.compare = abs(spawn_near_collapse.compare) * -1
+        spawn_near_collapse.compare = Math.abs(spawn_near_collapse.compare) * -1
         Collapse.set_position(Orient.world(0, Orient.spawn_len(130)))
         Collapse.set_direction(Orient.collapse_direction())
         Public.locomotive_spawn(surface, Orient.world(-18, 25), adjusted_zones.reversed)
@@ -532,7 +530,7 @@ function Public.announce_new_map(current_task)
     if not Public.get('disable_startup_notification') then
         local server_name = Server.check_server_name(Public.discord_name)
         if server_name then
-            Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ' .. reset_messages[random(1, #reset_messages)])
+            Server.to_discord_named_raw(send_ping_to_channel, role_to_mention .. ' ' .. reset_messages[Math.random(1, #reset_messages)])
         end
     end
     local starting_planet = Public.get_planet()

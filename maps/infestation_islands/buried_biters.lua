@@ -2,10 +2,7 @@ local Event = require 'utils.event'
 local Public = require 'maps.infestation_islands.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
 local Server = require 'utils.server'
-
-
-local round = math.round
-local random = math.random
+local math = require 'utils.math.math'
 
 local random_particles =
 {
@@ -65,17 +62,17 @@ local function create_particles(data)
         return
     end
     for _ = 1, amount, 1 do
-        local m = random(6, 12)
+        local m = math.random(6, 12)
         local m2 = m * 0.005
 
         surface.create_particle(
             {
-                name = random_particles[random(1, s_random_particles)],
+                name = random_particles[math.random(1, s_random_particles)],
                 position = position,
                 frame_speed = 0.1,
                 vertical_speed = 0.1,
                 height = 0.1,
-                movement = { m2 - (random(0, m) * 0.01), m2 - (random(0, m) * 0.01) }
+                movement = { m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01) }
             }
         )
     end
@@ -101,7 +98,7 @@ local function roll_spawner(level)
         spawn_qualities = { 'epic', 'epic', 'legendary', 'legendary' }
     end
 
-    return spawner_types[random(1, #spawner_types)], spawn_qualities[random(1, #spawn_qualities)]
+    return spawner_types[math.random(1, #spawner_types)], spawn_qualities[math.random(1, #spawn_qualities)]
 end
 
 local function roll_health_boost(level)
@@ -145,10 +142,10 @@ local function spawn_spawner(data)
 
     local health_boost = roll_health_boost(current_level + 5) or 1
 
-    if random(1, 30) == 1 then
+    if math.random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
     else
-        local final_health = round(health_boost * scale_spawners_by_health[unit.name], 3)
+        local final_health = math.round(health_boost * scale_spawners_by_health[unit.name], 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -176,10 +173,10 @@ local function spawn_biters(data)
     end
 
     local tier = Public.get_enemy_tier_by_units(current_level)
-    local biter_unit = tier.biter_types[random(1, #tier.biter_types)]
-    local spitter_unit = tier.spitter_types[random(1, #tier.spitter_types)]
+    local biter_unit = tier.biter_types[math.random(1, #tier.biter_types)]
+    local spitter_unit = tier.spitter_types[math.random(1, #tier.spitter_types)]
 
-    local unit_to_create = random(1, 2) == 1 and biter_unit or spitter_unit
+    local unit_to_create = math.random(1, 2) == 1 and biter_unit or spitter_unit
 
     if not unit_to_create then
         Server.output_script_data('buried_enemies - unit_to_create was nil?')
@@ -193,10 +190,10 @@ local function spawn_biters(data)
 
     local health_boost = roll_health_boost(current_level + 5) or 1
 
-    if random(1, 30) == 1 then
+    if math.random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
     else
-        local final_health = round(health_boost * scale_units_by_health[unit.name], 3)
+        local final_health = math.round(health_boost * scale_units_by_health[unit.name], 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -244,10 +241,10 @@ local function spawn_tech(data)
 
     local unit_to_create
 
-    if random(1, 3) == 1 then
-        unit_to_create = rand_tech[random(1, #rand_tech)]
+    if math.random(1, 3) == 1 then
+        unit_to_create = rand_tech[math.random(1, #rand_tech)]
     else
-        unit_to_create = rand_tech[random(1, #rand_tech)]
+        unit_to_create = rand_tech[math.random(1, #rand_tech)]
     end
 
     if not unit_to_create then
@@ -263,10 +260,10 @@ local function spawn_tech(data)
         return
     end
 
-    if random(1, 30) == 1 then
+    if math.random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
     else
-        local final_health = round(health_boost * 0.5, 3)
+        local final_health = math.round(health_boost * 0.5, 3)
         if final_health < 1 then
             final_health = 1
         end
@@ -284,7 +281,7 @@ local function spawn_worms(data)
 
     local current_level = Public.get('current_level')
     local tier = Public.get_enemy_tier_by_units(current_level)
-    local unit_to_create = tier.worm_types[random(1, #tier.worm_types)]
+    local unit_to_create = tier.worm_types[math.random(1, #tier.worm_types)]
 
     if not unit_to_create then
         Server.output_script_data('spawn_worms - unit_to_create was nil?')
@@ -307,10 +304,10 @@ local function spawn_worms(data)
 
     local health_boost = roll_health_boost(current_level + 5) or 1
 
-    if random(1, 30) == 1 then
+    if math.random(1, 30) == 1 then
         BiterHealthBooster.add_boss_unit(unit, health_boost, 0.38)
     else
-        local final_health = round(health_boost * scale_worms_by_health[unit.name], 3)
+        local final_health = math.round(health_boost * scale_worms_by_health[unit.name], 3)
         if final_health < 1 then
             final_health = 1
         end

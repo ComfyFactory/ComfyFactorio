@@ -13,19 +13,7 @@ local Color = require 'utils.color_presets'
 local Config = require 'utils.gui.config'
 local Session = require 'utils.datastore.session_data'
 local Core = require 'utils.core'
-
-local random = math.random
-local sqrt = math.sqrt
-local abs = math.abs
-local floor = math.floor
-local min = math.min
-local pi = math.pi
-local cos = math.cos
-local sin = math.sin
-local rad = math.rad
-local huge = math.huge
-local pow = math.pow
-local max = math.max
+local math = require 'utils.math.math'
 
 local function get_player_options(player)
     local player_options = Public.get('player_options')
@@ -73,7 +61,7 @@ local function add_units(tier, raw_level, unit_type, chance)
         if raw_level >= entry.unlock_level then
             table.insert(tier[unit_type == "qualities" and "spawn_qualities" or unit_type], entry.name)
         end
-        if raw_level > 10 and chance and random() < chance then
+        if raw_level > 10 and chance and math.random() < chance then
             table.insert(tier[unit_type == "qualities" and "spawn_qualities" or unit_type], entry.name)
         end
     end
@@ -81,7 +69,7 @@ end
 
 local function is_inside_island(x, y, radius)
     radius = radius or Public.island_radius_param
-    local distance_to_center = sqrt(x ^ 2 + y ^ 2)
+    local distance_to_center = math.sqrt(x ^ 2 + y ^ 2)
     return distance_to_center < radius
 end
 
@@ -105,7 +93,7 @@ local function tile_placement(surface, position, name, tiles)
             for dx = -1, 1, 1 do
                 for dy = -1, 1, 1 do
                     local a, b = x + dx, y + dy
-                    if (random() > 0.9) and (abs(a) < w_max) and (abs(b) < h_max) then
+                    if (math.random() > 0.9) and (math.abs(a) < w_max) and (math.abs(b) < h_max) then
                         grid[a] = grid[a] or {}
                         if not grid[a][b] then
                             grid[a][b] = 1 - (t / tiles)
@@ -145,14 +133,14 @@ local function island_noise(p, divided_by)
     local noise_1 = simplex_noise(p.x * seeds.seed_m1, p.y * seeds.seed_m1, seeds.seed_1)
     local noise_2 = simplex_noise(p.x * seeds.seed_m2, p.y * seeds.seed_m2, seeds.seed_2)
     local noise_3 = simplex_noise(p.x * seeds.seed_m3, p.y * seeds.seed_m3, seeds.seed_3)
-    local noise = abs(noise_1 + noise_2 + noise_3)
+    local noise = math.abs(noise_1 + noise_2 + noise_3)
     divided_by = divided_by or 2.3
     noise = noise / divided_by
     return noise
 end
 
 local function connected_ground_size(surface, start, max_radius, max_count)
-    local start_x, start_y = floor(start.x), floor(start.y)
+    local start_x, start_y = math.floor(start.x), math.floor(start.y)
     local queue, head = { { x = start_x, y = start_y } }, 1
     local visited = {}
     local count = 0
@@ -170,7 +158,7 @@ local function connected_ground_size(surface, start, max_radius, max_count)
                 count = count + 1
                 for i = 1, 4 do
                     local nx, ny = p.x + dirs[i][1], p.y + dirs[i][2]
-                    if abs(nx - start_x) <= max_radius and abs(ny - start_y) <= max_radius then
+                    if math.abs(nx - start_x) <= max_radius and math.abs(ny - start_y) <= max_radius then
                         table.insert(queue, { x = nx, y = ny })
                     end
                 end
@@ -183,11 +171,11 @@ end
 
 local function get_quality_for_stage(current_level, last_level)
     local level = current_level or 1
-    local normalized = min(level / last_level, 1.0)
-    local tier = floor(normalized * 50 + 0.5)
+    local normalized = math.min(level / last_level, 1.0)
+    local tier = math.floor(normalized * 50 + 0.5)
     local t = Public.quality_per_level[tier].thresholds
 
-    local r = random()
+    local r = math.random()
     if r < t[1] then
         return "normal"
     elseif r < t[2] then
@@ -257,10 +245,10 @@ local function create_units_and_command(unit_count, market, surface, position, c
     for _ = 1, unit_count do
         local p = surface.find_non_colliding_position('wooden-chest', position, 128, 4)
         if p then
-            local biter_unit = tier.biter_types[random(1, #tier.biter_types)]
-            local spitter_unit = tier.spitter_types[random(1, #tier.spitter_types)]
-            local quality = tier.spawn_qualities[random(1, #tier.spawn_qualities)]
-            local unit_to_create = random(1, 2) == 1 and biter_unit or spitter_unit
+            local biter_unit = tier.biter_types[math.random(1, #tier.biter_types)]
+            local spitter_unit = tier.spitter_types[math.random(1, #tier.spitter_types)]
+            local quality = tier.spawn_qualities[math.random(1, #tier.spawn_qualities)]
+            local unit_to_create = math.random(1, 2) == 1 and biter_unit or spitter_unit
             if unit_to_create then
                 local biter = surface.create_entity({ name = unit_to_create, position = p, force = 'enemy', quality = quality })
                 if biter and biter.valid then
@@ -305,8 +293,8 @@ local function create_spider_units_and_command(unit_count, market, surface, posi
     for _ = 1, unit_count do
         local p = surface.find_non_colliding_position('wooden-chest', position, 128, 4)
         if p then
-            local spider_unit = tier.spider_types[random(1, #tier.spider_types)]
-            local quality = tier.spawn_qualities[random(1, #tier.spawn_qualities)]
+            local spider_unit = tier.spider_types[math.random(1, #tier.spider_types)]
+            local quality = tier.spawn_qualities[math.random(1, #tier.spawn_qualities)]
             local unit_to_create = spider_unit
             if unit_to_create then
                 local spider = surface.create_entity({ name = unit_to_create, position = p, force = 'enemy', quality = quality })
@@ -336,7 +324,7 @@ local function is_valid_position(all_islands, current_radius, x, y)
     for _, island in pairs(all_islands) do
         local dx = island.position.x - x
         local dy = island.position.y - y
-        local dist = sqrt(dx * dx + dy * dy)
+        local dist = math.sqrt(dx * dx + dy * dy)
         local min_dist = (island.radius) + current_radius
         if dist < min_dist then
             return false
@@ -347,14 +335,14 @@ end
 
 
 local function get_ore_count(level)
-    return random(level, level + 1)
+    return math.random(level, level + 1)
 end
 
 local function reward_items(loot, surface, position)
     local amount = loot.count
     if amount > 0 then
         if amount >= 50 then
-            for _ = 1, floor(amount / 50), 1 do
+            for _ = 1, math.floor(amount / 50), 1 do
                 local e = surface.create_entity { name = 'item-on-ground', position = position, stack = { name = loot.name, quality = loot.quality, count = 50 } }
                 if e and e.valid then
                     e.to_be_looted = false
@@ -434,7 +422,7 @@ local function on_entity_died(event)
                         end
                     end
                 else
-                    Public.delayed_message(200, Public.island_keeper .. Public.overrun_messages[random(1, #Public.overrun_messages)])
+                    Public.delayed_message(200, Public.island_keeper .. Public.overrun_messages[math.random(1, #Public.overrun_messages)])
                     Scheduler.new(800, Public.do_place_enemies_token)
                         :set_data({ surface = game.surfaces[1], position = island_data.position, radius = island_data.radius })
                         :new_child(100, Public.do_revive_market_token):set_data({ surface = game.surfaces[1], position = island_data.market_position, level = island_data.level })
@@ -461,13 +449,13 @@ local function on_entity_died(event)
 
         if string.find(entity.name, 'premature') then
             premature = true
-            if random(1, 10) ~= 1 then return end
+            if math.random(1, 10) ~= 1 then return end
         end
 
         if cause and cause.valid then
             if string.find(cause.name, 'premature') then
                 premature = true
-                if random(1, 10) ~= 1 then return end
+                if math.random(1, 10) ~= 1 then return end
             end
 
             if cause.name == 'character' and cause.player then
@@ -479,8 +467,8 @@ local function on_entity_died(event)
             end
         end
 
-        local ore_drop_1 = Public.harvest_raffle_ores[random(1, Public.size_of_ore_raffle)]
-        local ore_drop_2 = Public.harvest_raffle_ores[random(1, Public.size_of_ore_raffle)]
+        local ore_drop_1 = Public.harvest_raffle_ores[math.random(1, Public.size_of_ore_raffle)]
+        local ore_drop_2 = Public.harvest_raffle_ores[math.random(1, Public.size_of_ore_raffle)]
 
         local quality_1 = get_quality_for_stage(this.current_level, this.last_level)
         local quality_2 = get_quality_for_stage(this.current_level, this.last_level)
@@ -493,7 +481,7 @@ local function on_entity_died(event)
             quality_2 = "normal"
         end
 
-        local coin_drop = { name = 'coin', count = random(1, 2), quality = 'normal' }
+        local coin_drop = { name = 'coin', count = math.random(1, 2), quality = 'normal' }
         local ore_1_drop = { name = ore_drop_1, count = get_ore_count(this.current_level), quality = quality_1 }
         local ore_2_drop = { name = ore_drop_2, count = get_ore_count(this.current_level), quality = quality_2 }
 
@@ -557,7 +545,7 @@ local function on_market_item_purchased(event)
 
     if not entity.get_market_items() then
         local island_data = this.islands_data[entity.unit_number]
-        Public.island_market(entity, (this.current_level * random(1, 3)) * 4, false, false, island_data.no_rerolls)
+        Public.island_market(entity, (this.current_level * math.random(1, 3)) * 4, false, false, island_data.no_rerolls)
         game.print(Public.island_keeper .. 'The market at level ' .. this.current_level - 1 .. ' has been refilled by ' .. player.name .. '!')
         Server.to_discord_embed('** The market at level ' .. this.current_level - 1 .. ' has been refilled by ' .. player.name .. '! **')
     end
@@ -658,7 +646,7 @@ end
 function Public.shuffle(tbl)
     local size = #tbl
     for i = size, 1, -1 do
-        local rand = random(size)
+        local rand = math.random(size)
         tbl[i], tbl[rand] = tbl[rand], tbl[i]
     end
     return tbl
@@ -715,7 +703,7 @@ function Public.poll_to_progress(player, poll_type, level, append_level)
 
             local _, id = Poll.poll(
                 {
-                    question = string.format(player.name .. ' ' .. Public.voting_messages[random(1, #Public.voting_messages)], level and append_level and level + 1 or level),
+                    question = string.format(player.name .. ' ' .. Public.voting_messages[math.random(1, #Public.voting_messages)], level and append_level and level + 1 or level),
                     answers = { 'Progress!', 'No, we are not ready!' },
                     duration = 300,
                 })
@@ -729,7 +717,7 @@ function Public.poll_to_progress(player, poll_type, level, append_level)
 
         if not island_data.voting.can_progress and game.tick < island_data.voting.timeout_until_next_vote then
             player.print('The team has decided to not progress yet to the next island!', { color = Color.warning })
-            player.print('The next vote will be available in ' .. floor((island_data.voting.timeout_until_next_vote - game.tick) / 60) .. ' seconds!', { color = Color.warning })
+            player.print('The next vote will be available in ' .. math.floor((island_data.voting.timeout_until_next_vote - game.tick) / 60) .. ' seconds!', { color = Color.warning })
             return false
         end
         return true
@@ -767,7 +755,7 @@ function Public.poll_to_restart(force_restart)
 
         local _, id = Poll.poll(
             {
-                question = string.format('Island Keeper ' .. Public.game_over_messages[random(1, #Public.game_over_messages)]),
+                question = string.format('Island Keeper ' .. Public.game_over_messages[math.random(1, #Public.game_over_messages)]),
                 answers = { 'Yes, restart!', 'No, we can win this!' },
                 duration = 300,
             })
@@ -912,7 +900,7 @@ function Public.resource_placement(surface, position, name, amount, tiles, level
             for dx = -1, 1, 1 do
                 for dy = -1, 1, 1 do
                     local a, b = x + dx, y + dy
-                    if (random() > 0.9) and (abs(a) < w_max) and (abs(b) < h_max) then
+                    if (math.random() > 0.9) and (math.abs(a) < w_max) and (math.abs(b) < h_max) then
                         grid[a] = grid[a] or {}
                         if not grid[a][b] then
                             grid[a][b] = 1 - (t / tiles)
@@ -966,7 +954,7 @@ end
 
 function Public.reward_level(surface, level)
     local radius = level.radius
-    local ore_index = Public.raw_ores[random(1, #Public.raw_ores)]
+    local ore_index = Public.raw_ores[math.random(1, #Public.raw_ores)]
     local oils = table.deep_copy(Public.oil_raffle)
     if level.level > 10 then
         table.insert(oils, 'fluorine-vent')
@@ -977,15 +965,15 @@ function Public.reward_level(surface, level)
         return
     end
 
-    local oil = oils[random(1, #oils)]
-    local offset_oil_position = { x = level.position.x - random(10, 20), y = level.position.y - random(10, 20) }
+    local oil = oils[math.random(1, #oils)]
+    local offset_oil_position = { x = level.position.x - math.random(10, 20), y = level.position.y - math.random(10, 20) }
     Public.delayed_message(1, Public.island_keeper .. 'A reward has been given for clearing the island at level ' .. level.level .. '!')
     MapFunctions.draw_oil_circle(offset_oil_position, oil, surface, 8, 50000)
-    Public.resource_placement(surface, level.position, ore_index, random(ore_data.min, ore_data.max * 3), radius * 3, level.level)
+    Public.resource_placement(surface, level.position, ore_index, math.random(ore_data.min, ore_data.max * 3), radius * 3, level.level)
 
     if level.level > 1 then
-        local position = { x = level.position.x + random(10, 20), y = level.position.y + random(10, 20) }
-        tile_placement(surface, position, Public.plantable_soil[random(1, #Public.plantable_soil)], radius * 2)
+        local position = { x = level.position.x + math.random(10, 20), y = level.position.y + math.random(10, 20) }
+        tile_placement(surface, position, Public.plantable_soil[math.random(1, #Public.plantable_soil)], radius * 2)
     end
 end
 
@@ -1096,7 +1084,7 @@ function Public.upgrade_market_rerolls_at_market(entity, player, offer_index)
     market_rerolls[entity.unit_number].price = market_rerolls[entity.unit_number].price + 250
 
     entity.remove_market_item(offer_index)
-    Public.island_market(entity, (market_level * random(1, 3)) * 4, false, true)
+    Public.island_market(entity, (market_level * math.random(1, 3)) * 4, false, true)
     if market_rerolls[entity.unit_number].rerolls == 0 then
         Public.delayed_message(1, Public.island_keeper .. 'The market at level ' .. market_level .. ' has been re-rolled one last time by ' .. player.name .. '!')
         Server.to_discord_embed('** The market at level ' .. market_level .. ' has been re-rolled one last time by ' .. player.name .. '! **')
@@ -1186,8 +1174,8 @@ function Public.add_basic_loot()
     this.ammo_override = this.ammo_override + 10
     this.ammo_chest.set_inventory_size_override(defines.inventory.chest, this.ammo_override)
 
-    this.ammo_chest.insert({ name = 'piercing-rounds-magazine', count = random(200, 400), quality = Public.qualities[random(1, #Public.qualities)] })
-    this.ammo_chest.insert({ name = 'gun-turret', count = random(1, 30), quality = Public.qualities[random(1, #Public.qualities)] })
+    this.ammo_chest.insert({ name = 'piercing-rounds-magazine', count = math.random(200, 400), quality = Public.qualities[math.random(1, #Public.qualities)] })
+    this.ammo_chest.insert({ name = 'gun-turret', count = math.random(1, 30), quality = Public.qualities[math.random(1, #Public.qualities)] })
 
     Public.delayed_message(100, Public.island_keeper .. 'Ammo chest has been refilled with some loot!')
 end
@@ -1247,21 +1235,21 @@ function Public.advance_to_next_island(entity, player, offer_index)
 
 
     local loot_found = 0
-    for _ = 1, random(1, 3), 1 do
+    for _ = 1, math.random(1, 3), 1 do
         local treasure_position = surface.find_non_colliding_position('stone-furnace', market.position, 32, 1)
 
         if treasure_position then
-            if random(1, 2) == 1 then
+            if math.random(1, 2) == 1 then
                 loot_found = loot_found + 1
                 Public.add_loot(surface, treasure_position, 'iron-chest', true)
                 ParticleEffects.particle_effects(surface, treasure_position, 80)
-            elseif random(1, 20) == 1 then
+            elseif math.random(1, 20) == 1 then
                 loot_found = loot_found + 1
                 Public.add_loot(surface, treasure_position, 'steel-chest', true)
                 ParticleEffects.particle_effects(surface, treasure_position, 80)
-            elseif random(1, 40) == 1 then
+            elseif math.random(1, 40) == 1 then
                 loot_found = loot_found + 1
-                Public.add_loot_rare(surface, treasure_position, 'crash-site-chest-1', random(1, 1024))
+                Public.add_loot_rare(surface, treasure_position, 'crash-site-chest-1', math.random(1, 1024))
                 ParticleEffects.particle_effects(surface, treasure_position, 120)
             end
         end
@@ -1426,13 +1414,13 @@ function Public.do_buried_biters()
     end
 
     if current_level > 2 then
-        local count = random(4, 10)
+        local count = math.random(4, 10)
         local position = Public.get_random_position(island_data.position, 40)
-        if random(1, 10) == 1 then
-            Public.buried_biter(game.surfaces[1], position, count, 'enemy', Public.qualities[random(1, #Public.qualities)])
-        elseif random(1, 15) == 1 then
-            Public.buried_worm(game.surfaces[1], position, Public.qualities[random(1, #Public.qualities)])
-        elseif random(1, 60) == 1 then
+        if math.random(1, 10) == 1 then
+            Public.buried_biter(game.surfaces[1], position, count, 'enemy', Public.qualities[math.random(1, #Public.qualities)])
+        elseif math.random(1, 15) == 1 then
+            Public.buried_worm(game.surfaces[1], position, Public.qualities[math.random(1, #Public.qualities)])
+        elseif math.random(1, 60) == 1 then
             Public.buried_spawner(game.surfaces[1], position, 1, 'enemy')
         end
     end
@@ -1465,15 +1453,15 @@ function Public.do_buried_biters_on_completed_levels()
         base_min, base_max = 64, 128
     end
 
-    local count = random(base_min, base_max)
+    local count = math.random(base_min, base_max)
 
     if current_level > 2 then
         local position = Public.get_random_position(center_position.position, 40)
-        if random(1, 10) == 1 then
-            Public.buried_biter(surface, position, count, 'enemy', Public.qualities[random(1, #Public.qualities)])
-        elseif random(1, 15) == 1 then
-            Public.buried_worm(surface, position, Public.qualities[random(1, #Public.qualities)])
-        elseif random(1, 60) == 1 then
+        if math.random(1, 10) == 1 then
+            Public.buried_biter(surface, position, count, 'enemy', Public.qualities[math.random(1, #Public.qualities)])
+        elseif math.random(1, 15) == 1 then
+            Public.buried_worm(surface, position, Public.qualities[math.random(1, #Public.qualities)])
+        elseif math.random(1, 60) == 1 then
             Public.buried_spawner(surface, position, 1, 'enemy')
         end
     end
@@ -1556,10 +1544,10 @@ function Public.update_evolution(this)
     local surface = game.surfaces[1]
     local force = game.forces.enemy
 
-    local normalized = min(this.current_level / this.last_level, 1)
-    local curve = pow(normalized, 1.3)
+    local normalized = math.min(this.current_level / this.last_level, 1)
+    local curve = math.pow(normalized, 1.3)
 
-    local evolution_factor = max(0.05, min(curve, 1.0))
+    local evolution_factor = math.max(0.05, math.min(curve, 1.0))
 
     this.evolution_factor = evolution_factor
 
@@ -1587,9 +1575,9 @@ function Public.print_grid_value(value, surface, position, scale, offset)
         scale = scale or 1
         offset = offset or 0
         position = { x = position.x + offset, y = position.y + offset }
-        local r = max(1, value) / scale
-        local g = 1 - abs(value) / scale
-        local b = min(1, value) / scale
+        local r = math.max(1, value) / scale
+        local g = 1 - math.abs(value) / scale
+        local b = math.min(1, value) / scale
 
         if (r > 0) then
             r = 0
@@ -1603,11 +1591,11 @@ function Public.print_grid_value(value, surface, position, scale, offset)
             g = 0
         end
 
-        r = abs(r)
+        r = math.abs(r)
 
         color = { r = r, g = g, b = b }
 
-        text = floor(100 * value) * 0.01
+        text = math.floor(100 * value) * 0.01
 
         if (0 == text) then
             text = '0.00'
@@ -2055,12 +2043,12 @@ function Public.send_biters_to_market()
         Server.to_discord_embed('** ' .. Public.island_keeper .. 'Ded soon - maybe him skill issue? **')
     end
 
-    local scale = max(1, (this.custom_level or this.current_level) * 0.1)
-    local unit_count = random(base_min * scale, base_max * scale)
-    unit_count = floor(unit_count)
+    local scale = math.max(1, (this.custom_level or this.current_level) * 0.1)
+    local unit_count = math.random(base_min * scale, base_max * scale)
+    unit_count = math.floor(unit_count)
 
     if island_data.hard_wave_set then
-        unit_count = random(256, 512)
+        unit_count = math.random(256, 512)
         island_data.wave_level_evolution = island_data.wave_level_evolution + 2
     end
 
@@ -2099,7 +2087,7 @@ function Public.add_market_slot(market)
         }
     }
     if current_level > 1 then
-        if random(1, 4) == 1 and this.infinite_ammo_grants < 10 then
+        if math.random(1, 4) == 1 and this.infinite_ammo_grants < 10 then
             offers[#offers + 1] =
             {
                 price = {},
@@ -2108,7 +2096,7 @@ function Public.add_market_slot(market)
             this.market_prices[market.unit_number]['ammo'] = 500 * current_level
         end
         if not this.piercing_ammo_grants and (current_level >= 1 and current_level <= 3) and not this.piercing_ammo_grants_added then
-            if random(1, 6) == 1 then
+            if math.random(1, 6) == 1 then
                 offers[#offers + 1] =
                 {
                     price = {},
@@ -2119,7 +2107,7 @@ function Public.add_market_slot(market)
             end
         end
         if not this.uranium_ammo_grants and (current_level >= 7 and current_level <= this.last_level) and not this.uranium_ammo_grants_added then
-            if random(1, 12) == 1 then
+            if math.random(1, 12) == 1 then
                 offers[#offers + 1] =
                 {
                     price = {},
@@ -2155,9 +2143,9 @@ function Public.add_market_revive_slot(market, revive_level, position)
 end
 
 function Public.get_random_position(center, radius)
-    local angle = random() * pi * 2
-    local r = sqrt(random()) * radius
-    return { x = center.x + cos(angle) * r, y = center.y + sin(angle) * r }
+    local angle = math.random() * math.pi * 2
+    local r = math.sqrt(math.random()) * radius
+    return { x = center.x + math.cos(angle) * r, y = center.y + math.sin(angle) * r }
 end
 
 function Public.get_enemy_tier_by_units(raw_level)
@@ -2192,7 +2180,7 @@ function Public.prepare_next_island(this)
     local all_islands = this.islands_data
     if #all_islands == 0 then return end
 
-    local origin_island = all_islands[random(1, #all_islands)]
+    local origin_island = all_islands[math.random(1, #all_islands)]
     local island_radius = origin_island.radius
     if origin_island.level == 1 then
         island_radius = 100
@@ -2210,21 +2198,21 @@ function Public.prepare_next_island(this)
     local max_attempts = 1000
     repeat
         attempts = attempts + 1
-        local angle = rad(random(0, 359))
-        local distance = base_distance + random(50, 250) + attempts
-        new_x = origin_pos.x + cos(angle) * distance
-        new_y = origin_pos.y + sin(angle) * distance
+        local angle = math.rad(math.random(0, 359))
+        local distance = base_distance + math.random(50, 250) + attempts
+        new_x = origin_pos.x + math.cos(angle) * distance
+        new_y = origin_pos.y + math.sin(angle) * distance
     until is_valid_position(all_islands, current_radius, new_x, new_y) or attempts >= max_attempts
 
     if attempts >= max_attempts then
         Core.log("Warning: Failed to find valid spacing for new island, forcing placement.")
     end
 
-    local nearest, nearest_dist = nil, huge
+    local nearest, nearest_dist = nil, math.huge
     for _, island in pairs(all_islands) do
         local dx = island.position.x - new_x
         local dy = island.position.y - new_y
-        local dist = sqrt(dx * dx + dy * dy)
+        local dist = math.sqrt(dx * dx + dy * dy)
         if dist < nearest_dist then
             nearest = island
             nearest_dist = dist

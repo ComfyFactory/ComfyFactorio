@@ -7,10 +7,8 @@ local Pathing = require 'modules.wave_defense.pathing'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Beams = require 'modules.render_beam'
 local Server = require 'utils.server'
+local Math = require 'utils.math.math'
 
-local random = math.random
-local abs = math.abs
-local floor = math.floor
 local set_timeout_in_ticks = Task.set_timeout_in_ticks
 
 local function destroy_tracked_entity(entity)
@@ -254,7 +252,7 @@ end
 local function shuffle_distance(tbl, position)
     local size = #tbl
     for i = size, 1, -1 do
-        local rand = random(size)
+        local rand = Math.random(size)
         if is_closer(tbl[i].position, tbl[rand].position, position) and i > rand then
             tbl[i], tbl[rand] = tbl[rand], tbl[i]
         end
@@ -273,20 +271,20 @@ local function aoe_punch(entity, target, damage)
     vector[1] = vector[1] * 1000
     vector[2] = vector[2] * 1000
 
-    if abs(vector[1]) > abs(vector[2]) then
-        local d = abs(vector[1])
-        if abs(vector[1]) > 0 then
+    if Math.abs(vector[1]) > Math.abs(vector[2]) then
+        local d = Math.abs(vector[1])
+        if Math.abs(vector[1]) > 0 then
             vector[1] = vector[1] / d
         end
-        if abs(vector[2]) > 0 then
+        if Math.abs(vector[2]) > 0 then
             vector[2] = vector[2] / d
         end
     else
-        local d = abs(vector[2])
-        if abs(vector[2]) > 0 then
+        local d = Math.abs(vector[2])
+        if Math.abs(vector[2]) > 0 then
             vector[2] = vector[2] / d
         end
-        if abs(vector[1]) > 0 and d > 0 then
+        if Math.abs(vector[1]) > 0 and d > 0 then
             vector[1] = vector[1] / d
         end
     end
@@ -377,7 +375,7 @@ local function area_of_effect(entity, radius, callback, find_entities)
 
     for x = area.left_top.x, area.right_bottom.x, 1 do
         for y = area.left_top.y, area.right_bottom.y, 1 do
-            local d = floor((cp.x - x) ^ 2 + (cp.y - y) ^ 2)
+            local d = Math.floor((cp.x - x) ^ 2 + (cp.y - y) ^ 2)
             if d < radius then
                 local p = { x = x, y = y }
                 if find_entities then
@@ -584,13 +582,13 @@ local function on_entity_damaged(event)
         state:spawn_children()
     end
 
-    if random(1, 64) == 1 then
+    if Math.random(1, 64) == 1 then
         state:flee_command()
     end
 
     if state.boss_unit and entity.health <= max / 2 and state.teleported < 5 then
         state.teleported = state.teleported + 1
-        if random(1, 4) == 1 then
+        if Math.random(1, 4) == 1 then
             state:switch_position()
         end
     end
@@ -811,7 +809,7 @@ function Public._esp:beam()
         return
     end
 
-    Beams.new_beam_delayed(entity.surface, random(500, 3000))
+    Beams.new_beam_delayed(entity.surface, Math.random(500, 3000))
 end
 
 --- Creates a laser.
@@ -844,7 +842,7 @@ function Public._esp:spew_damage()
         return
     end
 
-    local position = { entity.position.x + (-5 + random(0, 10)), entity.position.y + (-5 + random(0, 10)) }
+    local position = { entity.position.x + (-5 + Math.random(0, 10)), entity.position.y + (-5 + Math.random(0, 10)) }
 
     entity.surface.create_entity({ name = 'acid-stream-spitter-medium', position = position, target = position, source = position })
 end
@@ -856,11 +854,11 @@ function Public._esp:fire_projectile()
         return
     end
 
-    local position = { entity.position.x + (-10 + random(0, 20)), entity.position.y + (-10 + random(0, 20)) }
+    local position = { entity.position.x + (-10 + Math.random(0, 20)), entity.position.y + (-10 + Math.random(0, 20)) }
 
     entity.surface.create_entity(
         {
-            name = projectiles[random(1, #projectiles)],
+            name = projectiles[Math.random(1, #projectiles)],
             position = entity.position,
             force = entity.force.name,
             source = entity.position,
@@ -878,7 +876,7 @@ function Public._esp:aoe_attack()
         return
     end
 
-    local position = { x = entity.position.x + (-10 + random(0, 20)), y = entity.position.y + (-10 + random(0, 20)) }
+    local position = { x = entity.position.x + (-10 + Math.random(0, 20)), y = entity.position.y + (-10 + Math.random(0, 20)) }
 
     local target =
     {
@@ -891,7 +889,7 @@ function Public._esp:aoe_attack()
         return
     end
 
-    aoe_punch(entity, target, random(damage.min, damage.max))
+    aoe_punch(entity, target, Math.random(damage.min, damage.max))
 end
 
 --- Creates aoe attack.
@@ -978,7 +976,7 @@ function Public._esp:switch_position()
         return
     end
 
-    local position = { entity.position.x + (-5 + random(0, 15)), entity.position.y + (5 + random(0, 15)) }
+    local position = { entity.position.x + (-5 + Math.random(0, 15)), entity.position.y + (5 + Math.random(0, 15)) }
 
     local rand = entity.surface.find_non_colliding_position(entity.name, position, 0.2, 0.5)
     if rand then
@@ -1253,21 +1251,21 @@ function Public._esp:work(tick)
 
 
     if self.boss_unit then
-        if random(1, 20) == 1 then
+        if Math.random(1, 20) == 1 then
             self:spew_damage()
-        elseif random(1, 30) == 1 then
+        elseif Math.random(1, 30) == 1 then
             self:set_burst_frenzy()
-        elseif random(1, 40) == 1 then
+        elseif Math.random(1, 40) == 1 then
             self:find_targets()
-        elseif random(1, 50) == 1 then
+        elseif Math.random(1, 50) == 1 then
             self:fire_projectile()
-        elseif random(1, 60) == 1 then
+        elseif Math.random(1, 60) == 1 then
             self:laser(6)
-        elseif random(1, 70) == 1 then
+        elseif Math.random(1, 70) == 1 then
             if this.settings.wave_number >= 200 then
                 self:area_of_spit_attack()
             end
-        elseif random(1, 80) == 1 then
+        elseif Math.random(1, 80) == 1 then
             if this.settings.wave_number >= 200 then
                 self:aoe_attack()
             end
@@ -1276,13 +1274,13 @@ function Public._esp:work(tick)
             self:remove()
         end
     elseif tick < self.ttl then
-        if random(1, 30) == 1 then
+        if Math.random(1, 30) == 1 then
             self:find_targets()
-        elseif random(1, 40) == 1 then
+        elseif Math.random(1, 40) == 1 then
             self:spew_damage()
-        elseif random(1, 50) == 1 then
+        elseif Math.random(1, 50) == 1 then
             self:set_burst_frenzy()
-        elseif random(1, 60) == 1 then
+        elseif Math.random(1, 60) == 1 then
             self:laser()
         end
     else

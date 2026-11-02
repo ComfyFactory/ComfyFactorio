@@ -2,8 +2,7 @@ local Public = require 'modules.rpg.table'
 local Utils = require 'utils.core'
 local Color = require 'utils.color_presets'
 local Commands = require 'utils.commands'
-
-local round = math.round
+local Math = require 'utils.math.math'
 
 local validate_args = function (data)
     local player = data.player
@@ -42,7 +41,7 @@ local print_stats = function (target)
     end
 
     local level = rpg_t.level
-    local xp = round(rpg_t.xp)
+    local xp = Math.round(rpg_t.xp)
     local strength = rpg_t.strength
     local magicka = rpg_t.magicka
     local dexterity = rpg_t.dexterity

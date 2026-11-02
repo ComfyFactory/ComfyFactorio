@@ -13,6 +13,7 @@ local Discord = require 'utils.discord_handler'
 local Server = require 'utils.server'
 local Collapse = require 'modules.collapse'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local Math = require 'utils.math.math'
 local zone_settings = WPT.zone_settings
 
 local this = {}
@@ -573,7 +574,7 @@ local function refresh_main_frame(data)
                     while chest_index <= total_chests do
                         local chest_linker_table = chest_scroll_pane.add { type = 'table', column_count = 9 }
 
-                        local left_start = math.min(chest_index + 3, total_chests)
+                        local left_start = Math.min(chest_index + 3, total_chests)
                         for i = left_start, chest_index, -1 do
                             if i <= total_chests then
                                 local source_chest = chests[i]

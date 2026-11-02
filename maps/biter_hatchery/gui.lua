@@ -1,6 +1,7 @@
 local Public = {}
 local Team = require 'maps.biter_hatchery.team'
 local Server = require 'utils.server'
+local math = require 'utils.math.math'
 
 function Public.spectate_button(player)
     if player.gui.top.spectate_button then
