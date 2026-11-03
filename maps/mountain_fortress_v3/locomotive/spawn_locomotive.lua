@@ -2,34 +2,34 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local Task = require 'utils.task_token'
-local MapFunctions = require 'utils.tools.map_functions'
+-- local MapFunctions = require 'utils.tools.map_functions'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
-local random = math.random
+local Math = require 'utils.math.math'
 
-local random_tiles =
-{
-    'black-refined-concrete',
-    'refined-concrete',
-    'refined-hazard-concrete-left',
-    'refined-hazard-concrete-right',
-    'brown-refined-concrete',
-    'blue-refined-concrete',
-    'red-refined-concrete',
-    'yellow-refined-concrete',
-    'concrete',
-}
+-- local random_tiles =
+-- {
+--     'black-refined-concrete',
+--     'refined-concrete',
+--     'refined-hazard-concrete-left',
+--     'refined-hazard-concrete-right',
+--     'brown-refined-concrete',
+--     'blue-refined-concrete',
+--     'red-refined-concrete',
+--     'yellow-refined-concrete',
+--     'concrete',
+-- }
 
 local function initial_cargo_boxes()
     return
     {
         { name = 'loader', count = 1 },
         { name = 'stone-furnace', count = 2 },
-        { name = 'coal', count = random(32, 64) },
-        { name = 'coal', count = random(32, 64) },
+        { name = 'coal', count = Math.random(32, 64) },
+        { name = 'coal', count = Math.random(32, 64) },
         { name = 'loader', count = 1 },
-        { name = 'iron-ore', count = random(32, 128) },
-        { name = 'copper-ore', count = random(32, 128) },
+        { name = 'iron-ore', count = Math.random(32, 128) },
+        { name = 'copper-ore', count = Math.random(32, 128) },
         { name = 'submachine-gun', count = 1 },
         { name = 'loader', count = 1 },
         { name = 'submachine-gun', count = 1 },
@@ -39,65 +39,65 @@ local function initial_cargo_boxes()
         { name = 'submachine-gun', count = 1 },
         { name = 'loader', count = 1 },
         { name = 'submachine-gun', count = 1 },
-        { name = 'automation-science-pack', count = random(4, 32) },
+        { name = 'automation-science-pack', count = Math.random(4, 32) },
         { name = 'submachine-gun', count = 1 },
-        { name = 'stone-wall', count = random(4, 32) },
+        { name = 'stone-wall', count = Math.random(4, 32) },
         { name = 'shotgun', count = 1 },
         { name = 'shotgun', count = 1 },
         { name = 'shotgun', count = 1 },
-        { name = 'stone-wall', count = random(4, 32) },
+        { name = 'stone-wall', count = Math.random(4, 32) },
         { name = 'gun-turret', count = 1 },
         { name = 'gun-turret', count = 1 },
         { name = 'gun-turret', count = 1 },
         { name = 'gun-turret', count = 1 },
-        { name = 'stone-wall', count = random(4, 32) },
-        { name = 'shotgun-shell', count = random(4, 5) },
-        { name = 'shotgun-shell', count = random(4, 5) },
-        { name = 'shotgun-shell', count = random(4, 5) },
+        { name = 'stone-wall', count = Math.random(4, 32) },
+        { name = 'shotgun-shell', count = Math.random(4, 5) },
+        { name = 'shotgun-shell', count = Math.random(4, 5) },
+        { name = 'shotgun-shell', count = Math.random(4, 5) },
         { name = 'gun-turret', count = 1 },
-        { name = 'land-mine', count = random(6, 18) },
-        { name = 'grenade', count = random(2, 7) },
-        { name = 'grenade', count = random(2, 8) },
+        { name = 'land-mine', count = Math.random(6, 18) },
+        { name = 'grenade', count = Math.random(2, 7) },
+        { name = 'grenade', count = Math.random(2, 8) },
         { name = 'gun-turret', count = 1 },
-        { name = 'grenade', count = random(2, 7) },
-        { name = 'light-armor', count = random(2, 4) },
-        { name = 'iron-gear-wheel', count = random(7, 15) },
-        { name = 'iron-gear-wheel', count = random(7, 15) },
+        { name = 'grenade', count = Math.random(2, 7) },
+        { name = 'light-armor', count = Math.random(2, 4) },
+        { name = 'iron-gear-wheel', count = Math.random(7, 15) },
+        { name = 'iron-gear-wheel', count = Math.random(7, 15) },
         { name = 'gun-turret', count = 1 },
-        { name = 'iron-gear-wheel', count = random(7, 15) },
-        { name = 'iron-gear-wheel', count = random(7, 15) },
-        { name = 'iron-plate', count = random(15, 23) },
-        { name = 'iron-plate', count = random(15, 23) },
-        { name = 'iron-plate', count = random(15, 23) },
-        { name = 'iron-plate', count = random(15, 23) },
-        { name = 'copper-plate', count = random(15, 23) },
-        { name = 'copper-plate', count = random(15, 23) },
-        { name = 'copper-plate', count = random(15, 23) },
-        { name = 'copper-plate', count = random(15, 23) },
-        { name = 'firearm-magazine', count = random(10, 56) },
-        { name = 'firearm-magazine', count = random(10, 56) },
-        { name = 'firearm-magazine', count = random(10, 56) },
-        { name = 'firearm-magazine', count = random(10, 56) },
-        { name = 'rail', count = random(16, 24) },
-        { name = 'rail', count = random(16, 24) }
+        { name = 'iron-gear-wheel', count = Math.random(7, 15) },
+        { name = 'iron-gear-wheel', count = Math.random(7, 15) },
+        { name = 'iron-plate', count = Math.random(15, 23) },
+        { name = 'iron-plate', count = Math.random(15, 23) },
+        { name = 'iron-plate', count = Math.random(15, 23) },
+        { name = 'iron-plate', count = Math.random(15, 23) },
+        { name = 'copper-plate', count = Math.random(15, 23) },
+        { name = 'copper-plate', count = Math.random(15, 23) },
+        { name = 'copper-plate', count = Math.random(15, 23) },
+        { name = 'copper-plate', count = Math.random(15, 23) },
+        { name = 'firearm-magazine', count = Math.random(10, 56) },
+        { name = 'firearm-magazine', count = Math.random(10, 56) },
+        { name = 'firearm-magazine', count = Math.random(10, 56) },
+        { name = 'firearm-magazine', count = Math.random(10, 56) },
+        { name = 'rail', count = Math.random(16, 24) },
+        { name = 'rail', count = Math.random(16, 24) }
     }
 end
 
-local place_tiles_token =
-    Task.register(
-        function (event)
-            local surface = event.surface
-            if not surface or not surface.valid then
-                return
-            end
-            local position = event.position
-            if not position then
-                return
-            end
+-- local place_tiles_token =
+--     Task.register(
+--         function (event)
+--             local surface = event.surface
+--             if not surface or not surface.valid then
+--                 return
+--             end
+--             local position = event.position
+--             if not position then
+--                 return
+--             end
 
-            MapFunctions.draw_noise_tile_circle(position, random_tiles[random(1, #random_tiles)], surface, 22)
-        end
-    )
+--             MapFunctions.draw_noise_tile_circle(position, random_tiles[Math.random(1, #random_tiles)], surface, 22)
+--         end
+--     )
 
 local set_loco_cargo =
     Task.register(
@@ -114,11 +114,11 @@ local set_loco_cargo =
             local current_planet = Public.get_stateful_settings('current_planet')
             if current_planet == 'aquilo' then
                 for _ = 1, 6 do
-                    cargo_boxes[#cargo_boxes + 1] = { name = 'heating-tower', count = random(3, 6) }
+                    cargo_boxes[#cargo_boxes + 1] = { name = 'heating-tower', count = Math.random(3, 6) }
                 end
             elseif current_planet == 'fulgora' then
                 for _ = 1, 6 do
-                    cargo_boxes[#cargo_boxes + 1] = { name = 'lightning-rod', count = random(3, 6) }
+                    cargo_boxes[#cargo_boxes + 1] = { name = 'lightning-rod', count = Math.random(3, 6) }
                 end
             end
 
@@ -137,7 +137,7 @@ local set_loco_cargo =
                     local distance_squared = dx * dx + dy * dy
 
                     if distance_squared > rad_min and distance_squared < rad_max then
-                        if random(1, 3) == 1 then
+                        if Math.random(1, 3) == 1 then
                             p[#p + 1] = { x = x, y = y }
                         end
                     end
@@ -150,14 +150,14 @@ local set_loco_cargo =
                 end
                 local name = 'crash-site-chest-1'
 
-                if random(1, 3) == 1 then
+                if Math.random(1, 3) == 1 then
                     name = 'crash-site-chest-2'
                 end
                 if surface.can_place_entity({ name = name, position = p[i] }) then
                     local e = surface.create_entity({ name = name, position = p[i], force = 'neutral', create_build_effect_smoke = false })
                     e.minable_flag = false
                     e.destructible = true
-                    e.health = random(15, 30)
+                    e.health = Math.random(15, 30)
                     local inventory = e.get_inventory(defines.inventory.chest)
                     inventory.insert(cargo_boxes[i])
                 end
@@ -240,22 +240,22 @@ function Public.locomotive_spawn(surface, position, reversed)
     local s = 'entity/fish'
 
     for y = -1, 0, 0.05 do
-        local scale = random(50, 100) * 0.01
+        local scale = Math.random(50, 100) * 0.01
         rendering.draw_sprite(
             {
                 sprite = s,
-                orientation = random(0, 100) * 0.01,
+                orientation = Math.random(0, 100) * 0.01,
                 x_scale = scale,
                 y_scale = scale,
-                tint = { random(60, 255), random(60, 255), random(60, 255) },
+                tint = { Math.random(60, 255), Math.random(60, 255), Math.random(60, 255) },
                 render_layer = 'selection-box',
-                target = { entity = this.locomotive_cargo, offset = { -0.7 + random(0, 140) * 0.01, y } },
+                target = { entity = this.locomotive_cargo, offset = { -0.7 + Math.random(0, 140) * 0.01, y } },
                 surface = surface
             }
         )
     end
 
-    this.locomotive.color = { random(2, 255), random(60, 255), random(60, 255) }
+    this.locomotive.color = { Math.random(2, 255), Math.random(60, 255), Math.random(60, 255) }
     this.locomotive.minable_flag = false
     this.locomotive_cargo.minable_flag = false
     this.locomotive_cargo.operable = true
@@ -295,7 +295,7 @@ function Public.locomotive_spawn(surface, position, reversed)
         end
 
         for _ = 1, extra_wagons do
-            local wagon_name = random(1, 100) <= 30 and 'fluid-wagon' or 'cargo-wagon'
+            local wagon_name = Math.random(1, 100) <= 30 and 'fluid-wagon' or 'cargo-wagon'
             local new_wagon = surface.create_entity({ name = wagon_name, position = new_position, force = 'player', direction = loco_dir, quality = stateful.quality_trains })
             if new_wagon and new_wagon.valid then
                 new_wagon.minable_flag = false
@@ -314,7 +314,7 @@ function Public.locomotive_spawn(surface, position, reversed)
     end
 
     Task.set_timeout_in_ticks(50, set_loco_cargo, data)
-    Task.set_timeout_in_ticks(500, place_tiles_token, { surface = surface, position = position })
+    -- Task.set_timeout_in_ticks(500, place_tiles_token, { surface = surface, position = position })
 
     game.forces.player.set_spawn_position(Orient.offset(this.locomotive.position, -5, 0), locomotive.surface)
 end

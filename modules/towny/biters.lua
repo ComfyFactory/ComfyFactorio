@@ -1,10 +1,7 @@
 --luacheck: ignore
 local Public = {}
 local Table = require 'modules.towny.table'
-local math_random = math.random
-local math_floor = math.floor
-local math_sqrt = math.sqrt
-local math_round = math.round
+local Math = require 'utils.math.math'
 local table_insert = table.insert
 local table_remove = table.remove
 
@@ -14,9 +11,9 @@ local function get_commmands(target, group)
     local step_length = 128
 
     local target_position = target.position
-    local distance_to_target = math_floor(math_sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
-    local steps = math_floor(distance_to_target / step_length) + 1
-    local vector = { math_round((target_position.x - group_position.x) / steps, 3), math_round((target_position.y - group_position.y) / steps, 3) }
+    local distance_to_target = Math.floor(Math.sqrt((target_position.x - group_position.x) ^ 2 + (target_position.y - group_position.y) ^ 2))
+    local steps = Math.floor(distance_to_target / step_length) + 1
+    local vector = { Math.round((target_position.x - group_position.x) / steps, 3), Math.round((target_position.y - group_position.y) / steps, 3) }
 
     for i = 1, steps, 1 do
         group_position.x = group_position.x + vector[1]
@@ -63,7 +60,7 @@ local function roll_market()
     if r_max == 0 then
         return
     end
-    local r = math_random(0, r_max)
+    local r = Math.random(0, r_max)
 
     local chance = 0
     for k, town_center in pairs(town_centers) do
@@ -83,9 +80,9 @@ local function get_random_close_spawner(surface, market)
     end
     local size_of_spawners = #spawners
     local center = market.position
-    local spawner = spawners[math_random(1, size_of_spawners)]
+    local spawner = spawners[Math.random(1, size_of_spawners)]
     for i = 1, 64, 1 do
-        local spawner_2 = spawners[math_random(1, size_of_spawners)]
+        local spawner_2 = spawners[Math.random(1, size_of_spawners)]
         if (center.x - spawner_2.position.x) ^ 2 + (center.y - spawner_2.position.y) ^ 2 < (center.x - spawner.position.x) ^ 2 + (center.y - spawner.position.y) ^ 2 then
             spawner = spawner_2
         end
@@ -213,7 +210,7 @@ function Public.set_evolution()
         return
     end
 
-    local max_research_count = math_floor(#prototypes.technology * 0.30)
+    local max_research_count = Math.floor(#prototypes.technology * 0.30)
 
     local evo = 0
     for _, town_center in pairs(townytable.town_centers) do

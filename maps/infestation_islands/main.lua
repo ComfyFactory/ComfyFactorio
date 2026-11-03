@@ -6,9 +6,9 @@ local Scheduler = require 'utils.scheduler'
 local Difficulty = require 'modules.difficulty_vote_by_amount'
 local Server = require 'utils.server'
 local Gui = require 'utils.gui'
+local math = require 'utils.math.math'
 
 local stage_gui_name = Gui.uid()
-local random = math.random
 
 if not script.active_mods.quality then
     error('Quality mod is not enabled!')
@@ -135,7 +135,7 @@ local function update_stage_gui()
     }
 
     local tooltip
-    local random_quality = Public.qualities[random(1, #Public.qualities)]
+    local random_quality = Public.qualities[math.random(1, #Public.qualities)]
     local has_biters = island_data and island_data.ready
     local island_complete = has_biters and island_data.completed
     local can_auto_generate = (
@@ -234,7 +234,7 @@ local function drift_corpses_toward_beach()
             goto continue
         end
 
-        local step = 0.2 + random() * 0.15
+        local step = 0.2 + math.random() * 0.15
         local nx = dx / dist
         local ny = dy / dist
         local new_pos = { x = pos.x + nx * step, y = pos.y + ny * step }
@@ -398,11 +398,11 @@ local function on_tick()
                     local difficulty_index = Difficulty.get('index')
                     local hour
                     if difficulty_index == 1 then
-                        hour = random(60, 120)
+                        hour = math.random(60, 120)
                     elseif difficulty_index == 2 then
-                        hour = random(30, 60)
+                        hour = math.random(30, 60)
                     elseif difficulty_index == 3 then
-                        hour = random(15, 30)
+                        hour = math.random(15, 30)
                     end
 
                     this.time_until_next_island_is_created = tick + (60 * 60 * hour * this.current_level)

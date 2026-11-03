@@ -3,6 +3,7 @@ local bb_config = require 'maps.biter_battles_v2.config'
 local Force_health_booster = require 'modules.force_health_booster'
 local Functions = require 'maps.biter_battles_v2.functions'
 local Server = require 'utils.server'
+local math = require 'utils.math.math'
 
 local tables = require 'maps.biter_battles_v2.tables'
 local food_values = tables.food_values

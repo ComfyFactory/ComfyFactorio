@@ -275,6 +275,41 @@ function Public.get_random_buff(fetch_all, only_force)
             }
         },
         {
+            name = 'logistics_startup',
+            discord = 'Logistics starting supplies - start with belts, inserters and small electric poles',
+            tooltip = 'Selecting this buff grants each player 50 transport belts, 10 inserters and 10 small electric poles at start! Can be selected twice.',
+            poll_name = 'Starting items (logistics)',
+            modifier = 'starting_items',
+            limit = 2,
+            add_per_buff = 1,
+            items =
+            {
+                { name = 'transport-belt', count = 50 },
+                { name = 'inserter', count = 10 },
+                { name = 'small-electric-pole', count = 10 }
+            }
+        },
+        {
+            name = 'character_inventory_slots_bonus',
+            discord = 'Inventory bonus - carry more building supplies!',
+            tooltip = 'Selecting this buff grants each player 5 additional inventory slots! Can be selected three times, for a total of 15 slots.',
+            poll_name = 'Inventory slots',
+            modifier = 'force',
+            per_force = true,
+            limit = 3,
+            state = 5
+        },
+        {
+            name = 'character_build_distance_bonus',
+            discord = 'Build distance bonus - place buildings further away!',
+            tooltip = 'Selecting this buff grants each player +1 build distance without increasing mining or interaction reach! Can be selected three times, for a total of +3.',
+            poll_name = 'Build distance',
+            modifier = 'force',
+            per_force = true,
+            limit = 3,
+            state = 1
+        },
+        {
             name = 'heal-thy-buildings',
             discord = 'Repair starting supplies - start with some repair packs',
             tooltip = 'Selecting this buff will grant the team 5 repair packs at start!',
@@ -444,55 +479,6 @@ function Public.get_random_buff(fetch_all, only_force)
     }
 
     if Public.is_modded_pt2 then
-        --[[ buffs[#buffs + 1] =
-        {
-            name = 'quality_trains_uncommon',
-            discord = 'Grants uncommon trains at start',
-            tooltip = 'Selecting this buff make all trains of type uncommon quality!',
-            poll_name = 'Uncommon trains',
-            modifier = 'quality_trains',
-            limit = 1,
-            quality = 'uncommon',
-            dlc = true,
-            state = 1
-        }
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_trains_rare',
-            discord = 'Grants rare trains at start',
-            tooltip = 'Selecting this buff make all trains of type rare quality!',
-            poll_name = 'Rare trains',
-            modifier = 'quality_trains',
-            limit = 1,
-            quality = 'rare',
-            dlc = true,
-            state = 1
-        }
-
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_trains_epic',
-            discord = 'Grants epic trains at start',
-            tooltip = 'Selecting this buff make all trains of type epic quality!',
-            poll_name = 'Epic trains',
-            modifier = 'quality_trains',
-            limit = 1,
-            quality = 'epic',
-            dlc = true,
-            state = 1
-        }
-        buffs[#buffs + 1] =
-        {
-            name = 'quality_trains_legendary',
-            discord = 'Grants legendary trains at start',
-            tooltip = 'Selecting this buff make all trains of type legendary quality!',
-            poll_name = 'Legendary trains',
-            modifier = 'quality_trains',
-            limit = 1,
-            quality = 'legendary',
-            dlc = true,
-            state = 1
-        } ]]
         buffs[#buffs + 1] =
         {
             name = 'quality_buildings_uncommon',
@@ -570,4 +556,5 @@ function Public.get_random_buff(fetch_all, only_force)
 
     return buffs[1]
 end
+
 return Public

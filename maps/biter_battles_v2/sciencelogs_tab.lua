@@ -15,6 +15,7 @@ local evofilter_list = tables.evofilter_list
 local food_value_table_version = tables.food_value_table_version
 local Token = require 'utils.token'
 local module_name = Tabs.uid_name()
+local math = require 'utils.math.math'
 
 local function initialize_dropdown_users_choice()
     storage.dropdown_users_choice_force = {}

@@ -12,6 +12,7 @@ local Polls = require 'utils.gui.poll'
 local BottomFrame = require 'utils.gui.bottom_frame'
 local Core = require 'utils.core'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local Math = require 'utils.math.math'
 
 local format_number = require 'util'.format_number
 
@@ -25,7 +26,6 @@ local spectate_close_button_name = Gui.uid_name()
 local spectate_surface_picker_name = Gui.uid_name()
 local mystical_chest_button_name = Gui.uid_name()
 
-local floor = math.floor
 local on_player_changed_surface
 
 local function validate_entity(entity)
@@ -231,7 +231,7 @@ local function create_spectate_main_frame(player, redraw)
         local spectate = Public.get('spectate')
 
         if spectate and spectate[player.index] and spectate[player.index].delay and spectate[player.index].delay > game.tick then
-            local cooldown = floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
+            local cooldown = Math.floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
             data.spectate_hold_button = spectate_right_flow.add({ type = 'button', enabled = false, name = spectate_ready_to_button_name, caption = cooldown, tooltip = { 'spectate.hold-button-tooltip', cooldown } })
         else
             data.spectate_hold_button = spectate_right_flow.add({ type = 'button', name = spectate_ready_to_button_name, caption = { 'spectate.play-button' }, tooltip = { 'spectate.play-button-tooltip' } })
@@ -897,8 +897,8 @@ function Public.update_gui(player)
         gui.global_pool.caption = 'XP: 0'
         gui.global_pool.tooltip = ({ 'gui.global_pool_tooltip' })
     elseif rpg_extra.global_pool >= 0 then
-        gui.global_pool.caption = 'XP: ' .. format_number(floor(rpg_extra.global_pool), true)
-        gui.global_pool.tooltip = ({ 'gui.global_pool_amount', floor(rpg_extra.global_pool) })
+        gui.global_pool.caption = 'XP: ' .. format_number(Math.floor(rpg_extra.global_pool), true)
+        gui.global_pool.tooltip = ({ 'gui.global_pool_amount', Math.floor(rpg_extra.global_pool) })
     end
 
     gui.scrap_mined.caption = ' [img=entity.tree-01][img=entity.huge-rock]: ' .. format_number(mined_scrap, true)
@@ -906,7 +906,7 @@ function Public.update_gui(player)
 
     local pickaxe_upgrades = Public.pickaxe_upgrades
     local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
-    local speed = math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100)
+    local speed = Math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100)
     local train_upgrade_contribution = upgrades.train_upgrade_contribution
     if upgrades.train_upgrade_contribution > 0 then
         train_upgrade_contribution = upgrades.train_upgrade_contribution / 1000
@@ -1060,7 +1060,7 @@ Gui.on_click(
             for key, item in pairs(prices) do
                 local player_count = player_inv.get_item_count(item.value.name)
                 if player_count > 0 and item.min > 0 then
-                    local consume_amount = math.min(player_count, item.min)
+                    local consume_amount = Math.min(player_count, item.min)
                     player_inv.remove({ name = item.value.name, count = consume_amount })
                     item.min = item.min - consume_amount
 
@@ -1166,7 +1166,7 @@ Gui.on_selection_state_changed(
 
         player.set_controller({ type = defines.controllers.spectator })
 
-        player.teleport({ x = 0, y = 0 }, surface_name)
+        Public.teleport_player(player, { x = 0, y = 0 }, surface_name)
     end
 )
 
@@ -1208,7 +1208,7 @@ Event.on_nth_tick(20, function ()
         local data = Gui.get_data(f)
 
         if spectate and spectate[player.index] and spectate[player.index].delay and spectate[player.index].delay > game.tick then
-            local cooldown = floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
+            local cooldown = Math.floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
             if data and data.spectate_hold_button and data.spectate_hold_button.valid then
                 data.spectate_hold_button.caption = cooldown
                 data.spectate_hold_button.tooltip = { 'spectate.hold-button-tooltip', cooldown }

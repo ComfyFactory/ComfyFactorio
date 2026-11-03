@@ -158,7 +158,19 @@ local x_marks_the_spot_token =
                 return
             end
 
-            player.teleport(old_position, old_surface_index)
+            if player.controller_type == defines.controllers.remote and player.physical_controller_type ~= defines.controllers.remote then
+                local body = player.physical_vehicle
+                if not body or not body.valid then
+                    body = player.character
+                end
+                local teleported = body and body.valid and body.teleport(old_position, old_surface_index)
+                if not teleported then
+                    player.exit_remote_view()
+                    player.teleport(old_position, old_surface_index)
+                end
+            else
+                player.teleport(old_position, old_surface_index)
+            end
             Task.set_timeout_in_ticks(5, repeat_sound_token, { player_index = player.index, sound = 'utility/new_objective', once = true })
             local callback = Public.get_x_marks_the_spot_custom_callback()
             if callback then
@@ -716,7 +728,7 @@ spells[#spells + 1] =
     cooldown = 200,
     enabled = true,
     sprite = 'entity/small-biter',
-    tooltip = 'Spawns a small biter',
+    tooltip = 'Spawns a friendly small biter',
     callback = function (data)
         return create_entity(data)
     end
@@ -732,7 +744,7 @@ spells[#spells + 1] =
     cooldown = 200,
     enabled = true,
     sprite = 'entity/small-spitter',
-    tooltip = 'Spawns a small spitter',
+    tooltip = 'Spawns a friendly small spitter',
     callback = function (data)
         return create_entity(data)
     end
@@ -748,7 +760,7 @@ spells[#spells + 1] =
     cooldown = 300,
     enabled = true,
     sprite = 'entity/medium-biter',
-    tooltip = 'Spawns a medium biter',
+    tooltip = 'Spawns a friendly medium biter',
     callback = function (data)
         return create_entity(data)
     end
@@ -764,7 +776,7 @@ spells[#spells + 1] =
     cooldown = 300,
     enabled = true,
     sprite = 'entity/medium-spitter',
-    tooltip = 'Spawns a medium spitter',
+    tooltip = 'Spawns a friendly medium spitter',
     callback = function (data)
         return create_entity(data)
     end
@@ -781,7 +793,7 @@ spells[#spells + 1] =
     enabled = false,
     log_spell = true,
     sprite = 'entity/biter-spawner',
-    tooltip = 'Spawns a biter spawner',
+    tooltip = 'Spawns a friendly biter spawner',
     callback = function (data)
         return create_entity(data)
     end
@@ -798,7 +810,61 @@ spells[#spells + 1] =
     enabled = false,
     log_spell = true,
     sprite = 'entity/spitter-spawner',
-    tooltip = 'Spawns a spitter spawner',
+    tooltip = 'Spawns a friendly spitter spawner',
+    callback = function (data)
+        return create_entity(data)
+    end
+}
+spells[#spells + 1] =
+{
+    name = { 'entity-name.small-worm-turret' },
+    entityName = 'small-worm-turret',
+    level = 40,
+    biter = true,
+    type = 'entity',
+    mana_cost = 150,
+    cooldown = 600,
+    enabled = true,
+    enforce_cooldown = true,
+    log_spell = true,
+    sprite = 'entity/small-worm-turret',
+    tooltip = 'Spawns a friendly small worm',
+    callback = function (data)
+        return create_entity(data)
+    end
+}
+spells[#spells + 1] =
+{
+    name = { 'entity-name.medium-worm-turret' },
+    entityName = 'medium-worm-turret',
+    level = 70,
+    biter = true,
+    type = 'entity',
+    mana_cost = 300,
+    cooldown = 900,
+    enabled = true,
+    enforce_cooldown = true,
+    log_spell = true,
+    sprite = 'entity/medium-worm-turret',
+    tooltip = 'Spawns a friendly medium worm',
+    callback = function (data)
+        return create_entity(data)
+    end
+}
+spells[#spells + 1] =
+{
+    name = { 'entity-name.big-worm-turret' },
+    entityName = 'big-worm-turret',
+    level = 100,
+    biter = true,
+    type = 'entity',
+    mana_cost = 500,
+    cooldown = 1200,
+    enabled = true,
+    enforce_cooldown = true,
+    log_spell = true,
+    sprite = 'entity/big-worm-turret',
+    tooltip = 'Spawns a friendly big worm',
     callback = function (data)
         return create_entity(data)
     end
@@ -1431,10 +1497,20 @@ spells[#spells + 1] =
         local surface = data.surface
 
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
+        if not pos then
             pos = game.forces.player.get_spawn_position(surface)
+        end
+        if player.controller_type == defines.controllers.remote and player.physical_controller_type ~= defines.controllers.remote then
+            local body = player.physical_vehicle
+            if not body or not body.valid then
+                body = player.character
+            end
+            local teleported = body and body.valid and body.teleport(pos, surface)
+            if not teleported then
+                player.exit_remote_view()
+                player.teleport(pos, surface)
+            end
+        else
             player.teleport(pos, surface)
         end
         Public.remove_mana(player, 99999999)
@@ -1468,10 +1544,20 @@ spells[#spells + 1] =
         Public.register_cooldown_for_spell(player)
 
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
-        if pos then
-            player.teleport(pos, surface)
-        else
+        if not pos then
             pos = game.forces.player.get_spawn_position(surface)
+        end
+        if player.controller_type == defines.controllers.remote and player.physical_controller_type ~= defines.controllers.remote then
+            local body = player.physical_vehicle
+            if not body or not body.valid then
+                body = player.character
+            end
+            local teleported = body and body.valid and body.teleport(pos, surface)
+            if not teleported then
+                player.exit_remote_view()
+                player.teleport(pos, surface)
+            end
+        else
             player.teleport(pos, surface)
         end
 

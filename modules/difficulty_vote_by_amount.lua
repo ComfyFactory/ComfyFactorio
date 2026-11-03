@@ -3,9 +3,7 @@ local Gui = require 'utils.gui'
 local Server = require 'utils.server'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
-
-local max = math.max
-local round = math.round
+local Math = require 'utils.math.math'
 
 local main_frame_name = Gui.uid_name()
 local selection_button_name = Gui.uid_name()
@@ -163,7 +161,7 @@ local function highest_count(tbl)
         init.index[#init.index + 1] = tbl[i].index
     end
 
-    local highest = max(unpack(init.count))
+    local highest = Math.max(unpack(init.count))
 
     local pre = {}
 
@@ -176,7 +174,7 @@ local function highest_count(tbl)
     else
         for x = 1, #init.count do
             if init.count[x] ~= 0 then
-                if round(init.count[x] / highest) == 1 then
+                if Math.round(init.count[x] / highest) == 1 then
                     pre[#pre + 1] = { i = init.index[x], c = init.count[x] }
                 end
             end
@@ -188,7 +186,7 @@ local function highest_count(tbl)
         post[#post + 1] = pre[i].i
     end
 
-    highest = round(table.mean(post))
+    highest = Math.round(table.mean(post))
 
     return highest
 end

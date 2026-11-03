@@ -8,12 +8,11 @@ local Gui = require 'utils.gui'
 local SpamProtection = require 'utils.spam_protection'
 local Core = require 'utils.core'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
+local Math = require 'utils.math.math'
 
 local Orient = require 'maps.mountain_fortress_v3.orientation'
 
 local deep_copy = table.deep_copy
-local random = math.random
-local sqrt = math.sqrt
 local move_room_to_train
 
 local out_of_map_tile = 'out-of-map'
@@ -28,15 +27,24 @@ local construct_train_token =
         function (event)
             local icw = event.icw
             local carriage = event.carriage
-            if not carriage or not carriage.valid then
-                return error('Carriage was invalid, please check this out!')
+            if icw ~= ICW.get() or not carriage or not carriage.valid then
+                return
             end
 
             local train = event.train
+            if event.train_id and icw.trains[event.train_id] ~= train then
+                return
+            end
+            if not train.surface or not train.surface.valid then
+                return
+            end
             local chunk_position = event.chunk_position
             local saved_carriages = event.saved_carriages
 
             local carriage_wagon = icw.wagons[carriage.unit_number]
+            if not carriage_wagon or carriage_wagon.entity ~= carriage then
+                return
+            end
 
             move_room_to_train(icw, train, carriage_wagon, saved_carriages)
             carriage_wagon.chunk_position.x = chunk_position.x
@@ -108,7 +116,7 @@ for x = fallout_width * -1 - 80, fallout_width + 80, 1 do
     if x < -80 or x > 80 then
         for y = fallout_width * -1 - 80, fallout_width + 80, 1 do
             local position = { x = x, y = y }
-            local fallout = sqrt(position.x ^ 2 + position.y ^ 2)
+            local fallout = Math.sqrt(position.x ^ 2 + position.y ^ 2)
             if fallout > fallout_width then
                 fallout_debris[#fallout_debris + 1] = { position.x, position.y }
             end
@@ -318,7 +326,7 @@ local function kick_players_from_surface(wagon)
         if validate_entity(main_surface) then
             for _, e in pairs(wagon.surface.find_entities_filtered({ area = wagon.area })) do
                 if validate_entity(e) and e.name == 'character' and e.player then
-                    e.player.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
+                    WPT.teleport_player(e.player, main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0, 5), main_surface)
                 end
             end
         end
@@ -329,9 +337,9 @@ local function kick_players_from_surface(wagon)
         if validate_entity(e) and e.name == 'character' and e.player then
             local p = wagon.entity.surface.find_non_colliding_position('character', wagon.entity.position, 128, 0.5)
             if p then
-                e.player.teleport(p, wagon.entity.surface)
+                WPT.teleport_player(e.player, p, wagon.entity.surface)
             else
-                e.player.teleport(wagon.entity.position, wagon.entity.surface)
+                WPT.teleport_player(e.player, wagon.entity.position, wagon.entity.surface)
             end
         end
     end
@@ -362,7 +370,7 @@ local function teleport_char(position, destination_area, wagon)
                 player.physical_position.x,
                 player.physical_position.y + (destination_area.left_top.y - wagon.area.left_top.y)
             }
-            player.teleport({ 0, 0 }, game.surfaces.fortress)
+            WPT.teleport_player(player, { 0, 0 }, game.surfaces.fortress)
         end
     end
 end
@@ -378,10 +386,10 @@ local function connect_power_pole(entity, wagon_area_left_top_y)
     for _, pole in pairs(surface.find_entities_filtered({ area = area, name = entity.name })) do
         if pole.position.y < wagon_area_left_top_y then
             local source_wire = entity.get_wire_connector(defines.wire_connector_id.pole_copper, false)
-                        local target_wire = pole.get_wire_connector(defines.wire_connector_id.pole_copper, false)
-                        if source_wire and target_wire then
-                            source_wire.connect_to(target_wire, false, defines.wire_origin.script)
-                        end
+            local target_wire = pole.get_wire_connector(defines.wire_connector_id.pole_copper, false)
+            if source_wire and target_wire then
+                source_wire.connect_to(target_wire, false, defines.wire_origin.script)
+            end
             return
         end
     end
@@ -478,7 +486,7 @@ function Public.hazardous_debris()
 
     if final_battle then
         for _ = 1, 16 * speed, 1 do
-            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[Math.random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
@@ -489,7 +497,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 6 * speed, 1 do
-            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[Math.random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
@@ -500,7 +508,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 4 * speed, 1 do
-            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[Math.random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
@@ -519,7 +527,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 6 * speed, 1 do
-            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[Math.random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
@@ -538,7 +546,7 @@ function Public.hazardous_debris()
         end
     else
         for _ = 1, 16 * speed, 1 do
-            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[Math.random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
@@ -549,7 +557,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 6 * speed, 1 do
-            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[Math.random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
@@ -560,7 +568,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 4 * speed, 1 do
-            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[Math.random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
@@ -579,7 +587,7 @@ function Public.hazardous_debris()
         end
 
         for _ = 1, 6 * speed, 1 do
-            local position = deep_copy(fallout_debris[random(1, size_of_debris)])
+            local position = deep_copy(fallout_debris[Math.random(1, size_of_debris)])
             position[1] = position[1] + wagon.chunk_position.x
             position[2] = position[2] + wagon.chunk_position.y
             local p = { x = position[1], y = position[2] }
@@ -925,7 +933,6 @@ function Public.create_wagon_room(icw, wagon)
     local callback = Task.get(add_chests_to_wagon_token)
     callback({ wagon = wagon, surface = surface })
     -- end
-
     if wagon.entity.type == 'fluid-wagon' then
         local height = area.right_bottom.y - area.left_top.y
         local positions =
@@ -1154,10 +1161,10 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
             player.character.driving = false
             if p then
                 Public.move_robots_with_player(player, p)
-                player.teleport(p)
+                WPT.teleport_player(player, p)
             else
                 Public.move_robots_with_player(player, position)
-                player.teleport(position)
+                WPT.teleport_player(player, position)
             end
             player_data.surface = surface.index
             player_data.pos = nil
@@ -1186,7 +1193,7 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
             end
             player.character.driving = false
             Public.move_robots_with_player(player, surface_position)
-            player.teleport(surface_position, surface)
+            WPT.teleport_player(player, surface_position, surface)
             Public.kill_minimap(player)
             player_data.surface = surface.index
         end
@@ -1196,7 +1203,7 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
             if not (surface and surface.valid) then
                 return
             end
-            local x_vector = (door.position.x / math.abs(door.position.x)) * 2
+            local x_vector = (door.position.x / Math.abs(door.position.x)) * 2
             local position = { wagon.entity.position.x + x_vector, wagon.entity.position.y }
             local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
             if not position then
@@ -1213,13 +1220,13 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
             end
             if wagon.entity.type == 'locomotive' then
                 Public.move_robots_with_player(player, surface_position)
-                player.teleport(surface_position, surface)
+                WPT.teleport_player(player, surface_position, surface)
                 player_data.state = 2
                 player.driving = false
                 Public.kill_minimap(player)
             else
                 Public.move_robots_with_player(player, surface_position)
-                player.teleport(surface_position, surface)
+                WPT.teleport_player(player, surface_position, surface)
                 Public.kill_minimap(player)
             end
             player_data.surface = surface.index
@@ -1239,10 +1246,10 @@ function Public.use_cargo_wagon_door_with_entity(icw, player, door)
             local p = surface.find_non_colliding_position('character', position, 128, 0.5)
             if p then
                 Public.move_robots_with_player(player, p)
-                player.teleport(p, surface)
+                WPT.teleport_player(player, p, surface)
             else
                 Public.move_robots_with_player(player, position)
-                player.teleport(position, surface)
+                WPT.teleport_player(player, position, surface)
             end
             player_data.surface = surface.index
         end
@@ -1319,7 +1326,7 @@ move_room_to_train = function (icw, train, wagon, carriages)
 
     for player_index, position in pairs(player_positions) do
         local player = game.players[player_index]
-        player.teleport(position, train.surface)
+        WPT.teleport_player(player, position, train.surface)
     end
 
     wagon.surface = train.surface
@@ -1428,7 +1435,7 @@ function Public.construct_train(icw, carriages)
 
     local timeout = 5
     for _, carriage in ipairs(carriages) do
-        Task.set_timeout_in_ticks(timeout, construct_train_token, { icw = icw, carriage = carriage, train = train, chunk_position = wagon.chunk_position, saved_carriages = saved_carriages })
+        Task.set_timeout_in_ticks(timeout, construct_train_token, { icw = icw, carriage = carriage, train = train, train_id = unit_number, chunk_position = wagon.chunk_position, saved_carriages = saved_carriages })
         timeout = timeout + 5
     end
 end

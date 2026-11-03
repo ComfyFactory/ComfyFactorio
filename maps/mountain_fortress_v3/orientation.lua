@@ -1,4 +1,5 @@
 local Public = require 'maps.mountain_fortress_v3.table'
+local Math = require 'utils.math.math'
 
 local Orient = {}
 
@@ -177,14 +178,14 @@ function Orient.zone_width()
     if not Orient.is_horizontal() then
         return w
     end
-    return math.floor(w * 16 / 9 / 32 + 0.5) * 32
+    return Math.floor(w * 16 / 9 / 32 + 0.5) * 32
 end
 
 function Orient.spawn_len(n)
     if not Orient.is_horizontal() then
         return n
     end
-    return math.floor(n * 16 / 9 + 0.5)
+    return Math.floor(n * 16 / 9 + 0.5)
 end
 
 function Orient.in_map_width(pos)
@@ -207,16 +208,16 @@ function Orient.is_interior(pos, threshold)
 end
 
 function Orient.zone_index(pos, size)
-    return math.floor((math.abs(Orient.progression(pos) / Public.zone_settings.zone_depth)) % size) + 1
+    return Math.floor((Math.abs(Orient.progression(pos) / Public.zone_settings.zone_depth)) % size) + 1
 end
 
 function Orient.aabb(lat1, prog1, lat2, prog2)
     local a = Orient.world(lat1, prog1)
     local b = Orient.world(lat2, prog2)
-    local min_x = math.min(a.x, b.x)
-    local min_y = math.min(a.y, b.y)
-    local max_x = math.max(a.x, b.x)
-    local max_y = math.max(a.y, b.y)
+    local min_x = Math.min(a.x, b.x)
+    local min_y = Math.min(a.y, b.y)
+    local max_x = Math.max(a.x, b.x)
+    local max_y = Math.max(a.y, b.y)
     return { { min_x, min_y }, { max_x, max_y } }
 end
 

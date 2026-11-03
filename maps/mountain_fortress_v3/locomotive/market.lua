@@ -12,18 +12,13 @@ local Math2D = require 'math2d'
 local SpamProtection = require 'utils.spam_protection'
 local LinkedChests = require 'maps.mountain_fortress_v3.icw.linked_chests'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local Math = require 'utils.math.math'
 
 local format_number = require 'util'.format_number
 
 local concat = table.concat
-local floor = math.floor
 local main_frame_name = Gui.uid_name()
 local close_market_gui_name = Gui.uid_name()
-local random = math.random
-
-local round = math.round
-
-local ceil = math.ceil
 
 local shopkeeper = '[color=blue]Shopkeeper:[/color]\n'
 
@@ -160,13 +155,13 @@ local function get_items(player)
     local fixed_prices = Public.get('marked_fixed_prices')
     local market_rpg_purchased = Public.get('market_rpg_purchased')
 
-    local health_cost = round(fixed_prices.health_cost * (1 + upgrades.health_upgrades))
-    local pickaxe_cost = round(fixed_prices.pickaxe_cost * (0.1 + upgrades.pickaxe_tier / 2))
-    local aura_cost = round(fixed_prices.aura_cost * (1 + upgrades.aura_upgrades))
-    local xp_point_boost_cost = round(fixed_prices.xp_point_boost_cost * (1 + upgrades.xp_points_upgrade))
-    local explosive_bullets_cost = round(fixed_prices.explosive_bullets_cost)
-    local flamethrower_turrets_cost = round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
-    local land_mine_cost = round(fixed_prices.land_mine_cost * (1 + upgrades.landmine.bought))
+    local health_cost = Math.round(fixed_prices.health_cost * (1 + upgrades.health_upgrades))
+    local pickaxe_cost = Math.round(fixed_prices.pickaxe_cost * (0.1 + upgrades.pickaxe_tier / 2))
+    local aura_cost = Math.round(fixed_prices.aura_cost * (1 + upgrades.aura_upgrades))
+    local xp_point_boost_cost = Math.round(fixed_prices.xp_point_boost_cost * (1 + upgrades.xp_points_upgrade))
+    local explosive_bullets_cost = Math.round(fixed_prices.explosive_bullets_cost)
+    local flamethrower_turrets_cost = Math.round(fixed_prices.flamethrower_turrets_cost * (1 + flame_turret))
+    local land_mine_cost = Math.round(fixed_prices.land_mine_cost * (1 + upgrades.landmine.bought))
     local upgraded_tile_when_mining_cost = fixed_prices.tile_when_mining_cost
 
     local pickaxe_upgrades = Public.pickaxe_upgrades
@@ -999,7 +994,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                     {
                         type = 'label',
-                        caption = concat { '[item=', data.value, ',quality=normal]: ' } .. format_number(floor(item_cost), true)
+                        caption = concat { '[item=', data.value, ',quality=normal]: ' } .. format_number(Math.floor(item_cost), true)
                     }
                 )
             label.style.font = 'default-bold'
@@ -1020,7 +1015,7 @@ local function redraw_market_items(gui, player, search_text)
         )
     items_label.style.font = 'heading-2'
 
-    local slider_value = ceil(players[player.index].data.slider.slider_value)
+    local slider_value = Math.ceil(players[player.index].data.slider.slider_value)
     local items_table = gui.add({ type = 'table', column_count = 6 })
 
     for item, data in pairs(player_items) do
@@ -1077,7 +1072,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                     {
                         type = 'label',
-                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(floor(item_cost), true)
+                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(Math.floor(item_cost), true)
                     }
                 )
             label.style.font = 'default-bold'
@@ -1140,7 +1135,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                     {
                         type = 'label',
-                        caption = concat { '[item=', data.value, ',quality=normal]: ' } .. format_number(floor(item_cost), true)
+                        caption = concat { '[item=', data.value, ',quality=normal]: ' } .. format_number(Math.floor(item_cost), true)
                     }
                 )
             label.style.font = 'default-bold'
@@ -1201,7 +1196,7 @@ local function slider_changed(event)
     if not slider_value then
         return
     end
-    slider_value = ceil(slider_value)
+    slider_value = Math.ceil(slider_value)
     if players[player.index] and players[player.index].data and players[player.index].data.text_input then
         players[player.index].data.text_input.text = tostring(slider_value)
         redraw_market_items(players[player.index].data.item_frame, player, players[player.index].data.search_text)
@@ -1472,7 +1467,7 @@ local function gui_click(event)
     end
 
     local player_item_count = get_item_count(player, item.value)
-    local slider_value = ceil(data.slider.slider_value)
+    local slider_value = Math.ceil(data.slider.slider_value)
     local cost = (price * slider_value)
     local item_count = item.stack * slider_value
 
@@ -1589,7 +1584,7 @@ local function gui_click(event)
         this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + price
         this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
         if this.health_text and this.health_text.valid then
-            this.health_text.text = 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health)
+            this.health_text.text = 'HP: ' .. Math.round(this.locomotive_health) .. ' / ' .. Math.round(this.locomotive_max_health)
         end
 
         redraw_market_items(data.item_frame, player, data.search_text)
@@ -1948,9 +1943,9 @@ local function gui_click(event)
                 player.print(({ 'locomotive.full_inventory', inserted_count, name }), { r = 0.98, g = 0.66, b = 0.22 })
                 player.print(({ 'locomotive.change_returned' }), { r = 0.98, g = 0.66, b = 0.22 })
                 player.insert({ name = name, count = inserted_count, quality = quality })
-                remove_item_count(player, item.value, ceil(price * (inserted_count / item.stack)))
+                remove_item_count(player, item.value, Math.ceil(price * (inserted_count / item.stack)))
 
-                Event.raise(Public.events.on_market_item_purchased, { cost = ceil(price * (inserted_count / item.stack)) })
+                Event.raise(Public.events.on_market_item_purchased, { cost = Math.ceil(price * (inserted_count / item.stack)) })
             else
                 remove_item_count(player, item.value, cost)
                 Event.raise(Public.events.on_market_item_purchased, { cost = cost })
@@ -1959,7 +1954,7 @@ local function gui_click(event)
             redraw_coins_left(data.coins_left, player)
         else
             player.play_sound({ path = 'utility/cannot_build', volume_modifier = 0.65 })
-            if (random(1, 10) > 1) then
+            if (Math.random(1, 10) > 1) then
                 player.print(({ 'locomotive.notify_full_inventory_1' }), { r = 0.98, g = 0.66, b = 0.22 })
                 player.print(({ 'locomotive.notify_full_inventory_2' }), { r = 0.98, g = 0.66, b = 0.22 })
             else
@@ -2113,16 +2108,16 @@ local function create_market(data, rebuild)
     end
 
     for y = -1, 0, 0.05 do
-        local scale = random(50, 100) * 0.01
+        local scale = Math.random(50, 100) * 0.01
         rendering.draw_sprite(
             {
                 sprite = sprite,
-                orientation = random(0, 100) * 0.01,
+                orientation = Math.random(0, 100) * 0.01,
                 x_scale = scale,
                 y_scale = scale,
-                tint = { random(60, 255), random(60, 255), random(60, 255) },
+                tint = { Math.random(60, 255), Math.random(60, 255), Math.random(60, 255) },
                 render_layer = 'selection-box',
-                target = { entity = this.market, offset = { -0.7 + random(0, 140) * 0.01, y } },
+                target = { entity = this.market, offset = { -0.7 + Math.random(0, 140) * 0.01, y } },
                 surface = surface
             }
         )
@@ -2148,16 +2143,16 @@ local function create_market(data, rebuild)
 
     for x = center_position.x - 5, center_position.x + 5, 1 do
         for y = center_position.y - 5, center_position.y + 5, 1 do
-            if random(1, 2) == 1 then
-                loco_surface.spill_item_stack { position = { x = x + random(0, 9) * 0.1, y = y + random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 } }
+            if Math.random(1, 2) == 1 then
+                loco_surface.spill_item_stack { position = { x = x + Math.random(0, 9) * 0.1, y = y + Math.random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 } }
             end
             loco_surface.set_tiles({ { name = 'blue-refined-concrete', position = { x = x, y = y } } }, true)
         end
     end
     for x = center_position.x - 3, center_position.x + 3, 1 do
         for y = center_position.y - 3, center_position.y + 3, 1 do
-            if random(1, 2) == 1 then
-                loco_surface.spill_item_stack { position = { x = x + random(0, 9) * 0.1, y = y + random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 } }
+            if Math.random(1, 2) == 1 then
+                loco_surface.spill_item_stack { position = { x = x + Math.random(0, 9) * 0.1, y = y + Math.random(0, 9) * 0.1 }, stack = { name = 'raw-fish', count = 1 } }
             end
             loco_surface.set_tiles({ { name = 'cyan-refined-concrete', position = { x, y } } }, true)
         end

@@ -1,8 +1,8 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local Math = require 'utils.math.math'
 
-local random = math.random
 local biters
 
 if ServerCommands.has_space_age() then
@@ -127,7 +127,7 @@ function Public.spawn_biter()
         return
     end
 
-    local chosen_ent = biters[random(1, size_of)]
+    local chosen_ent = biters[Math.random(1, size_of)]
 
     this.locomotive_biter = loco_surface.create_entity({ name = chosen_ent, position = position, force = 'player', create_build_effect_smoke = false })
 

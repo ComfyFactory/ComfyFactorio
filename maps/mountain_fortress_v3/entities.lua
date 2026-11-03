@@ -16,13 +16,8 @@ local RPG_Progression = require 'utils.datastore.rpg_prestige_data'
 local WD = require 'modules.wave_defense.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
 local StatData = require 'utils.datastore.statistics'
+local Math = require 'utils.math.math'
 StatData.add_normalize('coins', 'Coins collected'):set_tooltip('The amount of coins the player has collected through mining/killed enemies.')
-
-
-local random = math.random
-local floor = math.floor
-local abs = math.abs
-local round = math.round
 
 -- Use these settings for live
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -114,7 +109,7 @@ local function get_random_weighted(player, weighted_table, item_index, weight_in
         total_weight = total_weight + w[weight_index]
     end
 
-    local index = random() * total_weight
+    local index = Math.random() * total_weight
     local weight_sum = 0
     for _, w in pairs(weighted_table) do
         weight_sum = weight_sum + w[weight_index]
@@ -141,8 +136,8 @@ local function get_quality_from_level(rpg_char)
     if Public.quality_per_level[level] then
         local quality = Public.quality_per_level[level]
 
-        if random(1, 2) == 1 then
-            return quality[random(1, #quality)]
+        if Math.random(1, 2) == 1 then
+            return quality[Math.random(1, #quality)]
         end
 
         return 'normal'
@@ -290,7 +285,7 @@ local function set_train_final_health(final_damage_amount, repair)
         return
     end
 
-    Public.set('locomotive_health', floor(locomotive_health - final_damage_amount))
+    Public.set('locomotive_health', Math.floor(locomotive_health - final_damage_amount))
     if locomotive_health > locomotive_max_health then
         Public.set('locomotive_health', locomotive_max_health)
     end
@@ -301,7 +296,7 @@ local function set_train_final_health(final_damage_amount, repair)
     local health_text = Public.get('health_text')
 
     if health_text and health_text.valid then
-        health_text.text = 'HP: ' .. round(locomotive_health) .. ' / ' .. round(locomotive_max_health)
+        health_text.text = 'HP: ' .. Math.round(locomotive_health) .. ' / ' .. Math.round(locomotive_max_health)
     end
 end
 
@@ -387,16 +382,16 @@ local function hidden_treasure(player, entity)
     end
 
     if magic >= magic_requirement then
-        local msg = rare_treasure_chest_messages[random(1, #rare_treasure_chest_messages)]
+        local msg = rare_treasure_chest_messages[Math.random(1, #rare_treasure_chest_messages)]
         Alert.alert_player(player, 5, msg, nil, nil, nil, 'personal')
 
         Public.add_loot_rare(entity.surface, entity.position, 'wooden-chest', magic, current_zone)
         return
     end
 
-    local msg = treasure_chest_messages[random(1, #treasure_chest_messages)]
+    local msg = treasure_chest_messages[Math.random(1, #treasure_chest_messages)]
     Alert.alert_player(player, 5, msg, nil, nil, 0.3, 'personal')
-    Public.add_loot(entity.surface, entity.position, chests[random(1, size_chests)], nil, current_zone)
+    Public.add_loot(entity.surface, entity.position, chests[Math.random(1, size_chests)], nil, current_zone)
 end
 
 local function biters_chew_rocks_faster(data)
@@ -427,13 +422,13 @@ local function angry_tree(entity, cause, player)
         return
     end
 
-    if random(1, 6) == 1 then
+    if Math.random(1, 6) == 1 then
         Public.buried_biter(entity.surface, entity.position)
     end
-    if random(1, 8) == 1 then
+    if Math.random(1, 8) == 1 then
         Public.buried_worm(entity.surface, entity.position)
     end
-    if random(1, 32) ~= 1 then
+    if Math.random(1, 32) ~= 1 then
         return
     end
     local position = false
@@ -443,11 +438,11 @@ local function angry_tree(entity, cause, player)
         end
     end
     if not position then
-        position = { entity.position.x + (-20 + random(0, 40)), entity.position.y + (-20 + random(0, 40)) }
+        position = { entity.position.x + (-20 + Math.random(0, 40)), entity.position.y + (-20 + Math.random(0, 40)) }
     end
     if player then
         local forest_zone = RPG.get_value_from_player(player.index, 'forest_zone')
-        if forest_zone and random(1, 32) == 1 then
+        if forest_zone and Math.random(1, 32) == 1 then
             local cbl = Public.refill_turret_callback
             local data = { callback_data = Public.piercing_rounds_magazine_ammo }
             local e =
@@ -469,7 +464,7 @@ local function angry_tree(entity, cause, player)
 
     entity.surface.create_entity(
         {
-            name = projectiles[random(1, 5)],
+            name = projectiles[Math.random(1, 5)],
             position = entity.position,
             force = 'neutral',
             source = entity.position,
@@ -486,7 +481,7 @@ local function give_coin(player)
     local forest_zone = RPG.get_value_from_player(player.index, 'forest_zone')
 
     if forest_zone then
-        if random(1, 3) ~= 1 then
+        if Math.random(1, 3) ~= 1 then
             return
         end
     end
@@ -497,7 +492,7 @@ local function give_coin(player)
             StatData.get_data(player):increase('coins', coin_override)
         else
             ---@diagnostic disable-next-line: param-type-mismatch
-            player.insert({ name = 'coin', count = random(1, coin_amount) })
+            player.insert({ name = 'coin', count = Math.random(1, coin_amount) })
 
             StatData.get_data(player):increase('coins', coin_amount)
         end
@@ -555,7 +550,7 @@ local unstuck_player_token =
             if not position then
                 return
             end
-            player.teleport(position, surface)
+            Public.teleport_player(player, position, surface)
         end
     )
 
@@ -794,7 +789,7 @@ local mining_events =
 
             local position = entity.position
             local surface = entity.surface
-            local spawner_name = ent_to_create[random(1, #ent_to_create)]
+            local spawner_name = ent_to_create[Math.random(1, #ent_to_create)]
             if
                 surface.count_entities_filtered
                 {
@@ -838,7 +833,7 @@ local mining_events =
 
             local position = entity.position
             local surface = entity.surface
-            local spawner_name = ent_to_create[random(1, #ent_to_create)]
+            local spawner_name = ent_to_create[Math.random(1, #ent_to_create)]
             if
                 surface.count_entities_filtered
                 {
@@ -861,11 +856,11 @@ local mining_events =
             if not entity or not entity.valid then
                 return
             end
-            local chest = 'crash-site-chest-' .. random(1, 2)
+            local chest = 'crash-site-chest-' .. Math.random(1, 2)
             local container = entity.surface.create_entity({ name = chest, position = entity.position, force = 'neutral' })
             if container and container.health then
                 container.insert({ name = 'vehicle-machine-gun', count = 1 })
-                container.health = random(1, container.health)
+                container.health = Math.random(1, container.health)
                 local player = game.players[index]
                 local msg = ({ 'entity.found_vsmg', player.name })
                 Alert.alert_player(player, 15, msg, nil, nil, nil, 'personal', 'vmg')
@@ -879,11 +874,11 @@ local mining_events =
             if not entity or not entity.valid then
                 return
             end
-            local chest = 'crash-site-chest-' .. random(1, 2)
+            local chest = 'crash-site-chest-' .. Math.random(1, 2)
             local container = entity.surface.create_entity({ name = chest, position = entity.position, force = 'neutral' })
             if container and container.health then
-                container.insert({ name = 'coin', count = random(1024, 4096) })
-                container.health = random(1, container.health)
+                container.insert({ name = 'coin', count = Math.random(1024, 4096) })
+                container.health = Math.random(1, container.health)
                 local player = game.players[index]
                 local msg = ({ 'entity.found_coin', player.name })
                 Alert.alert_all_players_location(player, msg, nil, 15, 'minor', 'coins')
@@ -900,7 +895,7 @@ local mining_events =
 
             local player = game.players[index]
             local msg = ({ 'entity.found_rpg_xp', player.name })
-            RPG.gain_xp(player, random(1000, 3000), true)
+            RPG.gain_xp(player, Math.random(1000, 3000), true)
             Alert.alert_all_players_location(player, msg, nil, 15, 'minor', 'xp')
         end,
         64,
@@ -915,13 +910,13 @@ local mining_events =
             local surface = entity.surface
 
             local quality = 'normal'
-            if random(1, 256) == 1 then
+            if Math.random(1, 256) == 1 then
                 quality = 'uncommon'
-            elseif random(1, 512) == 1 then
+            elseif Math.random(1, 512) == 1 then
                 quality = 'rare'
-            elseif random(1, 1024) == 1 then
+            elseif Math.random(1, 1024) == 1 then
                 quality = 'epic'
-            elseif random(1, 2048) == 1 then
+            elseif Math.random(1, 2048) == 1 then
                 quality = 'legendary'
             end
 
@@ -947,13 +942,13 @@ local mining_events =
             local surface = entity.surface
 
             local quality = 'normal'
-            if random(1, 256) == 1 then
+            if Math.random(1, 256) == 1 then
                 quality = 'uncommon'
-            elseif random(1, 512) == 1 then
+            elseif Math.random(1, 512) == 1 then
                 quality = 'rare'
-            elseif random(1, 1024) == 1 then
+            elseif Math.random(1, 1024) == 1 then
                 quality = 'epic'
-            elseif random(1, 2048) == 1 then
+            elseif Math.random(1, 2048) == 1 then
                 quality = 'legendary'
             end
 
@@ -975,11 +970,11 @@ local mining_events =
             if not entity or not entity.valid then
                 return
             end
-            local chest = 'crash-site-chest-' .. random(1, 2)
+            local chest = 'crash-site-chest-' .. Math.random(1, 2)
             local container = entity.surface.create_entity({ name = chest, position = entity.position, force = 'neutral' })
             if container and container.health then
                 container.insert({ name = 'power-armor-mk2', count = 1 })
-                container.health = random(1, container.health)
+                container.health = Math.random(1, container.health)
                 local player = game.players[index]
                 local msg = ({ 'entity.found_mk2', player.name })
                 Alert.alert_all_players_location(player, msg, nil, 15, 'player_event')
@@ -993,11 +988,11 @@ local mining_events =
             if not entity or not entity.valid then
                 return
             end
-            local chest = 'crash-site-chest-' .. random(1, 2)
+            local chest = 'crash-site-chest-' .. Math.random(1, 2)
             local container = entity.surface.create_entity({ name = chest, position = entity.position, force = 'neutral' })
             if container and container.health then
                 container.insert({ name = 'spidertron', count = 1 })
-                container.health = random(1, container.health)
+                container.health = Math.random(1, container.health)
                 local player = game.players[index]
                 local msg = ({ 'entity.found_spidertron', player.name })
                 Alert.alert_all_players_location(player, msg, nil, 15, 'player_event')
@@ -1052,11 +1047,11 @@ local function on_player_mined_entity(event)
         end
         Public.on_player_mined_entity(event)
         if entity.type == 'tree' then
-            if random(1, 3) == 1 then
+            if Math.random(1, 3) == 1 then
                 give_coin(player)
             end
         elseif entity.type == 'simple-entity-with-owner' then
-            if random(1, 6) == 1 then
+            if Math.random(1, 6) == 1 then
                 give_coin(player)
             end
         else
@@ -1105,14 +1100,14 @@ local function get_damage(data)
     local entity = data.entity
     local original_damage_amount = data.original_damage_amount
 
-    local damage = original_damage_amount + original_damage_amount * random(1, 100)
+    local damage = original_damage_amount + original_damage_amount * Math.random(1, 100)
     if entity.prototype.resistances then
         if entity.prototype.resistances.physical then
             damage = damage - entity.prototype.resistances.physical.decrease
             damage = damage - damage * entity.prototype.resistances.physical.percent
         end
     end
-    damage = round(damage, 3)
+    damage = Math.round(damage, 3)
     if damage < 1 then
         damage = 1
     end
@@ -1132,26 +1127,26 @@ local function kaboom(entity, target, damage)
         {
             name = 'compi-speech-bubble',
             position = { entity.position.x + base_vector[1] * 0.5, entity.position.y + base_vector[2] * 0.5 },
-            text = msg[random(1, #msg)],
+            text = msg[Math.random(1, #msg)],
             source = entity,
             lifetime = 30
         }
     )
 
-    if abs(vector[1]) > abs(vector[2]) then
-        local d = abs(vector[1])
-        if abs(vector[1]) > 0 then
+    if Math.abs(vector[1]) > Math.abs(vector[2]) then
+        local d = Math.abs(vector[1])
+        if Math.abs(vector[1]) > 0 then
             vector[1] = vector[1] / d
         end
-        if abs(vector[2]) > 0 then
+        if Math.abs(vector[2]) > 0 then
             vector[2] = vector[2] / d
         end
     else
-        local d = abs(vector[2])
-        if abs(vector[2]) > 0 then
+        local d = Math.abs(vector[2])
+        if Math.abs(vector[2]) > 0 then
             vector[2] = vector[2] / d
         end
-        if abs(vector[1]) > 0 and d > 0 then
+        if Math.abs(vector[1]) > 0 and d > 0 then
             vector[1] = vector[1] / d
         end
     end
@@ -1210,7 +1205,7 @@ local function boss_puncher(data)
         return
     end
 
-    if random(1, 10) == 1 then
+    if Math.random(1, 10) == 1 then
         kaboom(cause, entity, get_damage(data))
     end
 end
@@ -1247,7 +1242,7 @@ local function on_entity_damaged(event)
 
     if munch_time then
         if boss_wave_warning or wave_number >= 1000 then
-            if random(0, 512) == 1 then
+            if Math.random(0, 512) == 1 then
                 boss_puncher(data)
             end
         end
@@ -1305,6 +1300,8 @@ local function on_entity_died(event)
         return
     end
 
+    local name = entity.name
+
     local unit_number = entity.unit_number
 
     local cause = event.cause
@@ -1335,13 +1332,15 @@ local function on_entity_died(event)
                 player = cause.player
             end
             if valid_enemy_forces[cause.force.name] or cause.force.index == 3 then
-                entity.destroy()
+                if not name:find('relay', 1, true) then
+                    entity.destroy()
+                end
                 return
             end
         end
     end
 
-    if disabled_threats[entity.name] then
+    if disabled_threats[name] then
         return
     end
 
@@ -1354,10 +1353,15 @@ local function on_entity_died(event)
         if biters.amount <= 0 then
             biters.amount = 0
         end
+        if entity.type == 'unit' and valid_enemy_forces[entity.force.name]
+            and string.find(name, 'biter', 1, true) and Math.random(1, 32) == 1 then
+            Public.tick_tack_trap(entity, true)
+            return
+        end
         if Public.is_around_train(entity) then
             return
         end
-        if random(1, 512) == 1 then
+        if Math.random(1, 512) == 1 then
             Public.tick_tack_trap(entity)
             return
         end
@@ -1393,17 +1397,17 @@ local function on_entity_died(event)
             entity.destroy()
             return
         end
-        if random(1, 32) == 1 then
+        if Math.random(1, 32) == 1 then
             Public.buried_biter(entity.surface, entity.position, 6)
             entity.destroy()
             return
         end
-        if random(1, 64) == 1 then
+        if Math.random(1, 64) == 1 then
             Public.buried_worm(entity.surface, entity.position)
             entity.destroy()
             return
         end
-        if random(1, 512) == 1 then
+        if Math.random(1, 512) == 1 then
             Public.tick_tack_trap(entity)
             return
         end
@@ -1656,7 +1660,7 @@ function Public.unstuck_player(index)
     if not position then
         return
     end
-    player.teleport(position, surface)
+    Public.teleport_player(player, position, surface)
 end
 
 function Public.loco_died()
@@ -1697,11 +1701,11 @@ function Public.loco_died()
     this.locomotive_health = 0
     if this.health_text and this.health_text.valid and this.locomotive and this.locomotive.valid then
         this.locomotive.color = { 0.49, 0, 255, 1 }
-        this.health_text.text = 'HP: ' .. round(this.locomotive_health) .. ' / ' .. round(this.locomotive_max_health)
+        this.health_text.text = 'HP: ' .. Math.round(this.locomotive_health) .. ' / ' .. Math.round(this.locomotive_max_health)
     end
     WD.set('game_lost', true)
     WD.set('target', nil)
-    local msg = defeated_messages[random(1, #defeated_messages)]
+    local msg = defeated_messages[Math.random(1, #defeated_messages)]
 
     local p = this.locomotive_position or { x = 0, y = 0 }
 

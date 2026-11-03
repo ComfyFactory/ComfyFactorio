@@ -12,12 +12,9 @@ local Task = require 'utils.task'
 local Token = require 'utils.token'
 local Server = require 'utils.server'
 local Commands = require 'utils.commands'
+local Math = require 'utils.math.math'
 
-local floor = math.floor
 local insert = table.insert
-local random = math.random
-local sqrt = math.sqrt
-local round = math.round
 local Public = {}
 
 local this =
@@ -54,7 +51,7 @@ local acid_lines =
 }
 for x = radius * -1, radius, 1 do
     for y = radius * -1, radius, 1 do
-        if sqrt(x ^ 2 + y ^ 2) <= radius then
+        if Math.sqrt(x ^ 2 + y ^ 2) <= radius then
             targets[#targets + 1] = { x = x, y = y }
         end
     end
@@ -124,12 +121,12 @@ local function loaded_biters(event)
         end
     end
     if not position then
-        position = { entity.position.x + (-20 + random(0, 40)), entity.position.y + (-20 + random(0, 40)) }
+        position = { entity.position.x + (-20 + Math.random(0, 40)), entity.position.y + (-20 + Math.random(0, 40)) }
     end
 
     entity.surface.create_entity(
         {
-            name = projectiles[random(1, 10)],
+            name = projectiles[Math.random(1, 10)],
             position = entity.position,
             force = 'enemy',
             source = entity.position,
@@ -141,8 +138,8 @@ local function loaded_biters(event)
 end
 
 local function acid_nova(event)
-    for _ = 1, random(20, 40) do
-        local i = random(1, #targets)
+    for _ = 1, Math.random(20, 40) do
+        local i = Math.random(1, #targets)
         event.entity.surface.create_entity(
             {
                 name = acid_splashes[event.entity.name],
@@ -158,13 +155,13 @@ local function acid_nova(event)
 end
 
 local function create_entity_radius(surface, name, source, target)
-    local distance = sqrt((source.x - target.x) ^ 2 + (source.y - target.y) ^ 2)
+    local distance = Math.sqrt((source.x - target.x) ^ 2 + (source.y - target.y) ^ 2)
     local modifier = { (target.x - source.x) / distance, (target.y - source.y) / distance }
 
     local position = { source.x, source.y }
 
     for _ = 1, distance * 1.5, 1 do
-        if random(1, 2) ~= 1 then
+        if Math.random(1, 2) ~= 1 then
             surface.create_entity(
                 {
                     name = name,
@@ -254,7 +251,7 @@ local function set_boss_healthbar(health, max_health, healthbar_id)
     end
     local x_scale = healthbar_id.y_scale * 15
     healthbar_id.x_scale = x_scale * m
-    healthbar_id.color = { floor(255 - 255 * m), floor(200 * m), 0 }
+    healthbar_id.color = { Math.floor(255 - 255 * m), Math.floor(200 * m), 0 }
 end
 
 local function extra_projectiles(cause, target)
@@ -311,11 +308,11 @@ local function on_entity_damaged(event)
             local stickers = biter.stickers
             if stickers and #stickers > 0 then
                 for i = 1, #stickers, 1 do
-                    if random(1, 4) == 1 then -- there's a % that biters can recover from stun and get slowed instead.
+                    if Math.random(1, 4) == 1 then -- there's a % that biters can recover from stun and get slowed instead.
                         if stickers[i].sticked_to == biter then
                             if stickers[i].name == 'stun-sticker' then
                                 stickers[i].destroy()
-                                if random(1, 2) == 1 then
+                                if Math.random(1, 2) == 1 then
                                     local slow = surface.create_entity { name = 'slowdown-sticker', position = biter.position, target = biter }
                                     slow.time_to_live = 200
                                 end
@@ -350,12 +347,12 @@ local function on_entity_damaged(event)
     end
 
     --Reduce health pool
-    health_pool[1] = round(health_pool[1] - damage)
+    health_pool[1] = Math.round(health_pool[1] - damage)
 
     --Set entity health relative to health pool
     local max_health = health_pool[3].max_health
     local m = health_pool[1] / max_health
-    local final_health = round(biter.max_health * m)
+    local final_health = Math.round(biter.max_health * m)
     biter.health = final_health
 
     --Proceed to kill entity if health is 0
@@ -402,12 +399,12 @@ local function on_entity_died(event)
         Task.set_timeout_in_ticks(30, remove_unit_token, { unit_number = unit_number })
         if health_pool[3] and health_pool[3].healthbar_id then
             if this.enable_boss_loot then
-                if random(1, 128) == 1 then
+                if Math.random(1, 128) == 1 then
                     LootDrop.drop_loot(biter, wave_count)
                 end
             end
             if this.boss_spawns_projectiles then
-                if random(1, 32) == 1 then
+                if Math.random(1, 32) == 1 then
                     loaded_biters(event)
                 end
             end
@@ -473,8 +470,8 @@ function Public.add_unit(unit, health_multiplier)
     if not health_multiplier then
         health_multiplier = this.biter_health_boost
     end
-    local health = floor(unit.max_health * health_multiplier)
-    local xp_modifier = round(1 / health_multiplier, 5)
+    local health = Math.floor(unit.max_health * health_multiplier)
+    local xp_modifier = Math.round(1 / health_multiplier, 5)
     this.biter_health_boost_units[unit.unit_number] =
     {
         health,
@@ -496,8 +493,8 @@ function Public.add_boss_unit(unit, health_multiplier, health_bar_size)
     if not health_bar_size then
         health_bar_size = 0.5
     end
-    local xp_modifier = round(1 / health_multiplier, 5)
-    local health = floor(unit.max_health * health_multiplier)
+    local xp_modifier = Math.round(1 / health_multiplier, 5)
+    local health = Math.floor(unit.max_health * health_multiplier)
     this.biter_health_boost_units[unit.unit_number] =
     {
         health,

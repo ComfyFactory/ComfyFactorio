@@ -1,9 +1,7 @@
 local FlyingText = require 'utils.functions.flying_texts'
+local math = require 'utils.math.math'
 --luacheck:ignore
 local string_sub = string.sub
-local math_random = math.random
-local math_round = math.round
-local math_abs = math.abs
 local table_insert = table.insert
 local table_remove = table.remove
 local string_find = string.find
@@ -113,7 +111,7 @@ function Public.get_random_target_entity(force_index)
         return
     end
     for _ = 1, size_of_target_entities, 1 do
-        local i = math_random(1, size_of_target_entities)
+        local i = math.random(1, size_of_target_entities)
         local entity = target_entities[i]
         if entity and entity.valid then
             return entity
@@ -131,7 +129,7 @@ function Public.get_health_modifier(force)
     if storage.bb_evolution[force.name] < 1 then
         return 1
     end
-    return math_round((storage.bb_evolution[force.name] - 1) * 3, 3) + 1
+    return math.round((storage.bb_evolution[force.name] - 1) * 3, 3) + 1
 end
 
 function Public.biters_landfill(entity)
@@ -139,7 +137,7 @@ function Public.biters_landfill(entity)
         return
     end
     local position = entity.position
-    if math_abs(position.y) < 8 then
+    if math.abs(position.y) < 8 then
         return true
     end
     local surface = entity.surface
@@ -156,7 +154,7 @@ function Public.biters_landfill(entity)
                         frame_speed = 0.1,
                         vertical_speed = 0.12,
                         height = 0.01,
-                        movement = { -0.05 + math_random(0, 100) * 0.001, -0.05 + math_random(0, 100) * 0.001 }
+                        movement = { -0.05 + math.random(0, 100) * 0.001, -0.05 + math.random(0, 100) * 0.001 }
                     }
                 )
             end
@@ -199,7 +197,7 @@ function Public.init_player(player)
     player.force = game.forces.spectator
 
     local surface = game.surfaces.biter_battles
-    local p = spawn_positions[math_random(1, size_of_spawn_positions)]
+    local p = spawn_positions[math.random(1, size_of_spawn_positions)]
     if surface.is_chunk_generated({ 0, 0 }) then
         player.teleport(surface.find_non_colliding_position('character', p, 4, 0.5), surface)
     else

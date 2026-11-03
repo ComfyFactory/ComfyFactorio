@@ -1,10 +1,7 @@
 local LootRaffle = require 'maps.mountain_fortress_v3.loot_raffle'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
-local random = math.random
-local abs = math.abs
-local floor = math.floor
-local sqrt = math.sqrt
+local Math = require 'utils.math.math'
 
 local blacklist =
 {
@@ -55,36 +52,36 @@ local blacklist =
 
 local function check_quality()
     local quality_list = Public.get('quality_list')
-    local quality_level = random(1, #quality_list)
+    local quality_level = Math.random(1, #quality_list)
     local quality = quality_list[quality_level]
 
     return quality
 end
 
 function Public.get_distance(position)
-    local difficulty = sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
+    local difficulty = Math.sqrt(position.x ^ 2 + position.y ^ 2) * 0.0001
     return difficulty
 end
 
 function Public.add_loot(surface, position, chest, collision, zone)
     local loot_stats = Public.get('loot_stats') -- loot_stats.normal == 48
-    local budget = loot_stats.normal + abs(Orient.progression(position)) * 1.75
-    budget = budget * random(25, 175) * 0.01
+    local budget = loot_stats.normal + Math.abs(Orient.progression(position)) * 1.75
+    budget = budget * Math.random(25, 175) * 0.01
 
-    if random(1, 128) == 1 then
+    if Math.random(1, 128) == 1 then
         budget = budget * 4
-        chest = 'crash-site-chest-' .. random(1, 2)
+        chest = 'crash-site-chest-' .. Math.random(1, 2)
     end
-    if random(1, 256) == 1 then
+    if Math.random(1, 256) == 1 then
         budget = budget * 4
-        chest = 'crash-site-chest-' .. random(1, 2)
+        chest = 'crash-site-chest-' .. Math.random(1, 2)
     end
 
     local quality = check_quality()
 
-    budget = floor(budget) + 1
+    budget = Math.floor(budget) + 1
 
-    local amount = random(1, 5)
+    local amount = Math.random(1, 5)
     local base_amount = 12 * amount
     local distance_mod = Public.get_distance(position)
 
@@ -119,21 +116,21 @@ function Public.add_loot(surface, position, chest, collision, zone)
         quality = 'normal'
     end
 
-    if random(1, 8) == 1 then
-        container.insert({ name = 'coin', count = random(1, 32), quality = 'normal' })
-    elseif random(1, 32) == 1 then
-        container.insert({ name = 'coin', count = random(1, 128), quality = 'normal' })
-    elseif random(1, 128) == 1 then
-        container.insert({ name = 'coin', count = random(1, 256), quality = quality })
-    elseif random(1, 256) == 1 then
-        container.insert({ name = 'coin', count = random(1, 512), quality = quality })
-    elseif random(1, 512) == 1 then
-        container.insert({ name = 'coin', count = random(1, 1024), quality = quality })
+    if Math.random(1, 8) == 1 then
+        container.insert({ name = 'coin', count = Math.random(1, 32), quality = 'normal' })
+    elseif Math.random(1, 32) == 1 then
+        container.insert({ name = 'coin', count = Math.random(1, 128), quality = 'normal' })
+    elseif Math.random(1, 128) == 1 then
+        container.insert({ name = 'coin', count = Math.random(1, 256), quality = quality })
+    elseif Math.random(1, 256) == 1 then
+        container.insert({ name = 'coin', count = Math.random(1, 512), quality = quality })
+    elseif Math.random(1, 512) == 1 then
+        container.insert({ name = 'coin', count = Math.random(1, 1024), quality = quality })
     end
 
     for _ = 1, 3, 1 do
-        if random(1, 16) == 1 then
-            container.insert({ name = 'explosives', count = random(25, 50) })
+        if Math.random(1, 16) == 1 then
+            container.insert({ name = 'explosives', count = Math.random(25, 50) })
         else
             break
         end
@@ -142,24 +139,24 @@ end
 
 function Public.add_loot_rare(surface, position, chest, magic, zone)
     local loot_stats = Public.get('loot_stats') -- loot_stats.rare == 48
-    local budget = (magic * loot_stats.rare) + abs(Orient.progression(position)) * 1.75
+    local budget = (magic * loot_stats.rare) + Math.abs(Orient.progression(position)) * 1.75
 
-    if random(1, 128) == 1 then
+    if Math.random(1, 128) == 1 then
         budget = budget * 6
-        chest = 'crash-site-chest-' .. random(1, 2)
+        chest = 'crash-site-chest-' .. Math.random(1, 2)
     end
-    if random(1, 128) == 1 then
+    if Math.random(1, 128) == 1 then
         budget = budget * 6
-        chest = 'crash-site-chest-' .. random(1, 2)
+        chest = 'crash-site-chest-' .. Math.random(1, 2)
     end
 
     local quality = check_quality()
 
-    local amount = random(1, 5)
+    local amount = Math.random(1, 5)
     local base_amount = 12 * amount
     local distance_mod = Public.get_distance(position)
 
-    budget = floor(budget) + 1
+    budget = Math.floor(budget) + 1
 
     local result = base_amount + budget + distance_mod
 
@@ -178,21 +175,21 @@ function Public.add_loot_rare(surface, position, chest, magic, zone)
         quality = 'normal'
     end
 
-    if random(1, 8) == 1 then
-        container.insert({ name = 'coin', count = random(1, 32), quality = 'normal' })
-    elseif random(1, 32) == 1 then
-        container.insert({ name = 'coin', count = random(1, 128), quality = 'normal' })
-    elseif random(1, 128) == 1 then
-        container.insert({ name = 'coin', count = random(1, 256), quality = quality })
-    elseif random(1, 256) == 1 then
-        container.insert({ name = 'coin', count = random(1, 512), quality = quality })
-    elseif random(1, 512) == 1 then
-        container.insert({ name = 'coin', count = random(1, 2048), quality = quality })
+    if Math.random(1, 8) == 1 then
+        container.insert({ name = 'coin', count = Math.random(1, 32), quality = 'normal' })
+    elseif Math.random(1, 32) == 1 then
+        container.insert({ name = 'coin', count = Math.random(1, 128), quality = 'normal' })
+    elseif Math.random(1, 128) == 1 then
+        container.insert({ name = 'coin', count = Math.random(1, 256), quality = quality })
+    elseif Math.random(1, 256) == 1 then
+        container.insert({ name = 'coin', count = Math.random(1, 512), quality = quality })
+    elseif Math.random(1, 512) == 1 then
+        container.insert({ name = 'coin', count = Math.random(1, 2048), quality = quality })
     end
 
     for _ = 1, 3, 1 do
-        if random(1, 16) == 1 then
-            container.insert({ name = 'explosives', count = random(25, 50) })
+        if Math.random(1, 16) == 1 then
+            container.insert({ name = 'explosives', count = Math.random(25, 50) })
         else
             break
         end

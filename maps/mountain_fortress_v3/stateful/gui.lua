@@ -16,6 +16,7 @@ local Explosives = require 'modules.explosives'
 local StatefulFunctions = require 'maps.mountain_fortress_v3.stateful.functions'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local Math = require 'utils.math.math'
 
 local zone_settings = Public.zone_settings
 local send_ping_to_channel = Discord.channel_names.mtn_channel
@@ -29,15 +30,14 @@ local on_click_buff_name = Gui.uid_name()
 local on_click_permanent_buff_name = Gui.uid_name()
 local close_permanent_buffs_window_name = Gui.uid_name()
 local permanent_buff_window_name = Gui.uid_name()
-local random = math.random
-local floor = math.floor
+
 local main_frame
 
 Public.stateful_main_button_name = main_button_name
 
 local function create_particles(surface, name, position, amount, cause_position)
-    local d1 = (-100 + random(0, 200)) * 0.0004
-    local d2 = (-100 + random(0, 200)) * 0.0004
+    local d1 = (-100 + Math.random(0, 200)) * 0.0004
+    local d2 = (-100 + Math.random(0, 200)) * 0.0004
 
     name = name or 'leaf-particle'
 
@@ -47,7 +47,7 @@ local function create_particles(surface, name, position, amount, cause_position)
     end
 
     for _ = 1, amount, 1 do
-        local m = random(4, 10)
+        local m = Math.random(4, 10)
         local m2 = m * 0.005
 
         surface.create_particle(
@@ -59,8 +59,8 @@ local function create_particles(surface, name, position, amount, cause_position)
                 height = 0,
                 movement =
                 {
-                    (m2 - (random(0, m) * 0.01)) + d1,
-                    (m2 - (random(0, m) * 0.01)) + d2
+                    (m2 - (Math.random(0, m) * 0.01)) + d1,
+                    (m2 - (Math.random(0, m) * 0.01)) + d2
                 }
             }
         )
@@ -447,7 +447,14 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
 
     local function format_force_buff_text(name, count)
         local display_name = Stateful.buff_to_string[name] or name
-        local flat_value_buffs = { xp_level = true, xp_bonus = true, character_health_bonus = true }
+        local flat_value_buffs =
+                {
+                    xp_level = true,
+                    xp_bonus = true,
+                    character_health_bonus = true,
+                    character_inventory_slots_bonus = true,
+                    character_build_distance_bonus = true
+                }
 
         if flat_value_buffs[name] then
             return '[font=default-bold]' .. display_name .. ': ' .. count .. '[/font]\n'
@@ -691,10 +698,10 @@ local function boss_frame(player, alert)
             survive_for_right_flow.style.horizontal_align = 'right'
             survive_for_right_flow.style.horizontally_stretchable = true
 
-            local survive_for_timer = floor(collection.survive_for / 60 / 60) .. 'm'
+            local survive_for_timer = Math.floor(collection.survive_for / 60 / 60) .. 'm'
 
             if collection.survive_for / 60 / 60 <= 1 then
-                survive_for_timer = floor(collection.survive_for / 60) .. 's'
+                survive_for_timer = Math.floor(collection.survive_for / 60) .. 's'
             end
 
             if collection.survive_for <= 0 then
@@ -747,14 +754,15 @@ main_frame = function (player)
     breached_wall = breached_wall - 1
 
     local frame = player.gui.left.add { type = 'frame', name = main_frame_name, caption = { 'stateful.win_conditions' }, direction = 'vertical', tooltip = { 'stateful.win_conditions_tooltip' } }
-    if Gui.get_mod_gui_top_frame() then
-        frame.location = { x = 0, y = 67 }
-    else
-        frame.location = { x = 1, y = 45 }
-    end
-    frame.style.maximal_height = 700
+    local top_offset = Gui.get_mod_gui_top_frame() and 67 or 45
+    local viewport_height = player.display_resolution.height / player.display_scale
+    frame.style.maximal_height = Math.min(700, Math.max(100, viewport_height - top_offset - 32))
     frame.style.minimal_width = 200
     frame.style.maximal_width = 400
+    local outer_frame = frame
+    frame = outer_frame.add { type = 'scroll-pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto' }
+    frame.style.vertically_squashable = true
+    frame.style.horizontally_stretchable = true
     local season_tbl = frame.add { type = 'table', column_count = 2 }
     season_tbl.style.horizontally_stretchable = true
 
@@ -882,10 +890,10 @@ main_frame = function (player)
         warn_timer_flow_right.style.horizontal_align = 'right'
         warn_timer_flow_right.style.horizontally_stretchable = true
 
-        local time_left = floor(stateful.collection.gather_time / 60 / 60) .. 'm'
+        local time_left = Math.floor(stateful.collection.gather_time / 60 / 60) .. 'm'
 
         if stateful.collection.gather_time / 60 / 60 <= 1 then
-            time_left = floor(stateful.collection.gather_time / 60) .. 's'
+            time_left = Math.floor(stateful.collection.gather_time / 60) .. 's'
         end
 
         data.gather_time_label = warn_timer_flow_right.add({ type = 'label', caption = time_left })
@@ -918,6 +926,7 @@ main_frame = function (player)
         end
     end
 
+
     -- warn players
     spacer(frame)
     frame.add({ type = 'line' })
@@ -925,7 +934,7 @@ main_frame = function (player)
 
     local close = frame.add({ type = 'button', name = close_button, caption = 'Close' })
     close.style.horizontally_stretchable = true
-    Gui.set_data(frame, data)
+    Gui.set_data(outer_frame, data)
 end
 
 local function update_data()
@@ -1035,13 +1044,14 @@ local function update_data()
             end
 
             if stateful.collection.gather_time and data.gather_time_label and data.gather_time_label.valid then
-                local time_left = floor(stateful.collection.gather_time / 60 / 60) .. 'm'
+                local time_left = Math.floor(stateful.collection.gather_time / 60 / 60) .. 'm'
 
                 if stateful.collection.gather_time / 60 / 60 <= 1 then
-                    time_left = floor(stateful.collection.gather_time / 60) .. 's'
+                    time_left = Math.floor(stateful.collection.gather_time / 60) .. 's'
                 end
                 data.gather_time_label.caption = time_left
             end
+
 
             if data.random_objectives and next(data.random_objectives) then
                 for index = 1, #data.random_objectives do
@@ -1079,10 +1089,10 @@ local function update_data()
                     alert_players_sound()
                 end
 
-                local survive_for_timer = floor(collection.survive_for / 60 / 60) .. 'm'
+                local survive_for_timer = Math.floor(collection.survive_for / 60 / 60) .. 'm'
 
                 if collection.survive_for / 60 / 60 <= 1 then
-                    survive_for_timer = floor(collection.survive_for / 60) .. 's'
+                    survive_for_timer = Math.floor(collection.survive_for / 60) .. 's'
                 end
 
                 if collection.survive_for <= 0 then
@@ -1263,7 +1273,7 @@ local function update_raw()
                 end
 
                 local directions = { 'north', 'south', 'east', 'west' }
-                local next_direction = directions[random(1, #directions)]
+                local next_direction = directions[Math.random(1, #directions)]
                 Public.set_stateful_settings('direction', next_direction)
                 Server.output_script_data('Next map direction: ' .. next_direction)
 

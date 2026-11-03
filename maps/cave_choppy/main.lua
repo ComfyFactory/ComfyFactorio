@@ -16,6 +16,7 @@ local Event = require 'utils.event'
 local Module = require 'infinity_chest'
 local market_items = require 'cave_miner_market_items'
 local Map = require 'modules.map_info'
+local math = require 'utils.math.math'
 
 local spawn_dome_size = 8000
 

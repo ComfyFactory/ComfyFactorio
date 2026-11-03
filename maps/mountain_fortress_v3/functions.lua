@@ -23,14 +23,12 @@ local Score = require 'utils.gui.score'
 local Gui = require 'utils.gui'
 local FunctionColor = { r = 0.98, g = 0.66, b = 0.22 }
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local Math = require 'utils.math.math'
 
 local remove_boost_movement_speed_on_respawn
 local de = defines.events
 local is_modded = Public.is_modded
-local random = math.random
-local floor = math.floor
-local round = math.round
-local sqrt = math.sqrt
+
 local remove = table.remove
 local magic_crafters_per_tick = 3
 local magic_fluid_crafters_per_tick = 8
@@ -247,9 +245,9 @@ local custom_surface_funcs_token =
                     return
                 end
 
-                local entity = entities[random(#entities)]
+                local entity = entities[Math.random(#entities)]
                 if entity and entity.valid then
-                    local position = { x = entity.position.x + random(-120, 120), y = entity.position.y + random(-120, 120) }
+                    local position = { x = entity.position.x + Math.random(-120, 120), y = entity.position.y + Math.random(-120, 120) }
                     surface.create_entity({ name = 'lightning', position = position, force = 'enemy' })
                 end
             end
@@ -461,7 +459,7 @@ local function do_magic_crafters()
 
             local count = (tick - last_tick) * rate
 
-            local fcount = floor(count)
+            local fcount = Math.floor(count)
 
             if fcount > 1 then
                 fcount = 1
@@ -471,7 +469,7 @@ local function do_magic_crafters()
                 if entity.get_output_inventory().can_insert({ name = data.item, count = fcount, quality = data.quality }) then
                     entity.get_output_inventory().insert { name = data.item, count = fcount, quality = data.quality }
                     entity.products_finished = entity.products_finished + fcount
-                    data.last_tick = round(tick - (count - fcount) / rate)
+                    data.last_tick = Math.round(tick - (count - fcount) / rate)
                 end
             end
         end
@@ -513,7 +511,7 @@ local function do_magic_fluid_crafters()
 
             local count = (tick - last_tick) * rate
 
-            local fcount = floor(count)
+            local fcount = Math.floor(count)
 
             if fcount > 0 then
                 local fluidbox_index = data.fluidbox_index
@@ -611,7 +609,7 @@ local function do_beams_away()
 
             if not orbital_strikes[wave_number] then
                 orbital_strikes[wave_number] = true
-                Beams.new_beam_delayed(surface, random(500, 3000))
+                Beams.new_beam_delayed(surface, Math.random(500, 3000))
             end
         end
     end
@@ -809,22 +807,29 @@ local function level_weight(level, min, max, multiplier)
     end
 
     if level >= max then
-        return round((max - min) * (multiplier or 2.75), 6)
+        return Math.round((max - min) * (multiplier or 2.75), 6)
     end
 
     local progress = (level - min) / (max - min)
     local eased = progress ^ 1.25
-    return round(eased * (max - min) * (multiplier or 2.75), 6)
+    return Math.round(eased * (max - min) * (multiplier or 2.75), 6)
 end
 
 
 local function fill_raffles(level)
+    level = Math.max(level, 0)
     local raffles =
     {
         biter_raffle = {},
         spitter_raffle = {},
         boss_raffle = {}
     }
+
+    local function add_weight(raffle, name, weight)
+        if weight > 0 and prototypes.entity[name] then
+            raffle[name] = (raffle[name] or 0) + weight
+        end
+    end
 
     local current_planet = Public.get_stateful_settings('current_planet')
     local excluded_families = {}
@@ -844,29 +849,28 @@ local function fill_raffles(level)
                 for tier, range in pairs(tiers) do
                     for _, element in ipairs(elements) do
                         local weight = level_weight(level, range[1], range[2], 2.75)
-                        if weight then
-                            if boss_kind == "demolisher" and Public.is_modded_pt2 then
-                                local name = string.format("%s-%s", tier, range)
-                                raffles.boss_raffle[name] = weight
-                            else
-                                local name = string.format("mtn-addon-boss-%s-%s-%s", element, boss_kind, tier)
-                                raffles.boss_raffle[name] = weight
-                            end
-                        end
+                        local name = string.format("mtn-addon-boss-%s-%s-%s", element, boss_kind, tier)
+                        add_weight(raffles.boss_raffle, name, weight)
                     end
                 end
             end
-        elseif family == "space_age" and Public.is_modded_pt2 then
-            for type_name, sizes in pairs(groups) do
-                for size, tiers in pairs(sizes) do
-                    for _, range in pairs(tiers) do
-                        local weight = level_weight(level, range[1], range[2], 2.75)
-                        if weight then
+        elseif family == "space_age" then
+            if Public.is_modded_pt2 then
+                for type_name, sizes in pairs(groups) do
+                    for size, tiers in pairs(sizes) do
+                        local tier_names = {}
+                        for tier in pairs(tiers) do
+                            tier_names[#tier_names + 1] = tier
+                        end
+                        table.sort(tier_names)
+                        for _, tier in ipairs(tier_names) do
+                            local range = tiers[tier]
+                            local weight = level_weight(level, range[1], range[2], 2.75)
                             local proto_name = string.format("%s-%s-pentapod", size, type_name)
                             if type_name == "demolisher" then
                                 proto_name = string.format("%s-%s", size, type_name)
                             end
-                            raffles.biter_raffle[proto_name] = weight
+                            add_weight(raffles.biter_raffle, proto_name, weight)
                         end
                     end
                 end
@@ -876,10 +880,8 @@ local function fill_raffles(level)
                 for tier, range in pairs(tiers) do
                     for _, element in ipairs(elements) do
                         local weight = level_weight(level, range[1], range[2], 2.75)
-                        if weight then
-                            local name = string.format("mtn-addon-%s-%s-%s-%s", size, element, family, tier)
-                            raffles[family .. "_raffle"][name] = weight
-                        end
+                        local name = string.format("mtn-addon-%s-%s-%s-%s", size, element, family, tier)
+                        add_weight(raffles[family .. "_raffle"], name, weight)
                     end
                 end
             end
@@ -888,13 +890,37 @@ local function fill_raffles(level)
     end
 
 
+    if not excluded_families.biter then
+        local armored_weights =
+        {
+            small = level_weight(level, 1, 300, 2.75),
+            medium = level_weight(level, 100, 400, 2.75),
+            big = level_weight(level, 300, 800, 2.75),
+            behemoth = level_weight(level, 600, 1400, 2.75)
+        }
+        for size, weight in pairs(armored_weights) do
+            local name = string.format('mtn-addon-%s-armored-biter', size)
+            add_weight(raffles.biter_raffle, name, weight)
+        end
+        local flanker_weights =
+        {
+            small = level_weight(level, 1, 300, 2.75),
+            medium = level_weight(level, 100, 400, 2.75),
+            big = level_weight(level, 300, 800, 2.75)
+        }
+        for size, weight in pairs(flanker_weights) do
+            local name = string.format('mtn-addon-%s-flanker-biter', size)
+            add_weight(raffles.biter_raffle, name, weight)
+        end
+    end
+
     return raffles
 end
 
 
 local set_unit_raffle_token =
     Task.register(function (event)
-        local level = event.level
+        local level = Math.max(event.level, 0)
         local raffles
 
         if not is_modded then
@@ -902,24 +928,24 @@ local set_unit_raffle_token =
             {
                 biter_raffle =
                 {
-                    ['small-biter'] = round(1000 - level * 1.75, 6),
-                    ['medium-biter'] = round(level, 6),
+                    ['small-biter'] = Math.round(1000 - level * 1.75, 6),
+                    ['medium-biter'] = Math.round(level, 6),
                 },
                 spitter_raffle =
                 {
-                    ['small-spitter'] = round(1000 - level * 1.75, 6),
-                    ['medium-spitter'] = round(level, 6),
+                    ['small-spitter'] = Math.round(1000 - level * 1.75, 6),
+                    ['medium-spitter'] = Math.round(level, 6),
                 }
             }
 
             if level > 500 then
-                raffles.biter_raffle['big-biter'] = round((level - 500) * 2, 6)
-                raffles.spitter_raffle['big-spitter'] = round((level - 500) * 2, 6)
+                raffles.biter_raffle['big-biter'] = Math.round((level - 500) * 2, 6)
+                raffles.spitter_raffle['big-spitter'] = Math.round((level - 500) * 2, 6)
             end
 
             if level > 800 then
-                raffles.biter_raffle['behemoth-biter'] = round((level - 800) * 2.75, 6)
-                raffles.spitter_raffle['behemoth-spitter'] = round((level - 800) * 2.75, 6)
+                raffles.biter_raffle['behemoth-biter'] = Math.round((level - 800) * 2.75, 6)
+                raffles.spitter_raffle['behemoth-spitter'] = Math.round((level - 800) * 2.75, 6)
             end
         else
             raffles = fill_raffles(level)
@@ -931,7 +957,9 @@ local set_unit_raffle_token =
 
         for _, tbl in pairs(raffles) do
             for k, v in pairs(tbl) do
-                tbl[k] = math.max(v or 0, 0)
+                if not v or v <= 0 then
+                    tbl[k] = nil
+                end
             end
         end
 
@@ -942,75 +970,44 @@ local set_unit_raffle_token =
 
 
 local set_worm_raffle_token =
-    Task.register(
-        function (event)
-            local level = event.level
-            if not is_modded then
-                WD.set(
-                    'worm_raffle',
-                    {
-                        ['small-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['medium-worm-turret'] = round(level, 6),
-                        ['big-worm-turret'] = 0,
-                        ['behemoth-worm-turret'] = 0
-                    }
-                )
-                local worm_raffle = WD.get('worm_raffle') --[[@as table]]
+    Task.register(function (event)
+        local level = Math.min(Math.max(event.level, 0), 1000)
+        local worm_raffle = {}
+        local tiers =
+        {
+            { 'small', Math.round(1000 - level * 1.75, 6) },
+            { 'medium', Math.round(level <= 500 and level or 1000 - level, 6) },
+            { 'big', Math.round(Math.max(level - 500, 0) * 2, 6) },
+            { 'behemoth', Math.round(Math.max(level - 800, 0) * 3, 6) }
+        }
+        local worm_elements = { 'explosive', 'fire', 'piercing', 'poison', 'electric' }
 
-                if level > 500 then
-                    worm_raffle['medium-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['big-worm-turret'] = round((level - 500) * 2, 6)
+        for _, tier in ipairs(tiers) do
+            local size, weight = tier[1], tier[2]
+            if weight > 0 then
+                local names = {}
+                local name = size .. '-worm-turret'
+                if prototypes.entity[name] then
+                    names[#names + 1] = name
                 end
-                if level > 800 then
-                    worm_raffle['behemoth-worm-turret'] = round((level - 800) * 3, 6)
-                end
-                for k, _ in pairs(worm_raffle) do
-                    if worm_raffle[k] < 0 then
-                        worm_raffle[k] = 0
+                if is_modded then
+                    local custom_size = size == 'behemoth' and 'big' or size
+                    if size ~= 'big' then
+                        for _, element in ipairs(worm_elements) do
+                            name = 'mtn-addon-' .. custom_size .. '-' .. element .. '-worm-turret'
+                            if prototypes.entity[name] then
+                                names[#names + 1] = name
+                            end
+                        end
                     end
                 end
-            else
-                WD.set(
-                    'worm_raffle',
-                    {
-                        ['small-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['mtn-addon-small-explosive-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['mtn-addon-small-fire-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['mtn-addon-small-piercing-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['mtn-addon-small-poison-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['mtn-addon-small-electric-worm-turret'] = round(1000 - level * 1.75, 6),
-                        ['medium-worm-turret'] = round(level, 6),
-                        ['big-worm-turret'] = 0,
-                        ['behemoth-worm-turret'] = 0
-                    }
-                )
-                local worm_raffle = WD.get('worm_raffle') --[[@as table]]
-
-                if level > 500 then
-                    worm_raffle['mtn-addon-medium-explosive-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['mtn-addon-medium-fire-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['mtn-addon-medium-piercing-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['mtn-addon-medium-poison-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['mtn-addon-medium-electric-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['medium-worm-turret'] = round(500 - (level - 500), 6)
-                    worm_raffle['big-worm-turret'] = round((level - 500) * 2, 6)
-                end
-                if level > 800 then
-                    worm_raffle['mtn-addon-big-explosive-worm-turret'] = round((level - 800) * 3, 6)
-                    worm_raffle['mtn-addon-big-fire-worm-turret'] = round((level - 800) * 3, 6)
-                    worm_raffle['mtn-addon-big-piercing-worm-turret'] = round((level - 800) * 3, 6)
-                    worm_raffle['mtn-addon-big-poison-worm-turret'] = round((level - 800) * 3, 6)
-                    worm_raffle['mtn-addon-big-electric-worm-turret'] = round((level - 800) * 3, 6)
-                    worm_raffle['behemoth-worm-turret'] = round((level - 800) * 3, 6)
-                end
-                for k, _ in pairs(worm_raffle) do
-                    if worm_raffle[k] < 0 then
-                        worm_raffle[k] = 0
-                    end
+                for _, variant in ipairs(names) do
+                    worm_raffle[variant] = weight / #names
                 end
             end
         end
-    )
+        WD.set('worm_raffle', worm_raffle)
+    end)
 
 local function do_artillery_turrets_targets()
     local art_table = this.art_table
@@ -1059,7 +1056,7 @@ local function do_artillery_turrets_targets()
     outpost.last_fire_tick = now
 
     for i = 1, count do
-        local entity = entities[random(#entities)]
+        local entity = entities[Math.random(#entities)]
         if entity and entity.valid then
             local data = { position = position, entity = entity, index = index }
             Task.set_timeout_in_ticks(i * 60, artillery_target_callback, data)
@@ -1078,8 +1075,8 @@ local function add_magic_crafter_output(entity, output, distance, quality)
         entity = entity,
         quality = quality,
         last_tick = game.tick,
-        base_rate = round(rate, 8),
-        rate = round(rate, 8),
+        base_rate = Math.round(rate, 8),
+        rate = Math.round(rate, 8),
         item = output.item,
         fluidbox_index = fluidbox_index
     }
@@ -1294,7 +1291,7 @@ Public.magic_item_crafting_callback =
             local quality_buildings = Public.get_stateful('quality_buildings')
             local quality = 'normal'
 
-            if random(1, 32) == 1 then
+            if Math.random(1, 32) == 1 then
                 quality = quality_buildings or 'normal'
             end
 
@@ -1322,7 +1319,7 @@ Public.magic_item_crafting_callback =
 
             local p = entity.position
             local x, y = p.x, p.y
-            local distance = sqrt(x * x + y * y)
+            local distance = Math.sqrt(x * x + y * y)
 
             local output = callback_data.output
             if #output == 0 then
@@ -1361,7 +1358,7 @@ Public.magic_item_crafting_callback_weighted =
 
             local p = entity.position
 
-            local i = random() * weights.total
+            local i = Math.random() * weights.total
 
             local index = table.binary_search(weights, i)
             if (index < 0) then
@@ -1389,7 +1386,7 @@ Public.magic_item_crafting_callback_weighted =
             local quality_buildings = Public.get_stateful('quality_buildings')
             local quality = 'normal'
 
-            if random(1, 32) == 1 then
+            if Math.random(1, 32) == 1 then
                 quality = quality_buildings or 'normal'
             end
 
@@ -1415,7 +1412,7 @@ Public.magic_item_crafting_callback_weighted =
             end
 
             local x, y = p.x, p.y
-            local distance = sqrt(x * x + y * y)
+            local distance = Math.sqrt(x * x + y * y)
 
             local output = stack.output
             if #output == 0 then
@@ -1456,7 +1453,7 @@ function Public.do_random_loot(entity, weights, loot)
     entity.operable = false
     --entity.destructible = false
 
-    local i = random() * weights.total
+    local i = Math.random() * weights.total
 
     local index = table.binary_search(weights, i)
     if (index < 0) then
@@ -1473,7 +1470,7 @@ function Public.do_random_loot(entity, weights, loot)
     if df then
         local p = entity.position
         local x, y = p.x, p.y
-        local d = sqrt(x * x + y * y)
+        local d = Math.sqrt(x * x + y * y)
 
         count = stack.count + d * df
     else
@@ -1565,9 +1562,9 @@ local function on_wave_created(event)
 
     if wave_number % 50 == 0 then
         if wave_number >= 1500 then
-            WD.set_pause_wave_in_ticks(random(36000, 54000))
+            WD.set_pause_wave_in_ticks(Math.random(36000, 54000))
         else
-            WD.set_pause_wave_in_ticks(random(18000, 54000))
+            WD.set_pause_wave_in_ticks(Math.random(18000, 54000))
         end
     end
 end
@@ -1849,6 +1846,13 @@ end
 function Public.set_threat_values()
     WD.set('threat_values',
         {
+            ['mtn-addon-small-flanker-biter'] = 1,
+            ['mtn-addon-medium-flanker-biter'] = 4,
+            ['mtn-addon-big-flanker-biter'] = 16,
+            ['mtn-addon-small-armored-biter'] = 1,
+            ['mtn-addon-medium-armored-biter'] = 4,
+            ['mtn-addon-big-armored-biter'] = 16,
+            ['mtn-addon-behemoth-armored-biter'] = 64,
             ['biter-spawner'] = 128,
             ['spitter-spawner'] = 128,
             ['behemoth-biter'] = 64,
@@ -2102,6 +2106,13 @@ function Public.set_threat_values()
     local unit_settings = WD.get('unit_settings')
     unit_settings.scale_units_by_health =
     {
+        ['mtn-addon-small-flanker-biter'] = 1,
+        ['mtn-addon-medium-flanker-biter'] = 0.75,
+        ['mtn-addon-big-flanker-biter'] = 0.5,
+        ['mtn-addon-small-armored-biter'] = 1,
+        ['mtn-addon-medium-armored-biter'] = 0.75,
+        ['mtn-addon-big-armored-biter'] = 0.5,
+        ['mtn-addon-behemoth-armored-biter'] = 0.25,
         ['small-wriggler-pentapod'] = 1,
         ['medium-wriggler-pentapod'] = 0.75,
         ['big-wriggler-pentapod'] = 0.5,
@@ -2467,7 +2478,7 @@ end
 
 local function compute_collapse_amount(context)
     local amount = context.player_count * context.difficulty.multiply + 2
-    amount = floor(amount)
+    amount = Math.floor(amount)
 
     if amount < context.difficulty.lowest then
         amount = context.difficulty.lowest
@@ -2476,7 +2487,7 @@ local function compute_collapse_amount(context)
     end
 
     if Orient.is_horizontal() then
-        amount = floor(amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
+        amount = Math.floor(amount * Orient.zone_width() / Public.zone_settings.zone_width + 0.5)
         if amount < 1 then
             amount = 1
         end
@@ -2894,7 +2905,7 @@ function Public.set_spawn_position()
         end
 
         local locomotive_position = surface.find_non_colliding_position('steel-chest', sizeof, 128, 1)
-        local distance_from = floor(math2d.position.distance(locomotive_position, locomotive.position))
+        local distance_from = Math.floor(math2d.position.distance(locomotive_position, locomotive.position))
         local l_y = Orient.progression(l)
         local t_y = Orient.progression(locomotive_position)
         local c_y = Orient.progression(collapse_pos)
@@ -3048,10 +3059,10 @@ function Public.on_player_joined_game(event)
     if player.online_time < 1 then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
-            player.teleport(pos, surface)
+            Public.teleport_player(player, pos, surface)
         else
             pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
+            Public.teleport_player(player, pos, surface)
         end
     else
         local p = { x = player.physical_position.x, y = player.physical_position.y }
@@ -3059,10 +3070,10 @@ function Public.on_player_joined_game(event)
         if get_tile.valid and (get_tile.name == 'out-of-map' or get_tile.name == 'void-tile') then
             local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
             if pos then
-                player.teleport(pos, surface)
+                Public.teleport_player(player, pos, surface)
             else
                 pos = game.forces.player.get_spawn_position(surface)
-                player.teleport(pos, surface)
+                Public.teleport_player(player, pos, surface)
             end
         end
     end
@@ -3084,10 +3095,10 @@ function Public.on_player_joined_game(event)
     if distance_from_train then
         local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
         if pos then
-            player.teleport(pos, surface)
+            Public.teleport_player(player, pos, surface)
         else
             pos = game.forces.player.get_spawn_position(surface)
-            player.teleport(pos, surface)
+            Public.teleport_player(player, pos, surface)
         end
     end
 
@@ -3166,18 +3177,18 @@ function Public.on_player_respawned(event)
 
             local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
             if pos then
-                player.teleport(pos, surface)
+                Public.teleport_player(player, pos, surface)
             else
                 pos = game.forces.player.get_spawn_position(surface)
-                player.teleport(pos, surface)
+                Public.teleport_player(player, pos, surface)
             end
         end
     end
 
     if player.character and player.character.valid then
         Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, { player = player })
-        player.character.health = round(player.character.health * health_values[random(1, #health_values)])
-        player.print(random_respawn_messages[random(1, #random_respawn_messages)])
+        player.character.health = Math.round(player.character.health * health_values[Math.random(1, #health_values)])
+        player.print(random_respawn_messages[Math.random(1, #random_respawn_messages)])
     end
 end
 
@@ -3361,15 +3372,15 @@ function Public.on_player_changed_position(event)
     if config_tile == 'lab-dark-2' then
         local get_tile = surface.get_tile(p.x, p.y)
         if get_tile.valid and get_tile.name == 'lab-dark-2' then
-            if random(1, 2) == 1 then
-                if random(1, 2) == 1 then
+            if Math.random(1, 2) == 1 then
+                if Math.random(1, 2) == 1 then
                     show_text('This path is not for players!', p, surface, player)
                 end
                 player.physical_surface.create_entity({ name = 'fire-flame', position = player.physical_position })
                 player.character.health = player.character.health - tile_damage
                 if player.character.health == 0 then
                     player.character.die()
-                    local message = ({ 'main.death_message_' .. random(1, 7), player.name })
+                    local message = ({ 'main.death_message_' .. Math.random(1, 7), player.name })
                     game.print(message, { color = FunctionColor })
                 end
             end
@@ -3379,7 +3390,7 @@ function Public.on_player_changed_position(event)
     if adjusted_zones.reversed then
         if Orient.progression(position) < Orient.spawn_len(-74) and Orient.in_map_width(position) then
             if player.character ~= nil then
-                player.character.teleport(Orient.offset(position, 0, 1), surface)
+                Public.teleport_player(player, Orient.offset(position, 0, 1), surface)
             end
             player.print(({ 'main.forcefield' }), { color = FunctionColor })
             if player.character then
@@ -3393,7 +3404,7 @@ function Public.on_player_changed_position(event)
     else
         if Orient.progression(position) >= Orient.spawn_len(74) and Orient.in_map_width(position) then
             if player.character ~= nil then
-                player.character.teleport(Orient.offset(position, 0, -1), surface)
+                Public.teleport_player(player, Orient.offset(position, 0, -1), surface)
             end
             player.print(({ 'main.forcefield' }), { color = FunctionColor })
             if player.character then
@@ -3560,7 +3571,7 @@ function Public.set_player_to_god(player)
     local spectate = Public.get('spectate')
 
     if spectate[player.index] and spectate[player.index].delay and spectate[player.index].delay > game.tick then
-        local cooldown = floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
+        local cooldown = Math.floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
         player.print('[color=blue][Spectate][/color] Retry again in ' .. cooldown, { color = Color.warning })
         return false
     end
@@ -3583,10 +3594,10 @@ function Public.set_player_to_god(player)
 
     local pos = surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(surface), 3, 0)
     if pos then
-        player.teleport(pos, surface)
+        Public.teleport_player(player, pos, surface)
     else
         pos = game.forces.player.get_spawn_position(surface)
-        player.teleport(pos, surface)
+        Public.teleport_player(player, pos, surface)
     end
 
     player.set_controller({ type = defines.controllers.god })

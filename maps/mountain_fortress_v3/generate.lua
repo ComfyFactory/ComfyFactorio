@@ -1,29 +1,27 @@
 local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local RelayStation = require 'maps.mountain_fortress_v3.relay_station'
 local Task = require 'utils.task_token'
 local WD = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local Math = require 'utils.math.math'
 
-local random = math.random
-local abs = math.abs
-local ceil = math.ceil
-local round = math.round
 local queue_task = Task.queue_task
 local tiles_per_call = 12
-local total_calls = ceil(1024 / tiles_per_call)
+local total_calls = Math.ceil(1024 / tiles_per_call)
 local regen_decoratives = false
 local generate_map = Public.heavy_functions
 
 local winter_mode = false
 local wintery_type =
 {
-    ['simple-entity'] = true,
+    -- ['simple-entity'] = true,
     ['tree'] = true,
-    ['fish'] = true,
+    -- ['fish'] = true,
     ['market'] = true,
-    ['locomotive'] = true,
-    ['cargo-wagon'] = true
+    -- ['locomotive'] = true,
+    -- ['cargo-wagon'] = true
 }
 
 -- Simple "loop" that is UPS friendly.
@@ -204,7 +202,7 @@ local function do_place_treasure(data)
     end
 
     for _, e in ipairs(data.treasure) do
-        if random(1, 6) == 1 then
+        if Math.random(1, 6) == 1 then
             e.chest = 'iron-chest'
         end
         if
@@ -235,7 +233,7 @@ local function do_place_markets(data)
         return
     end
 
-    local pos = markets[random(1, #markets)]
+    local pos = markets[Math.random(1, #markets)]
     if
         surface.count_entities_filtered
         {
@@ -244,7 +242,7 @@ local function do_place_markets(data)
             limit = 1
         } == 0
     then
-        local market = Public.mountain_market(surface, pos, abs(Orient.progression(pos)) * 0.004)
+        local market = Public.mountain_market(surface, pos, Math.abs(Orient.progression(pos)) * 0.004)
         market.destructible = false
         force.add_chart_tag(
             surface,
@@ -343,7 +341,7 @@ local function wintery(ent, extra_lights)
     end
     local colors = { { 255, 0, 0 }, { 0, 255, 0 }, { 0, 0, 255 } }
     local function add_light(e)
-        local color = colors[math.random(1, 3)]
+        local color = colors[Math.random(1, 3)]
         local scale = extra_lights or 1
         rendering.draw_light(
             {
@@ -364,11 +362,11 @@ local function wintery(ent, extra_lights)
     end
     if wintery_type[ent.type] then
         if ent.type == 'simple-entity' then
-            if random(1, 64) == 1 then
+            if Math.random(1, 64) == 1 then
                 return add_light(ent)
             end
         else
-            if random(1, 4) == 1 then
+            if Math.random(1, 4) == 1 then
                 return add_light(ent)
             end
         end
@@ -415,7 +413,7 @@ local function do_place_entities(data)
                 if entity then
                     if e.note then -- flamethrower-turret and artillery-turret are at default health, only gun-turret is modified
                         local modified_unit_health = WD.get('modified_unit_health')
-                        local final_health = round(modified_unit_health.current_value * 0.5, 3)
+                        local final_health = Math.round(modified_unit_health.current_value * 0.5, 3)
                         if final_health < 1 then
                             final_health = 1
                         end
@@ -451,7 +449,7 @@ local function do_place_entities(data)
                     if e.note then -- small-worm-turret, medium-worm-turret, big-worm-turret, behemoth-worm-turret
                         local modified_unit_health = WD.get('modified_unit_health')
                         local unit_settings = WD.get('unit_settings')
-                        local final_health = round(modified_unit_health.current_value * unit_settings.scale_worms_by_health[entity.name], 3)
+                        local final_health = Math.round(modified_unit_health.current_value * (unit_settings.scale_worms_by_health[entity.name] or 1), 3)
                         if final_health < 1 then
                             final_health = 1
                         end
@@ -503,6 +501,7 @@ local function run_chart_update(data)
 end
 
 local function map_gen_action(data)
+    if data.relay_generation and data.relay_generation ~= RelayStation.surface_generation(data.surface) then return false end
     local state = data.y
 
     if state < 32 then
@@ -583,6 +582,7 @@ local function map_gen_action(data)
         return true
     elseif state == 41 then
         run_chart_update(data)
+        RelayStation.chunk_ready(data.surface, data.area.left_top, data.relay_generation)
         return false
     end
 end
@@ -615,6 +615,7 @@ local function schedule_chunk(event)
         yv = -0,
         xv = 0,
         y = 0,
+        relay_generation = RelayStation.surface_generation(surface),
         x = area.left_top.x,
         area = area,
         top_x = area.left_top.x,
@@ -658,6 +659,7 @@ local function force_do_chunk(event)
     {
         yv = -0,
         xv = 0,
+        relay_generation = RelayStation.surface_generation(surface),
         area = area,
         top_x = area.left_top.x,
         top_y = area.left_top.y,
@@ -689,6 +691,26 @@ local function force_do_chunk(event)
     do_place_decoratives(data)
     do_place_markets(data)
     do_place_treasure(data)
+    RelayStation.chunk_ready(data.surface, data.area.left_top, data.relay_generation)
+end
+
+function Public.recover_relay_chunks(surface, generation, probe)
+    if Public.get('stop_chunk') or Public.get('final_battle') then return false end
+    if not surface.get_chunks then return false end
+    if probe then return true end
+    local pending = {}
+    for _, data in pairs(Task.get_queue_tasks(map_gen_action_token)) do
+        if data.surface and data.surface.index == surface.index then
+            local top = data.area.left_top
+            pending[Math.floor(top.x / 32) .. ':' .. Math.floor(top.y / 32)] = true
+        end
+    end
+    for chunk in surface.get_chunks() do
+        if not pending[chunk.x .. ':' .. chunk.y] and surface.is_chunk_generated(chunk) then
+            RelayStation.chunk_ready(surface, { x = chunk.x * 32, y = chunk.y * 32 }, generation)
+        end
+    end
+    return true
 end
 
 local function on_chunk(event)

@@ -3,6 +3,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Collapse = require 'modules.collapse'
 local Commands = require 'utils.commands'
+local Math = require 'utils.math.math'
 local this =
 {
     explosives = {},
@@ -52,11 +53,6 @@ Global.register(
     end
 )
 
-local math_abs = math.abs
-local math_floor = math.floor
-local math_sqrt = math.sqrt
-local math_round = math.round
-local math_random = math.random
 local shuffle_table = table.shuffle_table
 local speed = 6
 local density = 1
@@ -157,7 +153,7 @@ end
 
 local function grow_cell(cell)
     shuffle_table(this.explosives.vectors)
-    local radius = math_floor((game.tick - cell.origin_tick) / 9) + 2
+    local radius = Math.floor((game.tick - cell.origin_tick) / 9) + 2
     local positions = {}
     for i = 1, 4, 1 do
         local position =
@@ -166,7 +162,7 @@ local function grow_cell(cell)
             y = cell.position.y + this.explosives.vectors[i][2]
         }
         if not this.explosives.cells[pos_to_key(position)] then
-            local distance = math_sqrt((cell.origin_position.x - position.x) ^ 2 + (cell.origin_position.y - position.y) ^ 2)
+            local distance = Math.sqrt((cell.origin_position.x - position.x) ^ 2 + (cell.origin_position.y - position.y) ^ 2)
             if distance < radius then
                 positions[#positions + 1] = position
             end
@@ -181,7 +177,7 @@ local function grow_cell(cell)
         }
     end
 
-    local new_cell_health = math_round(cell.health / #positions, 3) - this.explosives.damage_decay
+    local new_cell_health = Math.round(cell.health / #positions, 3) - this.explosives.damage_decay
 
     if new_cell_health <= 0 then
         return
@@ -231,7 +227,7 @@ local function damage_entity(entity, cell)
         if entity.health <= 0 then
             return true
         end
-        damage_required = math_floor(entity.health * (damage_required / damage_dealt)) + 1
+        damage_required = Math.floor(entity.health * (damage_required / damage_dealt)) + 1
     end
 end
 
@@ -244,7 +240,7 @@ local function damage_area(cell)
         return
     end
 
-    if math_random(1, 4) == 1 then
+    if Math.random(1, 4) == 1 then
         if cell.atomic then
             surface.create_entity({ name = 'nuke-explosion', position = cell.position })
         else
@@ -276,7 +272,7 @@ local function damage_area(cell)
         if cell.health > this.explosives.tiles[key] then
             cell.health = cell.health - this.explosives.tiles[key]
             this.explosives.tiles[key] = nil
-            if math_abs(tile.position.y) < surface.map_gen_settings.height * 0.5 and math_abs(tile.position.x) < surface.map_gen_settings.width * 0.5 then
+            if Math.abs(tile.position.y) < surface.map_gen_settings.height * 0.5 and Math.abs(tile.position.x) < surface.map_gen_settings.width * 0.5 then
                 if not check_y_pos(tile.position) then
                     surface.set_tiles({ { name = 'nuclear-ground', position = tile.position } }, true)
                 end

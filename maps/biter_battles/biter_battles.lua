@@ -8,6 +8,7 @@ end
 local Server = require 'utils.server'
 local Score = require 'utils.gui.score'
 local Global = require 'utils.global'
+local math = require 'utils.math.math'
 require 'modules.splice_double'
 require 'modules.explosive_biters'
 require 'modules.spawners_contain_biters'
@@ -15,7 +16,6 @@ require 'modules.custom_death_messages'
 
 local BiterBattleTerrain = require 'maps.biter_battles.biter_battles_terrain'
 local Event = require 'utils.event'
-local math_random = math.random
 local insert = table.insert
 
 local traps = {}
@@ -892,8 +892,8 @@ end
 
 local function create_fireworks_rocket(surface, position)
     local particles = { 'coal-particle', 'copper-ore-particle', 'iron-ore-particle', 'stone-particle' }
-    local particle = particles[math_random(1, #particles)]
-    local m = math_random(16, 36)
+    local particle = particles[math.random(1, #particles)]
+    local m = math.random(16, 36)
     local m2 = m * 0.005
 
     for _ = 1, 80, 1 do
@@ -904,12 +904,12 @@ local function create_fireworks_rocket(surface, position)
                 frame_speed = 0.1,
                 vertical_speed = 0.1,
                 height = 0.1,
-                movement = { m2 - (math_random(0, m) * 0.01), m2 - (math_random(0, m) * 0.01) }
+                movement = { m2 - (math.random(0, m) * 0.01), m2 - (math.random(0, m) * 0.01) }
             }
         )
     end
 
-    if math_random(1, 16) ~= 1 then
+    if math.random(1, 16) ~= 1 then
         return
     end
     surface.create_entity({ name = 'explosion', position = position })
@@ -938,7 +938,7 @@ local function on_entity_died(event)
                     traps[game.tick + t][#traps[game.tick + t] + 1] =
                     {
                         callback = 'create_fireworks_rocket',
-                        params = { event.entity.surface, { x = radius - math_random(0, radius * 2), y = radius - math_random(0, radius * 2) } }
+                        params = { event.entity.surface, { x = radius - math.random(0, radius * 2), y = radius - math.random(0, radius * 2) } }
                     }
                 end
                 t = t + 1
@@ -1022,7 +1022,7 @@ local function biter_attack_silo(team, requested_amount, mode)
     if not mode then
         --local modes = {"spread", "ball", "line"}
         local modes = { 'spread', 'ball' }
-        mode = modes[math_random(1, #modes)]
+        mode = modes[math.random(1, #modes)]
     end
 
     if mode == 'spread' then
@@ -1047,7 +1047,7 @@ local function biter_attack_silo(team, requested_amount, mode)
             biters_selected_for_attack[x] = valid_biters[y]
         end
 
-        if math_random(1, 6) == 1 then
+        if math.random(1, 6) == 1 then
             for _, biter in pairs(biters_selected_for_attack) do
                 biter.set_command({ type = defines.command.attack_area, destination = storage.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_anything })
             end
@@ -1071,7 +1071,7 @@ local function biter_attack_silo(team, requested_amount, mode)
         local additional_checks = additional_empty_space_checks
         local gathering_point_x = 0
         local gathering_point_y = 0
-        local r = math_random(1, 3) --pick a random side
+        local r = math.random(1, 3) --pick a random side
         if r == 1 or r == 2 then
             --- determine base height
             for pos_y = 0, 8192 * y_modifier, 32 * y_modifier do
@@ -1093,15 +1093,15 @@ local function biter_attack_silo(team, requested_amount, mode)
 
             if height ~= 0 then
                 if y_modifier == -1 then
-                    gathering_point_y = math_random(height, -32)
+                    gathering_point_y = math.random(height, -32)
                 else
-                    gathering_point_y = math_random(32, height)
+                    gathering_point_y = math.random(32, height)
                 end
             else
                 if y_modifier == -1 then
-                    gathering_point_y = math_random(-128, -32)
+                    gathering_point_y = math.random(-128, -32)
                 else
-                    gathering_point_y = math_random(32, 128)
+                    gathering_point_y = math.random(32, 128)
                 end
             end
 
@@ -1183,9 +1183,9 @@ local function biter_attack_silo(team, requested_amount, mode)
             end
 
             if width_west ~= 0 and width_east ~= 0 then
-                gathering_point_x = math_random(width_west, width_east)
+                gathering_point_x = math.random(width_west, width_east)
             else
-                gathering_point_x = math_random(-64, 64)
+                gathering_point_x = math.random(-64, 64)
             end
             additional_empty_space_checks = 32
 
@@ -1232,7 +1232,7 @@ local function biter_attack_silo(team, requested_amount, mode)
                 name = { 'deepwater', 'water', 'water-green' }
             }
         if t > 8 then
-            if math_random(1, 6) ~= 1 then
+            if math.random(1, 6) ~= 1 then
                 for _, biter in pairs(biters_selected_for_attack) do
                     biter.set_command({ type = defines.command.attack_area, destination = storage.biter_attack_main_target[team], radius = 12, distraction = defines.distraction.by_enemy })
                 end
@@ -1261,7 +1261,7 @@ end
 
 local function clear_corpses()
     for _, entity in pairs(game.surfaces['surface'].find_entities_filtered { type = 'corpse' }) do
-        if math_random(1, 3) == 1 then
+        if math.random(1, 3) == 1 then
             entity.destroy()
         end
     end

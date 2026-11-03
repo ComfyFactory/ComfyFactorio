@@ -11,6 +11,7 @@ local BiterRaffle = require 'utils.functions.biter_raffle'
 local Functions = require 'maps.dungeons.functions'
 local Get_noise = require 'utils.math.get_noise'
 local DungeonsTable = require 'maps.dungeons.table'
+local math = require 'utils.math.math'
 
 local Biomes = {}
 Biomes.dirtlands = require 'maps.dungeons.biome_dirtlands'
@@ -25,10 +26,6 @@ Biomes.acid_zone = require 'maps.dungeons.biome_acid_zone'
 Biomes.rainbow = require 'maps.dungeons.biome_rainbow'
 
 local table_insert = table.insert
-local math_random = math.random
-local math_abs = math.abs
-local math_floor = math.floor
-local math_round = math.round
 
 local function get_biome(position)
     --if not a then return "concrete" end
@@ -95,7 +92,7 @@ local function draw_depth_gui()
             'dungeons.depth_tooltip',
             Functions.get_dungeon_evolution_factor(surface.index) * 100,
             storage.biter_health_boost * 100,
-            math_round(game.forces.enemy.get_ammo_damage_modifier('melee') * 100 + 100, 1)
+            math.round(game.forces.enemy.get_ammo_damage_modifier('melee') * 100 + 100, 1)
         }
 
         local style = element.style
@@ -143,7 +140,7 @@ local function expand(surface, position)
         storage.biter_health_boost = 1 + evo
     end
 
-    storage.biter_health_boost = math_round(storage.biter_health_boost, 2)
+    storage.biter_health_boost = math.round(storage.biter_health_boost, 2)
 
     draw_depth_gui()
 end
@@ -189,12 +186,12 @@ local function on_entity_spawned(event)
         bonus_unit.ai_settings.allow_try_return_to_spawner = true
         bonus_unit.ai_settings.allow_destroy_when_commands_fail = true
 
-        if math_random(1, 256) == 1 then
+        if math.random(1, 256) == 1 then
             BiterHealthBooster.add_boss_unit(bonus_unit, storage.biter_health_boost * 8, 0.25)
         end
     end
 
-    if math_random(1, 256) == 1 then
+    if math.random(1, 256) == 1 then
         BiterHealthBooster.add_boss_unit(unit, storage.biter_health_boost * 8, 0.25)
     end
 end
@@ -221,27 +218,27 @@ local function on_chunk_generated(event)
     local rock_positions = {}
     local set_tiles = surface.set_tiles
     local nauvis_seed = game.surfaces[1].map_gen_settings.seed
-    local s = math_floor(nauvis_seed * 0.1) + 100
+    local s = math.floor(nauvis_seed * 0.1) + 100
     for a = 1, 7, 1 do
         local b = a * s
         local c = 0.0035 + a * 0.0035
         local d = c * 0.5
         local seed = nauvis_seed + b
-        if math_abs(Get_noise('dungeon_sewer', { x = left_top.x + 16, y = left_top.y + 16 }, seed)) < 0.12 then
+        if math.abs(Get_noise('dungeon_sewer', { x = left_top.x + 16, y = left_top.y + 16 }, seed)) < 0.12 then
             for x = 0, 31, 1 do
                 for y = 0, 31, 1 do
                     local position = { x = left_top.x + x, y = left_top.y + y }
-                    local noise = math_abs(Get_noise('dungeon_sewer', position, seed))
+                    local noise = math.abs(Get_noise('dungeon_sewer', position, seed))
                     if noise < c then
                         local tile_name = surface.get_tile(position).name
                         if noise > d and tile_name ~= 'deepwater-green' then
                             set_tiles({ { name = 'water-green', position = position } }, true)
-                            if math_random(1, 320) == 1 and noise > c - 0.001 then
+                            if math.random(1, 320) == 1 and noise > c - 0.001 then
                                 table_insert(rock_positions, position)
                             end
                         else
                             set_tiles({ { name = 'deepwater-green', position = position } }, true)
-                            if math_random(1, 64) == 1 then
+                            if math.random(1, 64) == 1 then
                                 surface.create_entity({ name = 'fish', position = position })
                             end
                         end
@@ -309,7 +306,7 @@ local function on_entity_damaged(event)
     if event.cause.force.index ~= 2 then
         return
     end --Enemy Force
-    if math_random(1, 256) == 1 then
+    if math.random(1, 256) == 1 then
         return
     end
     if entity.name ~= 'big-rock' then

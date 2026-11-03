@@ -6,6 +6,7 @@ local Task = require 'utils.task_token'
 local Config = require 'utils.gui.config'
 local Fullness = require 'modules.check_fullness'
 local Color = require 'utils.color_presets'
+local Math = require 'utils.math.math'
 
 local stateful_settings =
 {
@@ -65,7 +66,6 @@ local this =
 
 
 local Public = {}
-local random = math.random
 local dataset = 'scenario_settings'
 local dataset_key = 'mtn_v3_table'
 local dataset_key_dev = 'mtn_v3_table_dev'
@@ -673,11 +673,11 @@ function Public.reset_main_table()
         explosive_bullets_cost = 10000,
         flamethrower_turrets_cost = 3000,
         land_mine_cost = 2,
-        tile_when_mining_cost = random(45000, 70000),
-        roboport_cost = random(750, 1500),
-        construction_bot_cost = random(150, 350),
-        chest_cost = random(400, 600),
-        rpg_reset_skills_cost = random(50000, 100000)
+        tile_when_mining_cost = Math.random(45000, 70000),
+        roboport_cost = Math.random(750, 1500),
+        construction_bot_cost = Math.random(150, 350),
+        chest_cost = Math.random(400, 600),
+        rpg_reset_skills_cost = Math.random(50000, 100000)
     }
     this.market_rpg_purchased = {}
     this.mystical_chest_price = nil
@@ -714,7 +714,7 @@ function Public.reset_main_table()
     this.sent_to_discord = false
     this.send_mvp_to_discord = false
     this.decoratives_generated = nil
-    this.random_seed = random(100000000, 1000000000)
+    this.random_seed = Math.random(100000000, 1000000000)
     this.difficulty =
     {
         multiply = 0.25,
@@ -777,7 +777,7 @@ function Public.reset_main_table()
     this.player_gui_settings = {}
     this.purchased_zones = {}
 
-    this.better_loot_from_zone = random(4, 6)
+    this.better_loot_from_zone = Math.random(4, 6)
 
     this.quality_list =
     {
@@ -907,6 +907,24 @@ function Public.is_task_done()
     return this.current_task and this.current_task.done or false
 end
 
+function Public.teleport_player(player, position, surface)
+    if not player or not player.valid or not position then
+        return false
+    end
+    if player.controller_type == defines.controllers.remote and player.physical_controller_type ~= defines.controllers.remote then
+        local body = player.physical_vehicle
+        if not body or not body.valid then
+            body = player.character
+        end
+        local teleported = body and body.valid and body.teleport(position, surface)
+        if teleported then
+            return true
+        end
+        player.exit_remote_view()
+    end
+    return player.teleport(position, surface)
+end
+
 function Public.set_show_messages(state)
     this.current_task.show_messages = state or false
 end
@@ -936,7 +954,7 @@ function Public.save_stateful_settings()
 end
 
 function Public.get_new_random_planet()
-    local random_planet = Public.all_planets[random(1, #Public.all_planets)]
+    local random_planet = Public.all_planets[Math.random(1, #Public.all_planets)]
     Server.output_script_data('Generating new random planet: ' .. random_planet)
     return random_planet
 end

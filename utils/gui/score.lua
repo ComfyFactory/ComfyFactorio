@@ -95,6 +95,7 @@ local function get_score_list(force)
                 score_list,
                 {
                     name = p.name,
+                    color = p.color,
                     killscore = score.killscore or 0,
                     deaths = score.deaths or 0,
                     built_entities = score.built_entities or 0,
@@ -102,6 +103,20 @@ local function get_score_list(force)
                     crafted_items = score.crafted_items or 0
                 }
             )
+        end
+    end
+    if _DEBUG then
+        local fake_players =
+        {
+            { name = 'Belt Enjoyer', color = { r = 0.2, g = 0.75, b = 0.3 }, killscore = 1280, deaths = 3, built_entities = 420, mined_entities = 8600, crafted_items = 1500 },
+            { name = 'Smelter', color = { r = 0.9, g = 0.45, b = 0.1 }, killscore = 90, deaths = 1, built_entities = 2100, mined_entities = 540, crafted_items = 9800 },
+            { name = 'Admin Faker', color = { r = 0.85, g = 0.15, b = 0.15 }, killscore = 9000, deaths = 11, built_entities = 640, mined_entities = 120, crafted_items = 300 },
+            { name = 'Trainman', color = { r = 0.3, g = 0.55, b = 0.95 }, killscore = 15, deaths = 0, built_entities = 80, mined_entities = 40, crafted_items = 25 },
+            { name = 'Oil King', color = { r = 0.15, g = 0.15, b = 0.15 }, killscore = 320, deaths = 6, built_entities = 1100, mined_entities = 24000, crafted_items = 760 },
+            { name = 'Very Long Faker Like So Long', color = { r = 0.7, g = 0.4, b = 0.9 }, killscore = 2, deaths = 8, built_entities = 12, mined_entities = 3, crafted_items = 1 }
+        }
+        for i = 1, #fake_players do
+            score_list[#score_list + 1] = fake_players[i]
         end
     end
     return score_list
@@ -143,33 +158,34 @@ local function get_total_biter_killcount(force)
 end
 
 local function add_global_stats(frame, player)
-    local t = frame.add { type = 'table', column_count = 5 }
+    local flow = frame.add { type = 'flow', direction = 'horizontal' }
+    flow.style.vertical_align = 'center'
+    flow.style.horizontal_spacing = 8
 
-    local l = t.add { type = 'label', caption = 'Rockets launched: ' }
+    local l = flow.add { type = 'label', caption = 'Rockets launched:' }
     l.style.font = 'heading-2'
     l.style.font_color = { r = 175, g = 75, b = 255 }
-    l.style.minimal_width = 140
 
-    local rocketsLaunched_label = t.add { type = 'label', caption = format_number(player.force.rockets_launched, true) }
-    rocketsLaunched_label.style.font = 'default-semibold'
-    rocketsLaunched_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
-    rocketsLaunched_label.style.minimal_width = 123
+    local rockets_label = flow.add { type = 'label', caption = format_number(player.force.rockets_launched, true) }
+    rockets_label.style.font = 'default-semibold'
+    rockets_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
+    rockets_label.style.minimal_width = 48
+    rockets_label.style.right_margin = 24
 
-    local bugs_dead_label = t.add { type = 'label', caption = 'Dead bugs: ' }
+    local bugs_dead_label = flow.add { type = 'label', caption = 'Dead bugs:' }
     bugs_dead_label.style.font = 'heading-2'
     bugs_dead_label.style.font_color = { r = 0.90, g = 0.3, b = 0.3 }
-    bugs_dead_label.style.minimal_width = 100
 
-    local killcount_label = t.add { type = 'label', caption = format_number(tonumber(get_total_biter_killcount(player.force)), true) }
+    local killcount_label = flow.add { type = 'label', caption = format_number(tonumber(get_total_biter_killcount(player.force)), true) }
     killcount_label.style.font = 'default-semibold'
     killcount_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
-    killcount_label.style.minimal_width = 145
 end
 
 local function show_score(data)
     local player = data.player
     local frame = data.frame
     frame.clear()
+    frame.style.padding = 8
 
     Public.init_player_table(player)
 
@@ -178,36 +194,49 @@ local function show_score(data)
 
     -- Separator
     local line = frame.add { type = 'line' }
-    line.style.top_margin = 8
-    line.style.bottom_margin = 8
-
-    -- Score per player
-    local t = frame.add { type = 'table', column_count = 6 }
+    line.style.top_margin = 2
+    line.style.bottom_margin = 2
 
     -- Score headers
     local headers =
     {
-        { name = 'score_player', caption = 'Player' },
-        { column = 'killscore', name = 'score_killscore', caption = 'Killscore' },
-        { column = 'deaths', name = 'score_deaths', caption = 'Deaths' },
-        { column = 'built_entities', name = 'score_built_entities', caption = 'Built structures' },
-        { column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities' },
-        { column = 'crafted_items', name = 'score_crafted_items', caption = 'Crafted Items' }
+        { name = 'score_player', caption = 'Player', width = 140, align = 'left' },
+        { column = 'killscore', name = 'score_killscore', caption = 'Killscore', width = 96, align = 'center' },
+        { column = 'deaths', name = 'score_deaths', caption = 'Deaths', width = 68, align = 'center' },
+        { column = 'built_entities', name = 'score_built_entities', caption = 'Built structures', width = 136, align = 'center' },
+        { column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities', width = 124, align = 'center' },
+        { column = 'crafted_items', name = 'score_crafted_items', caption = 'Crafted items', width = 116, align = 'center' }
     }
 
+    local content_width = 0
+    for i = 1, #headers do
+        content_width = content_width + headers[i].width
+    end
+
     local sorting_pref = this.sort_by[player.name]
+    if not sorting_pref then
+        sorting_pref = { method = 'descending', column = 'killscore' }
+        this.sort_by[player.name] = sorting_pref
+    end
+
+    local header_table = frame.add { type = 'table', column_count = #headers }
+    header_table.style.minimal_width = content_width
+    header_table.style.horizontal_spacing = 0
+    header_table.style.vertical_spacing = 0
+    header_table.style.top_cell_padding = 0
+    header_table.style.bottom_cell_padding = 0
     for _, header in ipairs(headers) do
         local cap = header.caption
 
         -- Add sorting symbol if any
         if header.column and sorting_pref.column == header.column then
             local symbol = sorting_symbol[sorting_pref.method]
-            cap = symbol .. cap
+            cap = '[color=yellow]' .. symbol .. '[/color] ' .. cap
         end
 
         -- Header
         local label =
-            t.add
+            header_table.add
             {
                 type = 'label',
                 caption = cap,
@@ -215,14 +244,23 @@ local function show_score(data)
             }
         label.style.font = 'heading-2'
         label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 } -- yellow
-        label.style.minimal_width = 125
-        label.style.horizontal_align = 'center'
+        label.style.minimal_width = header.width
+        label.style.maximal_width = header.width
+        label.style.horizontal_align = header.align
+        label.style.top_padding = 0
+        label.style.bottom_padding = 0
     end
+
+    local header_line = frame.add({ type = 'line', direction = 'horizontal' })
+    header_line.style.minimal_width = content_width
+    header_line.style.horizontally_stretchable = true
+    header_line.style.top_margin = 0
+    header_line.style.bottom_margin = 0
 
     -- Score list
     local score_list = get_score_list(player.force.name)
 
-    if #game.connected_players > 1 then
+    if #score_list > 1 then
         score_list = get_sorted_list(sorting_pref.method, sorting_pref.column, score_list)
     end
 
@@ -237,17 +275,25 @@ local function show_score(data)
                 vertical_scroll_policy = 'auto'
             }
         )
-    scroll_pane.style.maximal_height = 400
-    local column_table = scroll_pane.add { type = 'table', column_count = 6 }
+    scroll_pane.style.maximal_height = 280
+    scroll_pane.style.minimal_width = content_width
+    scroll_pane.style.padding = 0
+
+    local score_flow = scroll_pane.add { type = 'flow', direction = 'vertical' }
+    score_flow.style.minimal_width = content_width
+    score_flow.style.vertical_spacing = 0
+
+    local default_color = { r = 0.9, g = 0.9, b = 0.9 }
 
     -- Score entries
-    for _, entry in pairs(score_list) do
-        local p = game.players[entry.name or ''] or { color = { r = 0.6, g = 0.6, b = 0.6 } }
+    for i = 1, #score_list do
+        local entry = score_list[i]
+        local base = entry.color or { r = 0.6, g = 0.6, b = 0.6 }
         local special_color =
         {
-            r = p.color.r * 0.6 + 0.4,
-            g = p.color.g * 0.6 + 0.4,
-            b = p.color.b * 0.6 + 0.4,
+            r = base.r * 0.6 + 0.4,
+            g = base.g * 0.6 + 0.4,
+            b = base.b * 0.6 + 0.4,
             a = 1
         }
         local lines =
@@ -259,22 +305,29 @@ local function show_score(data)
             { caption = format_number(tonumber(entry.mined_entities), true) },
             { caption = format_number(tonumber(entry.crafted_items), true) }
         }
-        local default_color = { r = 0.9, g = 0.9, b = 0.9 }
 
-        for _, column in ipairs(lines) do
+        local row = score_flow.add { type = 'table', column_count = #headers }
+        row.style.horizontal_spacing = 0
+        row.style.vertical_spacing = 0
+        row.style.top_cell_padding = 0
+        row.style.bottom_cell_padding = 1
+        for column_index, column in ipairs(lines) do
+            local header = headers[column_index]
             local label =
-                column_table.add
+                row.add
                 {
                     type = 'label',
                     caption = column.caption,
                     color = column.color or default_color
                 }
             label.style.font = 'default-semibold'
-            label.style.minimal_width = 125
-            label.style.maximal_width = 125
-            label.style.horizontal_align = 'center'
-        end -- foreach column
-    end -- foreach entry
+            label.style.minimal_width = header.width
+            label.style.maximal_width = header.width
+            label.style.horizontal_align = header.align
+            label.style.top_padding = 0
+            label.style.bottom_padding = 0
+        end
+    end
 end
 
 local show_score_token = Token.register(show_score)

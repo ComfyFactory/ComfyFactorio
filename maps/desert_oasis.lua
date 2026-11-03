@@ -11,9 +11,7 @@ local Map_info = require 'modules.map_info'
 local FT = require 'utils.functions.flying_texts'
 
 local get_noise = require 'utils.math.get_noise'
-local math_random = math.random
-local math_floor = math.floor
-local math_abs = math.abs
+local math = require 'utils.math.math'
 
 local oasis_start = 0.50
 local water_start = 0.81
@@ -134,31 +132,31 @@ local function draw_oasis(surface, left_top, seed)
                         tiles[#tiles + 1] = { name = 'water-mud', position = position }
                     else
                         tiles[#tiles + 1] = { name = 'water-shallow', position = position }
-                        if math_random(1, 6) == 1 then
-                            decoratives[#decoratives + 1] = { name = 'green-bush-mini', position = position, amount = math_random(1, 6) }
+                        if math.random(1, 6) == 1 then
+                            decoratives[#decoratives + 1] = { name = 'green-bush-mini', position = position, amount = math.random(1, 6) }
                         end
                     end
 
-                    if math_random(1, 64) == 1 then
+                    if math.random(1, 64) == 1 then
                         entities[#entities + 1] = { name = 'fish', position = position }
                     end
                 else
-                    tiles[#tiles + 1] = { name = 'grass-' .. math_floor(noise * 32) % 3 + 1, position = position }
+                    tiles[#tiles + 1] = { name = 'grass-' .. math.floor(noise * 32) % 3 + 1, position = position }
 
                     for _, cliff in pairs(surface.find_entities_filtered({ type = 'cliff', position = position })) do
                         cliff.destroy()
                     end
 
-                    if math_random(1, 12) == 1 and surface.can_place_entity({ name = 'coal', position = position, amount = 1 }) then
-                        if math_abs(get_noise('n3', position, seed)) > 0.50 then
-                            entities[#entities + 1] = { name = trees[math_floor(get_noise('n2', position, seed) * 9) % 6 + 1], position = position }
+                    if math.random(1, 12) == 1 and surface.can_place_entity({ name = 'coal', position = position, amount = 1 }) then
+                        if math.abs(get_noise('n3', position, seed)) > 0.50 then
+                            entities[#entities + 1] = { name = trees[math.floor(get_noise('n2', position, seed) * 9) % 6 + 1], position = position }
                         end
                     end
                 end
             elseif noise < -0.9 then
                 decoratives[#decoratives + 1] = { name = 'sand-decal', position = position, amount = 1 }
             else
-                if math_random(1, 6) == 1 then
+                if math.random(1, 6) == 1 then
                     decoratives[#decoratives + 1] = { name = 'sand-dune-decal', position = position, amount = 1 }
                 end
             end
@@ -416,7 +414,7 @@ local function on_init()
     local seed
     local position = { x = 0, y = 0 }
     for _ = 1, 1024 ^ 2, 1 do
-        seed = math_random(1, 999999999)
+        seed = math.random(1, 999999999)
         noise = get_noise('oasis', position, seed)
         if noise > 0.76 then
             storage.desert_oasis_seed = seed
@@ -552,7 +550,7 @@ local function on_player_joined_game(event)
 end
 
 local function on_player_changed_position(event)
-    if math_random(1, 4) ~= 1 then
+    if math.random(1, 4) ~= 1 then
         return
     end
     local player = game.players[event.player_index]
@@ -582,7 +580,7 @@ local function on_player_changed_position(event)
         return
     end
     if moisture <= 40 then
-        if math_random(1, math.max(1, math.min(40, math.floor(moisture)))) == 1 then
+        if math.random(1, math.max(1, math.min(40, math.floor(moisture)))) == 1 then
             surface.create_entity({ name = 'fire-flame', position = player.physical_position })
         end
         local damage = (sand_damage - moisture)

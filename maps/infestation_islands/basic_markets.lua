@@ -1,5 +1,6 @@
 local Global = require 'utils.global'
 local Public = require 'maps.infestation_islands.table'
+local math = require 'utils.math.math'
 
 local this =
 {

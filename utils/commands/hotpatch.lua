@@ -2,6 +2,7 @@ local Commands = require 'utils.commands'
 local Server = require 'utils.server'
 local Task = require 'utils.task_token'
 local Global = require 'utils.global'
+local Math = require 'utils.math.math'
 
 local hotpatch = '[color=yellow]Hotpatch:[/color] '
 
@@ -38,7 +39,7 @@ local save_hot_patch_notify_token =
                 return
             end
 
-            local time_left = math.round((this.halt_after - game.tick) / 60, 0)
+            local time_left = Math.round((this.halt_after - game.tick) / 60, 0)
 
             if game.tick % 500 == 0 then
                 if time_left < 0 then
@@ -81,7 +82,7 @@ Commands.new('patch-save', 'Tries to hotpatch the current save from the panel if
             if not this.halt_after then
                 this.halt_after = game.tick + this.halt_after_timer
                 game.print(hotpatch .. 'Save hot-patching has been initiated by ' .. player.name .. '.')
-                game.print(hotpatch .. 'The server will be stopped, hotpatched and resumed in ' .. math.round(this.halt_after_timer / 60, 0) .. ' seconds.')
+                game.print(hotpatch .. 'The server will be stopped, hotpatched and resumed in ' .. Math.round(this.halt_after_timer / 60, 0) .. ' seconds.')
                 Task.set_duration_task(500, this.halt_after_timer, save_hot_patch_notify_token, {})
                 Task.set_timeout_in_ticks(this.halt_after_timer, save_hot_patch_token)
             else

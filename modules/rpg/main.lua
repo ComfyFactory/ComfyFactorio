@@ -10,6 +10,8 @@ local StatData = require 'utils.datastore.statistics'
 local WD = require 'modules.wave_defense.table'
 local Math2D = require 'math2d'
 local Color = require 'utils.color_presets'
+local Token = require 'utils.token'
+local Math = require 'utils.math.math'
 
 StatData.add_normalize('spells', 'Spells casted')
 
@@ -24,10 +26,25 @@ local main_frame_name = Public.main_frame_name
 local spell_gui_frame_name = Public.spell_gui_frame_name
 local cooldown_indicator_name = Public.cooldown_indicator_name
 
-local round = math.round
-local floor = math.floor
-local random = math.random
-local sqrt = math.sqrt
+local spell_cast_validators = {}
+
+function Public.register_spell_cast_validator(validator)
+    assert(type(validator) == 'number' and type(Token.get(validator)) == 'function', 'Expected a spell validator token')
+    spell_cast_validators[#spell_cast_validators + 1] = validator
+end
+
+function Public.validate_spell_cast(player)
+    for _, validator in ipairs(spell_cast_validators) do
+        local allowed, message = Token.get(validator)(player)
+        if allowed == false then
+            if message and not SpamProtection.is_spamming(player, nil, 'RPG spell cast blocked') then
+                Public.display_notification(player, message, Color.warning)
+            end
+            return false
+        end
+    end
+    return true
+end
 
 local function on_gui_click(event)
     if not event then
@@ -300,7 +317,7 @@ local function on_entity_died(event)
             if health_pool then
                 for _, player in pairs(players) do
                     if entity.unit_number then
-                        local mana_to_reward = random(1, 5)
+                        local mana_to_reward = Math.random(1, 5)
                         if mana_to_reward > 1 then
                             Public.reward_mana(player, mana_to_reward)
                         end
@@ -328,7 +345,7 @@ local function on_entity_died(event)
     --Grant normal XP
     for _, player in pairs(players) do
         if entity.unit_number then
-            local mana_to_reward = random(1, 5)
+            local mana_to_reward = Math.random(1, 5)
             if mana_to_reward > 1 then
                 Public.reward_mana(player, mana_to_reward)
             end
@@ -356,7 +373,7 @@ local function regen_health_player(players)
         end
 
         if not heal_per_tick then goto continue end
-        heal_per_tick = round(heal_per_tick)
+        heal_per_tick = Math.round(heal_per_tick)
         if player and player.valid and not player.in_combat then
             if player.character and player.character.valid then
                 player.character.health = player.character.health + heal_per_tick
@@ -396,7 +413,7 @@ local function regen_mana_player(players)
                     if rpg_t.mana >= rpg_t.mana_max then
                         rpg_t.mana = rpg_t.mana_max
                     end
-                    rpg_t.mana = (round(rpg_t.mana * 10) / 10)
+                    rpg_t.mana = (Math.round(rpg_t.mana * 10) / 10)
                 end
             end
         end
@@ -503,23 +520,23 @@ local function on_entity_damaged(event)
     local rpg_t = Public.get_value_from_player(cause.player.index)
 
     --Floating messages and particle effects.
-    if random(1, 7) == 1 then
-        damage = damage * random(250, 350) * 0.01
+    if Math.random(1, 7) == 1 then
+        damage = damage * Math.random(250, 350) * 0.01
         cause.surface.create_entity(
             {
                 name = 'compi-speech-bubble',
                 position = entity.position,
-                text = '‼' .. floor(damage),
+                text = '‼' .. Math.floor(damage),
                 source = entity,
                 lifetime = 30
             }
         )
         cause.surface.create_entity({ name = 'blood-explosion-huge', position = entity.position })
     else
-        damage = damage * random(100, 125) * 0.01
+        damage = damage * Math.random(100, 125) * 0.01
         cause.player.create_local_flying_text(
             {
-                text = floor(damage),
+                text = Math.floor(damage),
                 position = entity.position,
                 color = { 150, 150, 150 },
                 time_to_live = 90,
@@ -537,7 +554,7 @@ local function on_entity_damaged(event)
     if enable_aoe_punch then
         if rpg_t.aoe_punch then
             local chance = Public.get_aoe_punch_chance(cause.player) * 10
-            local chance_to_hit = random(0, 999)
+            local chance_to_hit = Math.random(0, 999)
             local success = chance_to_hit < chance
             Public.log_aoe_punch(
                 function ()
@@ -560,7 +577,7 @@ local function on_entity_damaged(event)
 end
 
 local function on_player_repaired_entity(event)
-    if random(1, 4) ~= 1 then
+    if Math.random(1, 4) ~= 1 then
         return
     end
 
@@ -635,7 +652,7 @@ local function on_player_changed_position(event)
         return
     end
 
-    if random(1, 64) ~= 1 then
+    if Math.random(1, 64) ~= 1 then
         return
     end
     if not player.character then
@@ -705,7 +722,7 @@ local function on_player_mined_entity(event)
     rpg_t.last_mined_entity_position.x = entity.position.x
     rpg_t.last_mined_entity_position.y = entity.position.y
 
-    local distance_multiplier = floor(sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
+    local distance_multiplier = Math.floor(Math.sqrt(entity.position.x ^ 2 + entity.position.y ^ 2)) * 0.0005 + 1
 
     local xp_modifier_when_mining = Public.get('rpg_extra').xp_modifier_when_mining
 
@@ -720,7 +737,7 @@ local function on_player_mined_entity(event)
         local f = player.gui.screen[main_frame_name]
         local data = Gui.get_data(f)
         if data.exp_gui and data.exp_gui.valid then
-            data.exp_gui.caption = floor(rpg_t.xp)
+            data.exp_gui.caption = Math.floor(rpg_t.xp)
         end
     end
 
@@ -756,7 +773,7 @@ local function on_player_crafted_item(event)
 
     local item = event.item_stack
 
-    local amount = 0.40 * random(1, 2)
+    local amount = 0.40 * Math.random(1, 2)
     local recipe = event.recipe
 
     if tweaked_crafting_items_enabled then
@@ -781,17 +798,17 @@ local function on_player_crafted_item(event)
         local boost_chance = curved * 0.60 -- 60%
         local dupe_chance = curved * 0.25 -- 25%
 
-        if random() < boost_chance then
+        if Math.random() < boost_chance then
             Public.set_crafting_boost(player, dex)
 
-            if random() < dupe_chance then
+            if Math.random() < dupe_chance then
                 local rpg_t = Public.get_value_from_player(player.index)
                 if not rpg_t then return end
 
                 local quality = "normal"
 
                 if script.active_mods["space-age"] and rpg_t.quality_crafting_chance then
-                    local qr = random(1, 100)
+                    local qr = Math.random(1, 100)
 
                     if qr <= 2 then
                         quality = "legendary"
@@ -893,9 +910,9 @@ local function on_player_joined_game(event)
 end
 
 local function get_near_coord_modifier(range)
-    local coord = { x = (range * -1) + random(0, range * 2), y = (range * -1) + random(0, range * 2) }
+    local coord = { x = (range * -1) + Math.random(0, range * 2), y = (range * -1) + Math.random(0, range * 2) }
     for _ = 1, 5, 1 do
-        local new_coord = { x = (range * -1) + random(0, range * 2), y = (range * -1) + random(0, range * 2) }
+        local new_coord = { x = (range * -1) + Math.random(0, range * 2), y = (range * -1) + Math.random(0, range * 2) }
         if new_coord.x ^ 2 + new_coord.y ^ 2 < coord.x ^ 2 + coord.y ^ 2 then
             coord = new_coord
         end
@@ -927,7 +944,7 @@ local function damage_entity(e)
         return
     end
 
-    e.health = e.health - random(30, 90)
+    e.health = e.health - Math.random(30, 90)
     if e.health <= 0 then
         e.die('enemy')
     end
@@ -939,8 +956,8 @@ local function floaty_hearts(entity, c)
     for _ = 1, c, 1 do
         local p =
         {
-            (position.x + 0.4) + (b * -1 + random(0, b * 20) * 0.1),
-            position.y + (b * -1 + random(0, b * 20) * 0.1)
+            (position.x + 0.4) + (b * -1 + Math.random(0, b * 20) * 0.1),
+            position.y + (b * -1 + Math.random(0, b * 20) * 0.1)
         }
         entity.surface.create_entity({ name = 'compi-speech-bubble', position = p, text = '♥', source = entity, lifetime = 30 })
     end
@@ -970,6 +987,43 @@ local function tame_unit_effects(player, entity)
         alignment = 'center',
         scale_with_zoom = false
     }
+
+    if entity.type == 'unit' then
+        entity.ai_settings.allow_destroy_when_commands_fail = false
+    end
+
+    local pets = Public.get('pets')
+    if not pets then
+        pets = {}
+        Public.set('pets', pets)
+    end
+
+    local count = 0
+    local oldest_index = nil
+    local oldest_tick = nil
+    local n = #pets
+    for i = 1, n do
+        local pet = pets[i]
+        if pet.player_index == player.index and pet.entity.valid then
+            count = count + 1
+            local pet_tick = pet.tick or 0
+            if not oldest_tick or pet_tick < oldest_tick then
+                oldest_tick = pet_tick
+                oldest_index = i
+            end
+        end
+    end
+
+    if count >= 10 and oldest_index then
+        local old = pets[oldest_index]
+        if old.entity.valid then
+            old.entity.destroy()
+        end
+        pets[oldest_index] = pets[n]
+        pets[n] = nil
+    end
+
+    pets[#pets + 1] = { entity = entity, player_index = player.index, tick = game.tick }
 end
 
 local function on_player_used_capsule_custom(event)
@@ -983,10 +1037,6 @@ local function on_player_used_capsule_custom(event)
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player, nil, 'RPG - on_player_used_capsule_custom')
-    if is_spamming then
-        return
-    end
     local projectile_types = Public.get_projectiles
 
     if not player.character or not player.character.valid then
@@ -1007,6 +1057,15 @@ local function on_player_used_capsule_custom(event)
 
     local rpg_t = Public.get_value_from_player(player.index)
     if not rpg_t then
+        return
+    end
+
+    if not Public.validate_spell_cast(player) then
+        return
+    end
+
+    local is_spamming = SpamProtection.is_spamming(player, nil, 'RPG - on_player_used_capsule_custom')
+    if is_spamming then
         return
     end
 
@@ -1201,6 +1260,10 @@ local function on_player_used_capsule(event)
         return
     end
 
+    if not Public.validate_spell_cast(player) then
+        return
+    end
+
     local mana = rpg_t.mana
     local surface = player.surface
 
@@ -1365,6 +1428,40 @@ local function tick()
             regen_mana_player(players)
         end
         Public.update_cooldown(players)
+
+        local pets = Public.get('pets')
+        if pets then
+            local n = #pets
+            local kept = 0
+            for i = 1, n do
+                local pet = pets[i]
+                local entity = pet.entity
+                local player = entity.valid and game.get_player(pet.player_index)
+                if entity.valid and player and player.valid then
+                    kept = kept + 1
+                    pets[kept] = pet
+                    local character = player.character
+                    if entity.type == 'unit' and character and character.valid and character.surface == entity.surface then
+                        local dx = character.position.x - entity.position.x
+                        local dy = character.position.y - entity.position.y
+                        local dist = dx * dx + dy * dy
+                        local commandable = entity.commandable
+                        if commandable and commandable.valid and (dist > 6400 or (not commandable.command and dist > 4)) then
+                            commandable.set_command({
+                                type = defines.command.go_to_location,
+                                destination_entity = character,
+                                radius = 2,
+                                distraction = defines.distraction.by_enemy,
+                                pathfind_flags = { cache = false, low_priority = true }
+                            })
+                        end
+                    end
+                end
+            end
+            for i = kept + 1, n do
+                pets[i] = nil
+            end
+        end
     end
 end
 

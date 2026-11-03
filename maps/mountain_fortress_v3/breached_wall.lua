@@ -10,10 +10,8 @@ local Color = require 'utils.color_presets'
 local Session = require 'utils.datastore.session_data'
 local Modifiers = require 'utils.player_modifiers'
 local RocksYieldOreVeins = require 'maps.mountain_fortress_v3.rocks_yield_ore_veins'
+local Math = require 'utils.math.math'
 
-local floor = math.floor
-local abs = math.abs
-local random = math.random
 local sub = string.sub
 local zone_settings = Public.zone_settings
 
@@ -179,10 +177,10 @@ local breach_wall_warning_teleport = function (player, check_trusted)
     end
     local pos = player.physical_surface.find_non_colliding_position('character', player.force.get_spawn_position(player.physical_surface), 3, 0)
     if pos then
-        player.teleport(pos, player.physical_surface)
+        Public.teleport_player(player, pos, player.physical_surface)
     else
         pos = game.forces.player.get_spawn_position(player.physical_surface)
-        player.teleport(pos, player.physical_surface)
+        Public.teleport_player(player, pos, player.physical_surface)
     end
     return true
 end
@@ -209,9 +207,9 @@ local breach_wall_enforced = function (player)
     local message = ({ 'breached_wall.warning_teleport_enforced', player.name })
     Alert.alert_all_players(40, message, nil, nil, nil, 'global')
     if adjusted_zones.reversed then
-        player.teleport(Orient.offset(position, 0, -10), surface)
+        Public.teleport_player(player, Orient.offset(position, 0, -10), surface)
     else
-        player.teleport(Orient.offset(position, 0, 10), surface)
+        Public.teleport_player(player, Orient.offset(position, 0, 10), surface)
     end
     Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'breached_wall', -0.85)
     Task.set_duration_task(15, 200, damage_indicator_token, { player_index = player.index })
@@ -238,6 +236,30 @@ local spidertron_too_far =
         end
     )
 
+local function update_locomotive_barrier()
+    local current_task = Public.get('current_task')
+    if not current_task.done or Public.get('final_battle') or Public.get('game_lost') then
+        return
+    end
+
+    local locomotive = Public.get('locomotive')
+    if not (locomotive and locomotive.valid) then
+        return
+    end
+
+    local gap = Public.get('gap_between_locomotive')
+    local boundary = Math.max(300, Math.abs(Orient.progression(locomotive.position)) + gap.neg_gap)
+    local half_width = Orient.zone_width() / 2
+    local surface = locomotive.surface
+    for _, sign in ipairs({ -1, 1 }) do
+        local source = Orient.world(-half_width, boundary * sign)
+        local target = Orient.world(half_width, boundary * sign)
+        for _ = 1, 3 do
+            surface.create_entity({ name = 'electric-beam', position = source, source = source, target = target, duration = 30 })
+        end
+    end
+end
+
 local check_distance_between_player_and_locomotive = function (player)
     local surface = player.physical_surface
     local position = player.physical_position
@@ -252,20 +274,20 @@ local check_distance_between_player_and_locomotive = function (player)
     gap_between_locomotive.highest_pos = locomotive.position
     gap_between_locomotive = Public.get('gap_between_locomotive')
 
-    local p_y = abs(Orient.progression(position))
+    local p_y = Math.abs(Orient.progression(position))
     if p_y < 300 then
         return
     end
-    local t_y = abs(Orient.progression(gap_between_locomotive.highest_pos))
+    local t_y = Math.abs(Orient.progression(gap_between_locomotive.highest_pos))
 
     local locomotive_distance_too_far = p_y - t_y > gap_between_locomotive.neg_gap
 
     if locomotive_distance_too_far then
         local dest_prog = t_y + gap_between_locomotive.neg_gap - 4
         if adjusted_zones.reversed then
-            player.teleport(Orient.world(Orient.lateral(position), dest_prog), surface)
+            Public.teleport_player(player, Orient.world(Orient.lateral(position), dest_prog), surface)
         else
-            player.teleport(Orient.world(Orient.lateral(position), dest_prog * -1), surface)
+            Public.teleport_player(player, Orient.world(Orient.lateral(position), dest_prog * -1), surface)
         end
 
         player.print(({ 'breached_wall.hinder' }), { color = Color.warning })
@@ -288,7 +310,7 @@ local check_tiles = function (player)
     if tile and tile.name == 'red-refined-concrete' then
         local rpg_t = RPG.get_value_from_player(player.index)
         if rpg_t and rpg_t.volcanic_zone then
-            if random(1, 32) == 1 then
+            if Math.random(1, 32) == 1 then
                 Public.buried_enemies.buried_biter(player.physical_surface, p)
             end
         end
@@ -296,7 +318,7 @@ local check_tiles = function (player)
     if tile and tile.name == 'hazard-concrete-right' then
         local rpg_t = RPG.get_value_from_player(player.index)
         if rpg_t and rpg_t.tech_zone then
-            if random(1, 32) == 1 then
+            if Math.random(1, 32) == 1 then
                 Public.buried_enemies.buried_tech(player.physical_surface, p)
             end
         end
@@ -311,7 +333,7 @@ local compare_player_pos = function (player)
         return
     end
 
-    local zone = floor((abs(Orient.progression(p) / zone_settings.zone_depth)) % adjusted_zones.size) + 1
+    local zone = Math.floor((Math.abs(Orient.progression(p) / zone_settings.zone_depth)) % adjusted_zones.size) + 1
     local rpg_t = RPG.get_value_from_player(index)
 
     local max_zone = RPG.get_value_from_player(index, 'max_zone')
@@ -407,8 +429,8 @@ local compare_player_and_train = function (player, entity)
     gap_between_zones.highest_pos = locomotive.position
     gap_between_zones = Public.get('gap_between_zones')
 
-    local c_y = abs(Orient.progression(position))
-    local t_y = abs(Orient.progression(gap_between_zones.highest_pos))
+    local c_y = Math.abs(Orient.progression(position))
+    local t_y = Math.abs(Orient.progression(gap_between_zones.highest_pos))
 
     local spidertron_warning_position = gap_between_zones.neg_gap + 50
     local locomotive_distance_too_far = c_y - t_y > spidertron_warning_position
@@ -470,7 +492,7 @@ local function distance(player)
 
     check_tiles(player)
 
-    local distance_to_center = floor(abs(Orient.progression(p)))
+    local distance_to_center = Math.floor(Math.abs(Orient.progression(p)))
     local adjusted_zones = Public.get('adjusted_zones')
     if adjusted_zones.reversed then
         if distance_to_center < zone_settings.zone_depth * bonus + 32 then
@@ -537,10 +559,10 @@ local function distance(player)
                     local spider_tooltip = 'BiterStunner 9000'
                     local rng
                     if bw then
-                        rng = random(30000, 80000)
+                        rng = Math.random(30000, 80000)
                         spider_tooltip = spider_tooltip .. ' (Exclusive sale!)'
                     else
-                        rng = random(70000, 120000)
+                        rng = Math.random(70000, 120000)
                     end
                     main_market_items['spidertron'] =
                     {
@@ -659,6 +681,7 @@ local function on_player_driving_changed_state(event)
     Task.set_timeout_in_ticks(15, driving_state_changed_token, { player_index = player.index, entity = entity })
 end
 
+Event.on_nth_tick(30, update_locomotive_barrier)
 Event.add(defines.events.on_player_changed_position, on_player_changed_position)
 Event.add(defines.events.on_player_driving_changed_state, on_player_driving_changed_state)
 

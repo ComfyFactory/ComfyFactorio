@@ -8,6 +8,7 @@ local WPT = require 'maps.mountain_fortress_v3.table'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
+local Math = require 'utils.math.math'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
@@ -485,7 +486,7 @@ local function kick_players_from_surface(car)
                 if validate_entity(e) and e.name == 'character' and e.player then
                     local p = main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0)
                     if p then
-                        e.player.teleport(p, main_surface)
+                        WPT.teleport_player(e.player, p, main_surface)
                     end
                 end
             end
@@ -497,9 +498,9 @@ local function kick_players_from_surface(car)
         if validate_entity(e) and e.name == 'character' and e.player then
             local p = car.entity.surface.find_non_colliding_position('character', car.entity.position, 128, 0.5)
             if p then
-                e.player.teleport(p, car.entity.surface)
+                WPT.teleport_player(e.player, p, car.entity.surface)
             else
-                e.player.teleport(car.entity.position, car.entity.surface)
+                WPT.teleport_player(e.player, car.entity.position, car.entity.surface)
             end
         end
     end
@@ -523,9 +524,9 @@ local function kick_non_trusted_players_from_surface(car)
                 if position then
                     local new_position = main_surface.find_non_colliding_position('character', position, 3, 0)
                     if new_position then
-                        player.teleport(new_position, main_surface)
+                        WPT.teleport_player(player, new_position, main_surface)
                     else
-                        player.teleport(game.forces.player.get_spawn_position(main_surface), main_surface)
+                        WPT.teleport_player(player, game.forces.player.get_spawn_position(main_surface), main_surface)
                     end
                     player.print('[IC] You were kicked out of ' .. owner .. "'s " .. car.entity.name .. ' because you were not in the trusted list.', { color = Color.warning })
                 end
@@ -555,9 +556,9 @@ local function kick_player_from_surface(player, target)
             if locate then
                 local p = car.entity.surface.find_non_colliding_position('character', car.entity.position, 128, 0.5)
                 if p then
-                    target.teleport(p, car.entity.surface)
+                    WPT.teleport_player(target, p, car.entity.surface)
                 else
-                    target.teleport(main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0), main_surface)
+                    WPT.teleport_player(target, main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0), main_surface)
                 end
                 target.print('You were kicked out of ' .. player.name .. ' vehicle.', { color = Color.warning })
             end
@@ -1037,9 +1038,9 @@ function Public.kill_car(entity)
 
     local gps_tag = string.format('[gps=%.1f,%.1f,%s]', entity_position.x, entity_position.y, entity_surface.name)
 
-    game.print(module_tag .. owner.name .. messages[math.random(1, #messages)] .. ' ' .. gps_tag)
+    game.print(module_tag .. owner.name .. messages[Math.random(1, #messages)] .. ' ' .. gps_tag)
 
-    Server.to_discord_bold(table.concat { '*** ', '[Personal Vehicle] ***', owner.name .. messages[math.random(1, #messages)] .. ' ', gps_tag })
+    Server.to_discord_bold(table.concat { '*** ', '[Personal Vehicle] ***', owner.name .. messages[Math.random(1, #messages)] .. ' ', gps_tag })
 
     local player_gui_data = IC.get('player_gui_data')
     if player_gui_data[owner.name] then
@@ -1575,9 +1576,9 @@ function Public.use_door_with_entity(player, door)
         end
         local p = surface.find_non_colliding_position('character', position, 128, 0.5)
         if p then
-            player.teleport(p, surface)
+            WPT.teleport_player(player, p, surface)
         else
-            player.teleport(position, surface)
+            WPT.teleport_player(player, position, surface)
         end
         player_data.surface = surface.index
     else
@@ -1592,15 +1593,15 @@ function Public.use_door_with_entity(player, door)
             car.entity.minable_flag = true
         end
         local surface = car.entity.surface
-        local x_vector = (door.position.x / math.abs(door.position.x)) * 2
+        local x_vector = (door.position.x / Math.abs(door.position.x)) * 2
         local position = { car.entity.position.x + x_vector, car.entity.position.y }
         local surface_position = surface.find_non_colliding_position('character', position, 128, 0.5)
         if car.entity.type == 'car' or car.entity.name == 'spidertron' then
-            player.teleport(surface_position, surface)
+            WPT.teleport_player(player, surface_position, surface)
             player_data.state = 2
             player.driving = true
         else
-            player.teleport(surface_position, surface)
+            WPT.teleport_player(player, surface_position, surface)
         end
         player_data.surface = surface.index
     end

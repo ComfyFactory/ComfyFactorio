@@ -470,11 +470,12 @@ end
 ---@param message string|table
 ---@param category string|nil category of the alert
 ---@param filter string|nil filter of the alert
-function Public.alert_force(force, duration, message, category, filter)
+---@param sound string|nil sound to play, nil to not play anything
+function Public.alert_force(force, duration, message, category, filter, sound)
     local players = force.connected_players
     for i = 1, #players do
         local player = players[i]
-        Public.alert_player(player, duration, message, nil, nil, nil, category, filter)
+        Public.alert_player(player, duration, message, nil, nil, sound, category, filter)
     end
 end
 

@@ -1,8 +1,6 @@
 local Public = require 'maps.mountain_fortress_v3.table'
 local Functions = require 'maps.mountain_fortress_v3.functions'
-
-local random = math.random
-local abs = math.abs
+local Math = require 'utils.math.math'
 
 local types =
 {
@@ -756,47 +754,47 @@ if testing then
 end
 
 function Public.spawn_random_buildings(entities, p)
-    local randomizer = random(1, #buildings)
-    local low = random(1, 2)
-    local medium = random(2, 3)
+    local randomizer = Math.random(1, #buildings)
+    local low = Math.random(1, 2)
+    local medium = Math.random(2, 3)
     local high = 3
 
     local zone_depth = zone_settings.zone_depth
 
-    if abs(p.y) < zone_depth * 1.5 then
-        if random(1, 16) == 1 then
+    if Math.abs(p.y) < zone_depth * 1.5 then
+        if Math.random(1, 16) == 1 then
             return buildings[randomizer](entities, p, medium)
         else
             return buildings[randomizer](entities, p, low)
         end
-    elseif abs(p.y) < zone_depth * 2.5 then
-        if random(1, 8) == 1 then
+    elseif Math.abs(p.y) < zone_depth * 2.5 then
+        if Math.random(1, 8) == 1 then
             return buildings[randomizer](entities, p, medium)
         else
             return buildings[randomizer](entities, p, medium)
         end
-    elseif abs(p.y) < zone_depth * 3.5 then
-        if random(1, 4) == 1 then
+    elseif Math.abs(p.y) < zone_depth * 3.5 then
+        if Math.random(1, 4) == 1 then
             return buildings[randomizer](entities, p, high)
         else
             return buildings[randomizer](entities, p, medium)
         end
-    elseif abs(p.y) < zone_depth * 4.5 then
-        if random(1, 4) == 1 then
+    elseif Math.abs(p.y) < zone_depth * 4.5 then
+        if Math.random(1, 4) == 1 then
             return buildings[randomizer](entities, p, high)
         else
             return buildings[randomizer](entities, p, high)
         end
-    elseif abs(p.y) < zone_depth * 5.5 then
-        if random(1, 4) == 1 then
+    elseif Math.abs(p.y) < zone_depth * 5.5 then
+        if Math.random(1, 4) == 1 then
             return buildings[randomizer](entities, p, high)
-        elseif random(1, 2) == 1 then
+        elseif Math.random(1, 2) == 1 then
             return buildings[randomizer](entities, p, high)
-        elseif random(1, 8) == 1 then
+        elseif Math.random(1, 8) == 1 then
             return buildings[randomizer](entities, p, high)
         end
-    elseif abs(p.y) > zone_depth * 5.5 then
-        if random(1, 32) == 1 then
+    elseif Math.abs(p.y) > zone_depth * 5.5 then
+        if Math.random(1, 32) == 1 then
             return buildings[randomizer](entities, p, high)
         end
     end

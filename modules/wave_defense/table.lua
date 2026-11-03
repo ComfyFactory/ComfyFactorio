@@ -114,6 +114,7 @@ function Public.reset_wave_defense()
     }
     this.enable_random_spawn_positions = false
     this.enable_side_target = false
+    this.enable_group_tactics = true
     this.enable_threat_log = true
     this.disable_threat_below_zero = false
     this.check_collapse_position = true
@@ -140,6 +141,9 @@ function Public.reset_wave_defense()
     {
         active_biters = {},
         unit_groups = {},
+        pending_spawns = {},
+        group_tactics = {},
+        tactics_cursor = 0,
         unit_group_last_command = {},
         unit_group_pos =
         {

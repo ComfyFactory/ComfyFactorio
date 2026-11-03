@@ -4,8 +4,7 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Core = require 'utils.core'
-
-local round = math.round
+local Math = require 'utils.math.math'
 
 local this =
 {
@@ -78,7 +77,7 @@ function Public.update_player_modifiers(player)
             if disabled_modifiers and disabled_modifiers[k] then
                 player[modifier] = 0
             else
-                player[modifier] = round(sum_value, 4)
+                player[modifier] = Math.round(sum_value, 4)
             end
         end
     end
@@ -97,7 +96,7 @@ function Public.update_single_modifier(player, modifier, category, value)
             if category then
                 if value then
                     if modifiers[key] == 'character_inventory_slots_bonus' and not this.creative_enabled then
-                        current_modifier[category] = math.min(value, this.rpg_inventory_slot_limit)
+                        current_modifier[category] = Math.min(value, this.rpg_inventory_slot_limit)
                     else
                         current_modifier[category] = value
                     end
