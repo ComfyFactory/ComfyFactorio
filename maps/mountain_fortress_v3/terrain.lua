@@ -5805,7 +5805,7 @@ local function border_chunk(p, data)
     local pos = p
     local world_pos = Orient.to_world(pos)
 
-    local past_wall = false
+    local past_wall
     if data.reversed then
         past_wall = pos.y <= Orient.spawn_len(-74) - 1
     else
@@ -5976,33 +5976,33 @@ local function out_of_map(p, data)
     tiles[#tiles + 1] = { name = out_of_map_tile, position = p }
 end
 
-local function get_decoratives()
-    local decoratives_generated = Public.get('decoratives_generated')
-    if decoratives_generated then
-        return decoratives_generated
-    end
+-- local function get_decoratives()
+--     local decoratives_generated = Public.get('decoratives_generated')
+--     if decoratives_generated then
+--         return decoratives_generated
+--     end
 
-    local game_decoratives = prototypes.decorative
-    local dec_tbl = {}
-    local names = {}
+--     local game_decoratives = prototypes.decorative
+--     local dec_tbl = {}
+--     local names = {}
 
-    for _, decorative in pairs(game_decoratives) do
-        names[#names + 1] = decorative.name
-    end
+--     for _, decorative in pairs(game_decoratives) do
+--         names[#names + 1] = decorative.name
+--     end
 
-    local taken = {}
-    while #dec_tbl < 3 and #names > 0 do
-        local idx = Math.random(#names)
-        local name = names[idx]
-        if not taken[name] then
-            table.insert(dec_tbl, name)
-            taken[name] = true
-        end
-    end
+--     local taken = {}
+--     while #dec_tbl < 3 and #names > 0 do
+--         local idx = Math.random(#names)
+--         local name = names[idx]
+--         if not taken[name] then
+--             table.insert(dec_tbl, name)
+--             taken[name] = true
+--         end
+--     end
 
-    Public.set('decoratives_generated', dec_tbl)
-    return dec_tbl
-end
+--     Public.set('decoratives_generated', dec_tbl)
+--     return dec_tbl
+-- end
 
 function Public.heavy_functions(data)
     local top_y = Orient.chunk_progression(data.top_x, data.top_y)
@@ -6025,8 +6025,6 @@ function Public.heavy_functions(data)
     data.y = data.position.y
 
     local p = data.position
-
-    local dec_tbl = get_decoratives()
 
     local pre_final_battle = Public.get('pre_final_battle')
     if pre_final_battle then

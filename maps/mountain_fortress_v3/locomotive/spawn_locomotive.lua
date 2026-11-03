@@ -2,23 +2,23 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
 local ICW = require 'maps.mountain_fortress_v3.icw.main'
 local Task = require 'utils.task_token'
-local MapFunctions = require 'utils.tools.map_functions'
+-- local MapFunctions = require 'utils.tools.map_functions'
 local Event = require 'utils.event'
 local Server = require 'utils.server'
 local Math = require 'utils.math.math'
 
-local random_tiles =
-{
-    'black-refined-concrete',
-    'refined-concrete',
-    'refined-hazard-concrete-left',
-    'refined-hazard-concrete-right',
-    'brown-refined-concrete',
-    'blue-refined-concrete',
-    'red-refined-concrete',
-    'yellow-refined-concrete',
-    'concrete',
-}
+-- local random_tiles =
+-- {
+--     'black-refined-concrete',
+--     'refined-concrete',
+--     'refined-hazard-concrete-left',
+--     'refined-hazard-concrete-right',
+--     'brown-refined-concrete',
+--     'blue-refined-concrete',
+--     'red-refined-concrete',
+--     'yellow-refined-concrete',
+--     'concrete',
+-- }
 
 local function initial_cargo_boxes()
     return
@@ -83,21 +83,21 @@ local function initial_cargo_boxes()
     }
 end
 
-local place_tiles_token =
-    Task.register(
-        function (event)
-            local surface = event.surface
-            if not surface or not surface.valid then
-                return
-            end
-            local position = event.position
-            if not position then
-                return
-            end
+-- local place_tiles_token =
+--     Task.register(
+--         function (event)
+--             local surface = event.surface
+--             if not surface or not surface.valid then
+--                 return
+--             end
+--             local position = event.position
+--             if not position then
+--                 return
+--             end
 
-            MapFunctions.draw_noise_tile_circle(position, random_tiles[Math.random(1, #random_tiles)], surface, 22)
-        end
-    )
+--             MapFunctions.draw_noise_tile_circle(position, random_tiles[Math.random(1, #random_tiles)], surface, 22)
+--         end
+--     )
 
 local set_loco_cargo =
     Task.register(
