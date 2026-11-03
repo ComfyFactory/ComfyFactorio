@@ -2,6 +2,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Commands = require 'utils.commands'
 local WPT = require 'maps.mountain_fortress_v3.table'
+local WD = require 'modules.wave_defense.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Buried = require 'maps.mountain_fortress_v3.buried_enemies'
 local Rewards = require 'maps.mountain_fortress_v3.flag_rewards'
@@ -254,6 +255,7 @@ local function separated(pos, surface_index)
 end
 
 local function spawn(loco)
+    if not _DEBUG and WD.get_wave() < 200 then return end
     if mission_count() >= max_flags_to_spawn then return end
     local surface = loco.surface
 

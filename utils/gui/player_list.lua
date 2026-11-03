@@ -278,7 +278,7 @@ local function player_list_show(data)
     local sort_by = data.sort_by
     -- Frame management
     frame.clear()
-    frame.style.padding = 4
+    frame.style.padding = 8
 
     local gui_data =
         Vars.gui_data(

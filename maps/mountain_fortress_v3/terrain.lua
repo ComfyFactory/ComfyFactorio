@@ -141,7 +141,7 @@ local wagon_raffle =
     'fluid-wagon'
 }
 
-local rock_raffle =
+local nauvis_rock_raffle =
 {
     'big-sand-rock',
     'big-sand-rock',
@@ -155,6 +155,9 @@ local rock_raffle =
     'big-rock',
     'huge-rock'
 }
+local size_of_nauvis_rock_raffle = #nauvis_rock_raffle
+
+local rock_raffle = nauvis_rock_raffle
 
 if is_modded then
     rock_raffle =
@@ -5173,7 +5176,7 @@ local function zone_1(x, y, data, _, adjusted_zones)
     if smol_areas < shift_max and smol_areas > shift_min then
         entities[#entities + 1] =
         {
-            name = adjusted_zones.rock_raffle[Math.random(1, adjusted_zones.size_of)],
+            name = nauvis_rock_raffle[Math.random(1, size_of_nauvis_rock_raffle)],
             position = p
         }
 
@@ -5194,13 +5197,13 @@ local function zone_1(x, y, data, _, adjusted_zones)
         return
     end
 
-    local rmin, rmax = noise_shift(0.14, 0.34)
+    local rmin, rmax = noise_shift(0.24, 0.34)
     if no_rocks < rmax and no_rocks > rmin then
-        tiles[#tiles + 1] =
-        {
-            name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[Math.random(1, #adjusted_zones.tiles_raffle)] or 'brown-refined-concrete',
-            position = p
-        }
+        -- tiles[#tiles + 1] =
+        -- {
+        --     name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[Math.random(1, #adjusted_zones.tiles_raffle)] or 'brown-refined-concrete',
+        --     position = p
+        -- }
 
         if Math.random(1, 450) == 1 then
             entities[#entities + 1] =
@@ -5238,7 +5241,7 @@ local function zone_1(x, y, data, _, adjusted_zones)
         if shore > 0.8 then
             tiles[#tiles + 1] =
             {
-                name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[Math.random(1, #adjusted_zones.tiles_raffle)] or 'grass-2',
+                name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[Math.random(1, #adjusted_zones.tiles_raffle)] or 'grass-' .. Math.floor(noise_cave_ponds * 32) % 3 + 1,
                 position = p
             }
             if Math.random(1, 256) == 1 then markets[#markets + 1] = p end
@@ -5270,7 +5273,7 @@ local function zone_1(x, y, data, _, adjusted_zones)
             if cave_rivers > (-0.302 + season * 0.01) then
                 tiles[#tiles + 1] =
                 {
-                    name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[Math.random(1, #adjusted_zones.tiles_raffle)] or 'refined-hazard-concrete-right',
+                    name = adjusted_zones.tiles_raffle and adjusted_zones.tiles_raffle[Math.random(1, #adjusted_zones.tiles_raffle)] or 'grass-' .. Math.floor(noise_cave_ponds * 32) % 3 + 1,
                     position = p
                 }
             end
@@ -5327,7 +5330,7 @@ local function zone_1(x, y, data, _, adjusted_zones)
     if Math.random(1, Math.max(32, 125 - season * 2)) > 25 then
         entities[#entities + 1] =
         {
-            name = adjusted_zones.rock_raffle[Math.random(1, adjusted_zones.size_of)],
+            name = nauvis_rock_raffle[Math.random(1, size_of_nauvis_rock_raffle)],
             position = p
         }
     end
@@ -5793,7 +5796,7 @@ local function process_bits(p, data, adjusted_zones)
     end
 end
 
-local function border_chunk(p, data, dec_tbl)
+local function border_chunk(p, data)
     local entities = data.entities
     local decoratives = data.decoratives
     local tiles = data.tiles
@@ -5802,65 +5805,104 @@ local function border_chunk(p, data, dec_tbl)
     local pos = p
     local world_pos = Orient.to_world(pos)
 
+    local past_wall = false
+    if data.reversed then
+        past_wall = pos.y <= Orient.spawn_len(-74) - 1
+    else
+        past_wall = pos.y >= Orient.spawn_len(74) + 1
+    end
+    if past_wall then
+        local noise = seasonal_noise('cave_rivers_2', pos, data.seed, 0)
+        local index = Math.floor(noise * 32) % 10 + 1
+        local tile = surface.get_tile(world_pos)
+        local starting_planet = Public.get_planet()
+        if tile and tile.valid and tile.name ~= 'black-refined-concrete' then
+            if starting_planet == 'fulgora' then
+                tiles[#tiles + 1] = { name = start_fulgora_tiles[index], position = pos }
+            elseif starting_planet == 'aquilo' then
+                tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
+            else
+                tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
+            end
+        end
+    end
+
     if Math.random(1, Math.ceil(Math.abs(pos.y) + Math.abs(pos.y)) + 64) == 1 then
         entities[#entities + 1] = { name = trees[Math.random(1, #trees)], position = pos }
     end
 
     game.forces.player.chart(surface, { { world_pos.x - 32, world_pos.y - 32 }, { world_pos.x + 32, world_pos.y + 32 } })
 
-    local noise = seasonal_noise('cave_rivers_2', pos, data.seed, 0)
-    local index = Math.floor(noise * 32) % 10 + 1
-    local tile = surface.get_tile(world_pos)
-    local starting_planet = Public.get_planet()
-    if tile and tile.valid and tile.name ~= 'black-refined-concrete' then
-        if starting_planet == 'fulgora' then
-            tiles[#tiles + 1] = { name = start_fulgora_tiles[index], position = pos }
-        elseif starting_planet == 'aquilo' then
-            tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
-        elseif starting_planet == 'vulcanus' then
-            tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
-        elseif starting_planet == 'fortress' then
-            index = Math.floor(noise * 32) % 6 + 1
-            tiles[#tiles + 1] = { name = 'dirt-' .. index, position = pos }
-        end
-    end
+    -- local noise = seasonal_noise('cave_rivers_2', pos, data.seed, 0)
+    -- local index = Math.floor(noise * 32) % 10 + 1
+    -- local tile = surface.get_tile(world_pos)
+    -- local starting_planet = Public.get_planet()
+    -- if tile and tile.valid and tile.name ~= 'black-refined-concrete' then
+    --     if starting_planet == 'fulgora' then
+    --         tiles[#tiles + 1] = { name = start_fulgora_tiles[index], position = pos }
+    --     elseif starting_planet == 'aquilo' then
+    --         tiles[#tiles + 1] = { name = start_aquilo_tiles[index], position = pos }
+    --     elseif starting_planet == 'vulcanus' then
+    --         tiles[#tiles + 1] = { name = start_vulcanus_tiles[index], position = pos }
+    --     elseif starting_planet == 'fortress' then
+    --         index = Math.floor(noise * 32) % 6 + 1
+    --         tiles[#tiles + 1] = { name = 'dirt-' .. index, position = pos }
+    --     end
+    -- end
 
-    local corpse_raffle = Public.get('corpses_raffle')
-    if Math.random(1, Math.ceil(Math.abs(pos.y) + Math.abs(pos.y)) + 164) == 1 then
-        local corpse = corpse_raffle[Math.random(1, #corpse_raffle)]
+    -- local corpse_raffle = Public.get('corpses_raffle')
+    -- if Math.random(1, Math.ceil(Math.abs(pos.y) + Math.abs(pos.y)) + 164) == 1 then
+    --     local corpse = corpse_raffle[Math.random(1, #corpse_raffle)]
 
-        entities[#entities + 1] =
-        {
-            name = corpse,
-            position = pos,
-            force = 'neutral',
-            corpse_expires = false
-        }
-    end
+    --     entities[#entities + 1] =
+    --     {
+    --         name = corpse,
+    --         position = pos,
+    --         force = 'neutral',
+    --         corpse_expires = false
+    --     }
+    -- end
 
-    local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities(p)
+    -- local scrap_mineable_entities, scrap_mineable_entities_index = get_scrap_mineable_entities(p)
 
     if not is_out_of_map(world_pos) then
-        if Math.random(1, Math.ceil(Math.abs(pos.y) + Math.abs(pos.y)) + 32) == 1 then
-            entities[#entities + 1] =
+        -- if Math.random(1, Math.ceil(Math.abs(pos.y) + Math.abs(pos.y)) + 32) == 1 then
+        --     entities[#entities + 1] =
+        --     {
+        --         name = scrap_mineable_entities[Math.random(1, scrap_mineable_entities_index)],
+        --         position = pos,
+        --         force = 'neutral'
+        --     }
+        -- end
+
+        local distance = Math.abs(pos.y)
+        local rock_span = 1 + Math.ceil(Math.max(0, 20 - distance / 2))
+        if prototypes.decorative['rock-medium'] and Math.random(1, distance + 2) == 1 then
+            decoratives[#decoratives + 1] =
             {
-                name = scrap_mineable_entities[Math.random(1, scrap_mineable_entities_index)],
+                name = 'rock-medium',
                 position = pos,
-                force = 'neutral'
+                amount = Math.random(1, rock_span)
             }
         end
-
-        for _, decorative in pairs(dec_tbl) do
-            if Math.random(1, 32) == 1 then
-                if Math.random(1, Math.abs(pos.y) + 3) == 1 then
-                    decoratives[#decoratives + 1] =
-                    {
-                        name = decorative,
-                        position = pos,
-                        amount = 1
-                    }
-                end
-            end
+        if prototypes.decorative['rock-small'] and Math.random(1, distance + 2) == 1 then
+            decoratives[#decoratives + 1] =
+            {
+                name = 'rock-small',
+                position = pos,
+                amount = Math.random(1, rock_span)
+            }
+        end
+        if prototypes.decorative['rock-tiny'] and Math.random(1, distance + 2) == 1 then
+            decoratives[#decoratives + 1] =
+            {
+                name = 'rock-tiny',
+                position = pos,
+                amount = Math.random(1, rock_span)
+            }
+        end
+        if Math.random(1, Math.ceil(distance + distance) + 2) == 1 then
+            entities[#entities + 1] = { name = rock_raffle[Math.random(1, size_of_rock_raffle)], position = pos }
         end
     end
 end
@@ -5900,11 +5942,11 @@ local function biter_chunk(p, data)
     end
 
     if Math.random(1, 128) == 1 then
-        local position = surface.find_non_colliding_position('big-worm-turret', tile_positions[Math.random(1, #tile_positions)], 16, 2)
+        local position = surface.find_non_colliding_position('small-worm-turret', tile_positions[Math.random(1, #tile_positions)], 16, 2)
         if position then
             entities[#entities + 1] =
             {
-                name = 'big-worm-turret',
+                name = 'small-worm-turret',
                 position = Orient.to_logical(position),
                 force = 'enemy',
                 callback = disable_worms
@@ -6025,7 +6067,7 @@ function Public.heavy_functions(data)
         end
 
         if top_y <= -0 then
-            return border_chunk(p, data, dec_tbl)
+            return border_chunk(p, data)
         end
     else
         if top_y % zone_settings.zone_depth == 0 and top_y < 0 then
@@ -6040,12 +6082,12 @@ function Public.heavy_functions(data)
             return out_of_map(p, data)
         end
 
-        if top_y > Orient.spawn_len(75) then
+        if top_y > Orient.spawn_len(70) then
             return biter_chunk(p, data)
         end
 
         if top_y >= 0 then
-            return border_chunk(p, data, dec_tbl)
+            return border_chunk(p, data)
         end
     end
 end

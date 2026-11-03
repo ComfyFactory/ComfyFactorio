@@ -521,7 +521,7 @@ function Public.create_locomotive(current_task)
     end)
 
     current_task.message = 'Created locomotive!'
-    current_task.delay = game.tick + 100
+    current_task.delay = game.tick + 50
     current_task.state = 'announce_new_map'
     Server.output_script_data('Created locomotive!')
 end
@@ -537,7 +537,7 @@ function Public.announce_new_map(current_task)
     current_task.message = 'Announced new map!'
     current_task.state = 'to_fortress'
     current_task.surface_name = starting_planet
-    current_task.delay = game.tick + 250
+    current_task.delay = game.tick + 100
     Server.output_script_data('Announced new map!')
 end
 
@@ -650,7 +650,7 @@ local scenario_manager = function ()
         Public[old_task](current_task)
         if current_task.state == 'idle' and not current_task.done then
             current_task.state = old_task
-            current_task.delay = game.tick + 60
+            current_task.delay = game.tick + 20
             return
         end
         if current_task.message and current_task.show_messages then

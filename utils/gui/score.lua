@@ -185,7 +185,7 @@ local function show_score(data)
     local player = data.player
     local frame = data.frame
     frame.clear()
-    frame.style.padding = 2
+    frame.style.padding = 8
 
     Public.init_player_table(player)
 

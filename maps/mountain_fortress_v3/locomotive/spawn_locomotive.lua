@@ -314,7 +314,7 @@ function Public.locomotive_spawn(surface, position, reversed)
     end
 
     Task.set_timeout_in_ticks(50, set_loco_cargo, data)
-    Task.set_timeout_in_ticks(500, place_tiles_token, { surface = surface, position = position })
+    -- Task.set_timeout_in_ticks(500, place_tiles_token, { surface = surface, position = position })
 
     game.forces.player.set_spawn_position(Orient.offset(this.locomotive.position, -5, 0), locomotive.surface)
 end
