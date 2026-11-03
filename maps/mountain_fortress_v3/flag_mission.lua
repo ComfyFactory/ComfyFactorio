@@ -259,14 +259,25 @@ local function spawn(loco)
     if mission_count() >= max_flags_to_spawn then return end
     local surface = loco.surface
 
-    local distances = {}
+    local candidates = {}
     if _DEBUG then
-        for distance = 8, 48, 8 do distances[#distances + 1] = distance end
+        for distance = 8, 48, 8 do
+            for lateral = -96, 96, 16 do
+                candidates[#candidates + 1] = Orient.offset(loco.position, lateral, -Orient.sign() * distance)
+            end
+        end
     end
-    for distance = 256, 512, 32 do distances[#distances + 1] = distance end
-    for _, distance in ipairs(distances) do
-        for lateral = -96, 96, 16 do
-            local pos = Orient.offset(loco.position, lateral, -Orient.sign() * distance)
+    for distance = 256, 511, 32 do
+        for lateral = -96, 95, 16 do
+            candidates[#candidates + 1] = Orient.offset(loco.position,
+                Math.random(lateral, lateral + 15), -Orient.sign() * Math.random(distance, distance + 31))
+        end
+    end
+    for i = #candidates, 2, -1 do
+        local j = Math.random(1, i)
+        candidates[i], candidates[j] = candidates[j], candidates[i]
+    end
+    for _, pos in ipairs(candidates) do
             if separated(pos, surface.index) and surface.is_chunk_generated({ x = Math.floor(pos.x / 32), y = Math.floor(pos.y / 32) })
                 and surface.can_place_entity { name = 'character', position = pos, force = loco.force }
                 and surface.can_place_entity { name = post_name, position = pos, force = loco.force } then
@@ -299,7 +310,6 @@ local function spawn(loco)
                     return m
                 end
             end
-        end
     end
     this.next_tick = game.tick + 600
     if _DEBUG then this.debug_retry_tick = game.tick + 600 end
