@@ -26,6 +26,32 @@ end
 
 local function set_quick_bar_slot(player, index, filter)
     local page, slot = quickbar_page_and_slot(player, index)
+    if type(filter) == 'table' and filter.name and not filter.type then
+        local name = filter.name
+        if type(name) ~= 'string' then
+            name = name.name
+        end
+        if not name or not prototypes.item[name] then
+            return
+        end
+        local quality = filter.quality or 'normal'
+        if type(quality) ~= 'string' then
+            quality = quality.name or 'normal'
+        end
+        if not (prototypes.quality and prototypes.quality[quality]) then
+            quality = 'normal'
+        end
+        filter = {
+            type = 'filter',
+            filter = {
+                name = name,
+                quality = quality,
+                comparator = filter.comparator or '='
+            }
+        }
+    elseif type(filter) == 'string' and not prototypes.item[filter] then
+        return
+    end
     player.set_quick_bar_slot(page, slot, filter)
 end
 
