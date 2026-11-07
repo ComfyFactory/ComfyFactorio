@@ -941,8 +941,7 @@ local function get_random_objectives()
         }
     }
 
-    if prototypes and prototypes.entity and prototypes.item
-        and prototypes.entity['mtn-addon-mission-flag-post-medium'] and prototypes.item['mtn-addon-mission-flag'] then
+    if prototypes and prototypes.entity and prototypes.entity['mtn-addon-mission-flag-post-medium'] then
         items[#items + 1] = { name = 'ctf', token = ctf_token, discord = 'Capture the flag' }
     end
 
