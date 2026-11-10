@@ -6,9 +6,9 @@ local Server = require 'utils.server'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
 
-if script.active_mods['space-age'] then
-    error('Satellite Score is incompatible with the Space Age mod. Disable Space Age to run this scenario.', 2)
-end
+local space_age = script.active_mods['space-age'] ~= nil
+local score_name = space_age and 'Rockets launched' or 'Satellites launched'
+local score_sprite = space_age and 'item/rocket-silo' or 'item/satellite'
 
 local this = {}
 
@@ -48,13 +48,15 @@ end
 local function satellite_score_toggle_button(player)
     local button = get_top_frame(player)
     if button then
+        button.sprite = score_sprite
+        button.tooltip = score_name
         return
     end
 
     if Gui.get_mod_gui_top_frame() then
-        button = Gui.add_mod_button(player, { name = 'satellite_score_toggle_button', type = 'sprite-button', sprite = 'item/satellite', tooltip = 'Satellites in Space', style = Gui.button_style })
+        button = Gui.add_mod_button(player, { name = 'satellite_score_toggle_button', type = 'sprite-button', sprite = score_sprite, tooltip = score_name, style = Gui.button_style })
     else
-        button = player.gui.top.add { name = 'satellite_score_toggle_button', type = 'sprite-button', sprite = 'item/satellite', tooltip = 'Satellites in Space', style = Gui.button_style }
+        button = player.gui.top.add { name = 'satellite_score_toggle_button', type = 'sprite-button', sprite = score_sprite, tooltip = score_name, style = Gui.button_style }
     end
     if button then
         button.style.minimal_height = 36
@@ -72,19 +74,21 @@ local function satellites_in_space_gui(player)
     end
 
     local frame = player.gui.left.add({ type = 'frame', name = 'satellites_in_space' })
-    local label = frame.add({ type = 'label', caption = 'Satellites launched: ' })
+    local label = frame.add({ type = 'label', caption = score_name .. ': ' })
     label.style.font_color = { r = 0.11, g = 0.8, b = 0.44 }
 
-    local progress = (this.satellites_in_space - this.satellite_score[i].goal) / (this.satellite_score[i + 1].goal - this.satellite_score[i].goal)
-    if progress > 1 then
-        progress = 1
-    end
+    local next_rank = this.satellite_score[i + 1]
+    local progress = next_rank and math.min(1, (this.satellites_in_space - this.satellite_score[i].goal) / (next_rank.goal - this.satellite_score[i].goal)) or 1
     local progressbar = frame.add({ type = 'progressbar', value = progress, style = 'achievement_progressbar' })
     progressbar.style.minimal_width = 100
     progressbar.style.maximal_width = 100
     progressbar.style.height = 20
 
-    label = frame.add({ type = 'label', caption = this.satellites_in_space .. '/' .. tostring(this.satellite_score[i + 1].goal) })
+    local count_caption = tostring(this.satellites_in_space)
+    if next_rank then
+        count_caption = count_caption .. '/' .. tostring(next_rank.goal)
+    end
+    label = frame.add({ type = 'label', caption = count_caption })
     label.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
     if this.satellite_score[i].rank then
@@ -96,9 +100,27 @@ local function satellites_in_space_gui(player)
     end
 end
 
-local function on_rocket_launched(event)
-    local rocket_inventory = event.rocket.cargo_pod.get_inventory(defines.inventory.cargo_unit)
-    local c = rocket_inventory.get_item_count('satellite')
+local function on_cargo_pod_finished_ascending(event)
+    if not event.launched_by_rocket then
+        return
+    end
+    local pod = event.cargo_pod
+    if not pod or not pod.valid then
+        return
+    end
+    local c = 1
+    if not space_age then
+        local rocket_inventory = pod.get_inventory(defines.inventory.cargo_unit)
+        if not rocket_inventory then
+            return
+        end
+        c = 0
+        for _, item in pairs(rocket_inventory.get_contents()) do
+            if item.name == 'satellite' then
+                c = c + item.count
+            end
+        end
+    end
     if c == 0 then
         return
     end
@@ -118,7 +140,7 @@ local function on_rocket_launched(event)
         this.satellite_score[i].achieved = true
     end
     if (this.satellites_in_space < 10) or ((this.satellites_in_space < 50) and ((this.satellites_in_space % 5) == 0)) or ((this.satellites_in_space % 25) == 0) then
-        local message = 'A satellite has been launched! Total count: ' .. this.satellites_in_space
+        local message = (space_age and 'A rocket has been launched! Total count: ' or 'A satellite has been launched! Total count: ') .. this.satellites_in_space
         game.print(message)
         Server.to_discord_embed(message)
     end
@@ -185,10 +207,14 @@ local function on_gui_click(event)
     end
 
     if name == 'level_up_popup_close' then
-        player.gui.center['level_up_popup'].destroy()
+        local popup = player.gui.center['level_up_popup']
+        if popup then
+            popup.destroy()
+        end
     end
 end
 
 Event.add(defines.events.on_gui_click, on_gui_click)
 Event.add(defines.events.on_player_joined_game, on_player_joined_game)
-Event.add(defines.events.on_rocket_launch_ordered, on_rocket_launched)
+Event.on_init(init)
+Event.add(defines.events.on_cargo_pod_finished_ascending, on_cargo_pod_finished_ascending)

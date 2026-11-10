@@ -3,6 +3,7 @@
 local Global = require 'utils.global'
 local Event = require 'utils.event'
 local Player_modifiers = require 'utils.player_modifiers'
+local Gui = require 'utils.gui'
 local random = math.random
 local tooltip = 'How thirsty your character is.\nStand next to water,\nor keep water-barrels in your inventory to take a sip.'
 
@@ -42,31 +43,19 @@ local function update_player_modifiers(player)
 end
 
 local function update_hydration_meter(player)
-    local hydration_meter = player.gui.top.hydration_meter
-
-    if not hydration_meter then
-        this.hydration[player.index] = 1000
-
-        hydration_meter = player.gui.top.add({ type = 'frame', name = 'hydration_meter' })
-        hydration_meter.style.padding = 3
-        hydration_meter.tooltip = tooltip
-
-        local label = hydration_meter.add({ type = 'label', caption = 'Hydration:' })
-        label.style.font = 'heading-2'
-        label.style.font_color = { 125, 125, 255 }
-        label.tooltip = tooltip
-        local label2 = hydration_meter.add({ type = 'label', caption = 100 })
-        label2.style.font = 'heading-2'
-        label2.style.font_color = { 175, 175, 175 }
-        label2.tooltip = tooltip
-        local label3 = hydration_meter.add({ type = 'label', caption = '%' })
-        label3.style.font = 'heading-2'
-        label3.style.font_color = { 175, 175, 175 }
-        label3.tooltip = tooltip
-        return
+    local parent = Gui.get_mod_gui_top_frame() and Gui.get_button_flow(player) or player.gui.top
+    local legacy_meter = player.gui.top.hydration_meter
+    if legacy_meter and (parent ~= player.gui.top or legacy_meter.type ~= 'button') then
+        legacy_meter.destroy()
     end
-
-    hydration_meter.children[2].caption = this.hydration[player.index] / 10
+    local hydration_meter = parent.hydration_meter
+    if not hydration_meter then
+        hydration_meter = parent.add({ type = 'button', name = 'hydration_meter', style = 'mod_gui_button', tooltip = tooltip })
+        hydration_meter.style.minimal_height = 36
+        hydration_meter.style.maximal_height = 36
+        hydration_meter.style.minimal_width = 150
+    end
+    hydration_meter.caption = string.format('Hydration: %.0f%%', this.hydration[player.index] / 10)
 end
 
 local function local_modifier(surface)
@@ -85,11 +74,19 @@ local function sip(player)
     if this.hydration[player.index] == 1000 then
         return
     end
-    local water_tiles = player.surface.count_tiles_filtered({
-        name = { 'water', 'deepwater', 'water-mud', 'water-shallow' },
+    local surface = player.physical_surface
+    local nearby_tiles = surface.find_tiles_filtered({
         area = { { player.physical_position.x - 1, player.physical_position.y - 1 }, { player.physical_position.x + 1, player.physical_position.y + 1 } }
     })
-    if water_tiles > 0 then
+    local near_water = false
+    for _, tile in pairs(nearby_tiles) do
+        local fluid = tile.prototype.fluid
+        if fluid and fluid.name == 'water' then
+            near_water = true
+            break
+        end
+    end
+    if near_water then
         this.hydration[player.index] = this.hydration[player.index] + 200
         if this.hydration[player.index] > 1000 then
             this.hydration[player.index] = 1000
@@ -118,11 +115,11 @@ local function sip(player)
         return
     end
 
-    player.surface.spill_item_stack({ position = player.position, stack = { name = 'barrel', count = 1 }, enable_looted = true })
+    surface.spill_item_stack({ position = player.physical_position, stack = { name = 'barrel', count = 1 }, enable_looted = true })
 end
 
 local function on_player_changed_position(event)
-    if random(1, 320 ) ~= 1 then
+    if random(1, 320) ~= 1 then
         return
     end
     local player = game.players[event.player_index]
@@ -132,10 +129,13 @@ local function on_player_changed_position(event)
     if not player.character.valid then
         return
     end
+    if player.controller_type == defines.controllers.remote or (script.active_mods['space-age'] and player.cargo_pod) then
+        return
+    end
     if player.vehicle then
         return
     end
-    this.hydration[player.index] = this.hydration[player.index] - (10 * local_modifier(player.physical_surface))
+    this.hydration[player.index] = (this.hydration[player.index] or 1000) - (10 * local_modifier(player.physical_surface))
 end
 
 local function on_player_died(event)
@@ -149,6 +149,7 @@ local function tick()
     for _, player in pairs(game.connected_players) do
         if player.character then
             if player.character.valid then
+                this.hydration[player.index] = this.hydration[player.index] or 1000
                 sip(player)
                 update_hydration_meter(player)
                 update_player_modifiers(player)

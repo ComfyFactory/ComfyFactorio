@@ -1,14 +1,11 @@
-if script.active_mods['space-age'] then
-    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
-end
-
-if not script.active_mods['space-age'] then
-    require 'modules.satellite_score'
-end
+require 'modules.satellite_score'
 require 'modules.thirst'
 
+local Event = require 'utils.event'
 local Map_info = require 'modules.map_info'
 local FT = require 'utils.functions.flying_texts'
+local Gui = require 'utils.gui'
+local PG = require 'utils.terrain_layouts.planet_generation'
 
 local get_noise = require 'utils.math.get_noise'
 local math = require 'utils.math.math'
@@ -46,7 +43,7 @@ local function calculate_vulcanus(surface, position)
     return moisture
 end
 
-local function calculate_nauvis(_surface, position)
+local function calculate_nauvis(_, position)
     local moisture = get_noise('oasis', position, storage.desert_oasis_seed)
     moisture = moisture * 128
     moisture = math.round(moisture, 1)
@@ -71,12 +68,15 @@ local function calculate_gleba(surface, position)
     return moisture
 end
 
-local function calculate_aquilo(_surface, _position)
+local function calculate_aquilo(_, _)
     local moisture = 45
     return moisture
 end
 
 local function get_moisture(surface, position)
+    if surface.platform then
+        return 50
+    end
     local planet_calcs =
     {
         nauvis = calculate_nauvis,
@@ -85,7 +85,7 @@ local function get_moisture(surface, position)
         aquilo = calculate_aquilo,
         fulgora = calculate_fulgora
     }
-    local planet = surface.planet and surface.planet.name or 'custom'
+    local planet = surface.name == 'nauvis' and 'nauvis' or (surface.planet and surface.planet.name)
     local moisture = 50
     if planet_calcs[planet] then
         moisture = planet_calcs[planet](surface, position)
@@ -94,21 +94,19 @@ local function get_moisture(surface, position)
 end
 
 local function moisture_meter(player, moisture)
-    local moisture_meter_gui = player.gui.top.moisture_meter
-
-    if not moisture_meter_gui then
-        moisture_meter_gui = player.gui.top.add({ type = 'frame', name = 'moisture_meter' })
-        moisture_meter_gui.style.padding = 3
-
-        local label = moisture_meter_gui.add({ type = 'label', caption = 'Moisture Meter:' })
-        label.style.font = 'heading-2'
-        label.style.font_color = { 0, 150, 0 }
-        local number_label = moisture_meter_gui.add({ type = 'label', caption = 0 })
-        number_label.style.font = 'heading-2'
-        number_label.style.font_color = { 175, 175, 175 }
+    local parent = Gui.get_mod_gui_top_frame() and Gui.get_button_flow(player) or player.gui.top
+    local legacy_meter = player.gui.top.moisture_meter
+    if legacy_meter and (parent ~= player.gui.top or legacy_meter.type ~= 'button') then
+        legacy_meter.destroy()
     end
-
-    moisture_meter_gui.children[2].caption = moisture
+    local moisture_meter_gui = parent.moisture_meter
+    if not moisture_meter_gui then
+        moisture_meter_gui = parent.add({ type = 'button', name = 'moisture_meter', style = 'mod_gui_button', tooltip = 'Local moisture. Low moisture can cause heat damage on unprotected ground.' })
+        moisture_meter_gui.style.minimal_height = 36
+        moisture_meter_gui.style.maximal_height = 36
+        moisture_meter_gui.style.minimal_width = 150
+    end
+    moisture_meter_gui.caption = string.format('Moisture: %.1f', moisture)
 end
 
 local function draw_oasis(surface, left_top, seed)
@@ -188,6 +186,7 @@ end
 local function on_chunk_generated(event)
     local surface = event.surface
     if surface.name ~= 'nauvis' then
+        PG.generate(surface, event.area)
         return
     end
     local seed = storage.desert_oasis_seed
@@ -373,12 +372,6 @@ local function on_init()
                         size = 3,
                         richness = 3
                     },
-                    ['huge-sand-rock'] =
-                    {
-                        frequency = 5,
-                        size = 3,
-                        richness = 3
-                    },
                     ["huge-rock"] =
                     {
                         frequency = 1,
@@ -430,7 +423,9 @@ local function on_init()
     surface.force_generate_chunk_requests()
     surface.set_property('solar-power', 200)
     local force = game.forces.player
-    force.technologies['cliff-explosives'].enabled = false
+    if not script.active_mods['space-age'] then
+        force.technologies['cliff-explosives'].enabled = false
+    end
 end
 
 local type_whitelist =
@@ -461,45 +456,65 @@ local type_whitelist =
     ['crash-site-spaceship'] = true
 }
 
+local function refund_item(surface, position, inventory, item)
+    local inserted = inventory and inventory.insert(item) or 0
+    if inserted < item.count then
+        item.count = item.count - inserted
+        surface.spill_item_stack({
+            position = position,
+            stack = item,
+            enable_looted = true,
+            max_radius = 10,
+            use_start_position_on_failure = true
+        })
+    end
+end
+
 local function deny_building(event)
     local entity = event.entity
-    if not entity.valid then
+    if not entity or not entity.valid then
         return
     end
     if entity.surface.name ~= 'nauvis' then
         return
     end
 
-    if type_whitelist[entity.type] then
-        if entity.type == 'entity-ghost' then
-            if type_whitelist[entity.ghost_name] then
-                return
-            end
-        else
-            return
-        end
+    local is_ghost = entity.type == 'entity-ghost'
+    local entity_type = is_ghost and entity.ghost_type or entity.type
+    if type_whitelist[entity_type] or entity.name == 'crash-site-spaceship' then
+        return
     end
 
     if safe_tiles[entity.surface.get_tile(entity.position).name] then
         return
     end
-    local item = entity.prototype.items_to_place_this and entity.prototype.items_to_place_this[1]
-
+    local player
+    local inventory
     if event.player_index then
-        local player = game.get_player(event.player_index)
+        player = game.get_player(event.player_index)
         if player and player.valid then
-            if item then
-                player.insert(item)
-            end
-            FT.flying_text(player, entity.surface, entity.position, 'Can not be built in the sands!', { r = 0.98, g = 0.66, b = 0.22 })
+            inventory = player
         end
-    else
-        local inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
-        if item then
-            inventory.insert(item)
-        end
-        FT.flying_text(nil, entity.surface, entity.position, 'Can not be built in the sands!', { r = 0.98, g = 0.66, b = 0.22 })
+    elseif event.robot and event.robot.valid then
+        inventory = event.robot.get_inventory(defines.inventory.robot_cargo)
     end
+
+    if not is_ghost then
+        if event.consumed_items then
+            for i = 1, #event.consumed_items do
+                local stack = event.consumed_items[i]
+                if stack.valid_for_read then
+                    refund_item(entity.surface, entity.position, inventory, stack)
+                end
+            end
+        else
+            local item = entity.prototype.items_to_place_this and entity.prototype.items_to_place_this[1]
+            if item then
+                refund_item(entity.surface, entity.position, inventory, { name = item.name, count = item.count, quality = entity.quality })
+            end
+        end
+    end
+    FT.flying_text(player, entity.surface, entity.position, 'Can not be built in the sands!', { r = 0.98, g = 0.66, b = 0.22 })
     entity.destroy()
 end
 
@@ -511,16 +526,16 @@ local function on_robot_built_entity(event)
     deny_building(event)
 end
 
-local function deny_tile_building(surface, inventory, tiles, tile)
+local function deny_tile_building(event, inventory)
+    local surface = game.get_surface(event.surface_index)
     if surface.name ~= 'nauvis' then
         return
     end
-    for _, t in pairs(tiles) do
+    for _, t in pairs(event.tiles) do
         if not safe_tiles[t.old_tile.name] then
             surface.set_tiles({ { name = t.old_tile.name, position = t.position } }, true)
-            local item = tile.items_to_place_this and tile.items_to_place_this[1]
-            if item then
-                inventory.insert(item)
+            if event.item then
+                refund_item(surface, t.position, inventory, { name = event.item.name, count = 1, quality = event.quality })
             end
         end
     end
@@ -528,11 +543,11 @@ end
 
 local function on_player_built_tile(event)
     local player = game.players[event.player_index]
-    deny_tile_building(player.surface, player, event.tiles, event.tile)
+    deny_tile_building(event, event.inventory or player)
 end
 
 local function on_robot_built_tile(event)
-    deny_tile_building(event.robot.surface, event.robot.get_inventory(defines.inventory.robot_cargo), event.tiles, event.tile)
+    deny_tile_building(event, event.inventory or event.robot.get_inventory(defines.inventory.robot_cargo))
 end
 
 local function on_player_joined_game(event)
@@ -588,7 +603,6 @@ local function on_player_changed_position(event)
     end
 end
 
-local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
 Event.add(defines.events.on_player_built_tile, on_player_built_tile)
