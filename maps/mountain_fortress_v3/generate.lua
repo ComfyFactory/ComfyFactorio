@@ -729,6 +729,16 @@ local function on_chunk(event)
         return
     end
 
+    local left = event.area.left_top
+    local right = event.area.right_bottom
+    if not Orient.in_map_width(left)
+        and not Orient.in_map_width({ x = right.x - 1, y = left.y })
+        and not Orient.in_map_width({ x = left.x, y = right.y - 1 })
+        and not Orient.in_map_width({ x = right.x - 1, y = right.y - 1 })
+    then
+        return
+    end
+
     if force_chunk then
         force_do_chunk(event)
     else

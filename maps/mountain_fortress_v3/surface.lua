@@ -56,12 +56,8 @@ function Public.create_surface(recreate)
         }
     }
 
-    local corridor = Orient.zone_width()
     if Orient.is_horizontal() then
         map_gen_settings.width = 0
-        map_gen_settings.height = corridor
-    else
-        map_gen_settings.width = corridor
     end
 
     if Public.is_modded_pt2 then
