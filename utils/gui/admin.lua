@@ -661,8 +661,11 @@ local function draw_events(player_data)
                     vertical_scroll_policy = 'auto'
                 }
             )
-        scroll_pane.style.maximal_height = 200
-        scroll_pane.style.minimal_width = 790
+        scroll_pane.style.maximal_height = 220
+        scroll_pane.style.minimal_height = 96
+        scroll_pane.style.minimal_width = 492
+        scroll_pane.style.maximal_width = 492
+        scroll_pane.style.padding = 6
     end
 
     search_text_locally(
@@ -672,13 +675,17 @@ local function draw_events(player_data)
             if not history_label then
                 return
             end
-            frame.datalog.add(
+            local row = frame.datalog.add(
                 {
                     type = 'label',
                     caption = history_label,
                     tooltip = tooltip
                 }
             )
+            row.style.font = 'default'
+            row.style.font_color = { r = 0.78, g = 0.76, b = 0.70 }
+            row.style.single_line = false
+            row.style.maximal_width = 470
         end
     )
 end
@@ -723,6 +730,24 @@ local function text_changed(event)
     draw_events(player_data)
 end
 
+local accent = { r = 0.78, g = 0.58, b = 0.32 }
+local ink = { r = 0.86, g = 0.84, b = 0.78 }
+local muted = { r = 0.66, g = 0.64, b = 0.58 }
+local danger = { r = 255, g = 0.25, b = 0.22 }
+
+local function paint_button(button, width, harmful)
+    button.style.font = 'default-semibold'
+    button.style.font_color = harmful and danger or ink
+    button.style.minimal_width = width
+    button.style.maximal_width = width
+    button.style.minimal_height = 28
+    button.style.maximal_height = 28
+    button.style.top_padding = 0
+    button.style.bottom_padding = 0
+    button.style.left_padding = 6
+    button.style.right_padding = 6
+end
+
 local function create_pagination_buttons(player_data, frame, table_count)
     if table_count == 0 then
         return
@@ -745,6 +770,8 @@ local function create_pagination_buttons(player_data, frame, table_count)
             type = 'flow',
             direction = 'horizontal'
         }
+    button_flow.style.horizontal_spacing = 4
+    button_flow.style.vertical_align = 'center'
     local prev_button =
         button_flow.add
         {
@@ -753,9 +780,10 @@ local function create_pagination_buttons(player_data, frame, table_count)
             caption = '◀️',
             style = 'back_button'
         }
-    prev_button.style.font = 'default-bold'
-    prev_button.style.minimal_width = 32
-    prev_button.tooltip = 'Previous page\nHolding [color=yellow]shift[/color] while pressing LMB/RMB will jump to the first page.'
+    prev_button.style.font = 'default-semibold'
+    prev_button.style.minimal_width = 28
+    prev_button.style.minimal_height = 28
+    prev_button.tooltip = 'Previous page\nHolding [color=#c79452]shift[/color] while pressing LMB/RMB will jump to the first page.'
 
     local count_label =
         button_flow.add
@@ -764,7 +792,10 @@ local function create_pagination_buttons(player_data, frame, table_count)
             name = count_label_name,
             caption = current_page .. '/' .. last_page
         }
-    count_label.style.font = 'default-bold'
+    count_label.style.font = 'default'
+    count_label.style.font_color = muted
+    count_label.style.horizontal_align = 'center'
+    count_label.style.minimal_width = 48
     player_data.count_label = count_label
 
     local next_button =
@@ -775,9 +806,10 @@ local function create_pagination_buttons(player_data, frame, table_count)
             caption = '▶️',
             style = 'forward_button'
         }
-    next_button.style.font = 'default-bold'
-    next_button.style.minimal_width = 32
-    next_button.tooltip = 'Next page\nHolding [color=yellow]shift[/color] while pressing LMB/RMB will jump to the last page.'
+    next_button.style.font = 'default-semibold'
+    next_button.style.minimal_width = 28
+    next_button.style.minimal_height = 28
+    next_button.tooltip = 'Next page\nHolding [color=#c79452]shift[/color] while pressing LMB/RMB will jump to the last page.'
 
     player_data.table_count = table_count
 end
@@ -822,17 +854,41 @@ create_admin_panel = function (data)
         checkbox_caption = 'Currently showing: all players that have played on this server.'
     end
 
-    frame.add({ type = 'checkbox', name = listable_players_name, caption = checkbox_caption, state = checkbox_state or false })
+    local list_toggle = frame.add({ type = 'checkbox', name = listable_players_name, caption = checkbox_caption, state = checkbox_state or false })
+    list_toggle.style.font_color = muted
+    list_toggle.style.bottom_margin = 6
 
     local panel_width = 492
+    local player_button_width = 116
+    local global_button_width = 236
 
     local drop_down = frame.add({ type = 'drop-down', name = 'admin_player_select', items = player_names, selected_index = selected_index })
     drop_down.style.minimal_width = panel_width
     drop_down.style.maximal_width = panel_width
+    drop_down.style.minimal_height = 28
+    drop_down.style.bottom_margin = 8
 
-    local t = frame.add({ type = 'table', column_count = 4 })
-    t.style.horizontal_spacing = 4
-    t.style.vertical_spacing = 2
+    local player_box = frame.add({ type = 'frame', direction = 'vertical', style = 'inside_shallow_frame_with_padding' })
+    player_box.style.minimal_width = panel_width
+    player_box.style.padding = 8
+    player_box.style.bottom_margin = 8
+    local player_caption = player_box.add({ type = 'label', caption = 'Player actions' })
+    player_caption.style.font = 'default-bold'
+    player_caption.style.font_color = accent
+    player_caption.style.bottom_margin = 6
+
+    local t = player_box.add({ type = 'table', column_count = 4 })
+    t.style.horizontal_spacing = 6
+    t.style.vertical_spacing = 6
+    local harmful =
+    {
+        jail = true,
+        mute = true,
+        enemy = true,
+        spank = true,
+        damage = true,
+        kill = true
+    }
     local buttons =
     {
         t.add(
@@ -865,7 +921,6 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Make Enemy',
                 name = 'enemy',
-                style = 'red_button',
                 tooltip = 'Sets the selected players force to enemy_players.\nDO NOT USE IN PVP MAPS!!'
             }
         ),
@@ -898,11 +953,10 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Damage',
                 name = 'damage',
-                style = 'red_button',
                 tooltip = 'Damages the selected player with greater damage.\nCan not kill the player.'
             }
         ),
-        t.add({ type = 'button', caption = 'Kill', name = 'kill', style = 'red_button', tooltip = 'Kills the selected player instantly.' })
+        t.add({ type = 'button', caption = 'Kill', name = 'kill', tooltip = 'Kills the selected player instantly.' })
 
     }
     if this.custom_buttons and next(this.custom_buttons) then
@@ -919,23 +973,27 @@ create_admin_panel = function (data)
         end
     end
     for _, button in pairs(buttons) do
-        button.style.font = 'default-bold'
-        button.style.minimal_width = 120
-        button.style.maximal_width = 120
+        paint_button(button, player_button_width, harmful[button.name])
     end
 
-    local line = frame.add { type = 'line' }
-    line.style.top_margin = 4
-    line.style.bottom_margin = 4
-    line.style.minimal_width = panel_width
-    line.style.maximal_width = panel_width
-
-    local global_label = frame.add({ type = 'label', caption = 'Global Actions:' })
-    global_label.style.font = 'heading-2'
-    global_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
-    local actionTable = frame.add({ type = 'table', column_count = 2 })
-    actionTable.style.horizontal_spacing = 4
-    actionTable.style.vertical_spacing = 2
+    local global_box = frame.add({ type = 'frame', direction = 'vertical', style = 'inside_shallow_frame_with_padding' })
+    global_box.style.minimal_width = panel_width
+    global_box.style.padding = 8
+    global_box.style.bottom_margin = 8
+    local global_label = global_box.add({ type = 'label', caption = 'Global actions' })
+    global_label.style.font = 'default-bold'
+    global_label.style.font_color = accent
+    global_label.style.bottom_margin = 6
+    local actionTable = global_box.add({ type = 'table', column_count = 2 })
+    actionTable.style.horizontal_spacing = 6
+    actionTable.style.vertical_spacing = 6
+    local global_harmful =
+    {
+        turn_off_global_speakers = true,
+        delete_all_blueprints = true,
+        clear_items_on_ground = true,
+        clear_biters = true
+    }
     local bottomButtons =
     {
         actionTable.add(
@@ -943,7 +1001,6 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Destroy global speakers',
                 name = 'turn_off_global_speakers',
-                style = 'red_button',
                 tooltip = 'Destroys all speakers that are set to play sounds globally.'
             }
         ),
@@ -952,7 +1009,6 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Delete blueprints',
                 name = 'delete_all_blueprints',
-                style = 'red_button',
                 tooltip = 'Deletes all placed blueprints on the map.'
             }
         ),
@@ -977,7 +1033,6 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Clear items on ground',
                 name = 'clear_items_on_ground',
-                style = 'red_button',
                 tooltip = 'Clears all items on the ground.\nThis might lag the game!'
             }
         ),
@@ -986,23 +1041,13 @@ create_admin_panel = function (data)
                 type = 'button',
                 caption = 'Remove biters',
                 name = 'clear_biters',
-                style = 'red_button',
                 tooltip = 'Clears out all biters (friendly and enemy).\nThis might lag the game!'
             }
         )
-        ---	t.add({type = "button", caption = "Cancel all deconstruction orders", name = "remove_all_deconstruction_orders"})
     }
     for _, button in pairs(bottomButtons) do
-        button.style.font = 'default-bold'
-        button.style.minimal_width = 244
-        button.style.maximal_width = 244
+        paint_button(button, global_button_width, global_harmful[button.name])
     end
-
-    local bottomLine = frame.add { type = 'line' }
-    bottomLine.style.top_margin = 4
-    bottomLine.style.bottom_margin = 4
-    bottomLine.style.minimal_width = panel_width
-    bottomLine.style.maximal_width = panel_width
 
     local histories = {}
     if antigrief.capsule_history then
@@ -1043,20 +1088,22 @@ create_admin_panel = function (data)
         return
     end
 
+    local history_caption = frame.add({ type = 'label', caption = 'History' })
+    history_caption.style.font = 'default-bold'
+    history_caption.style.font_color = accent
+    history_caption.style.top_margin = 2
+    history_caption.style.bottom_margin = 4
+
     local search_table = frame.add({ type = 'table', column_count = 2 })
     search_table.style.horizontal_spacing = 8
-    search_table.add({ type = 'label', caption = 'Search' })
+    search_table.style.bottom_margin = 6
+    local search_label = search_table.add({ type = 'label', caption = 'Search' })
+    search_label.style.font_color = muted
     local search_text = search_table.add({ type = 'textfield' })
-    -- search_text.focus()
     search_text.text = player_data.search_text or ''
-    search_text.style.minimal_width = 428
-    search_text.style.maximal_width = 428
-
-    local bottomLine2 = frame.add { type = 'line' }
-    bottomLine2.style.top_margin = 4
-    bottomLine2.style.bottom_margin = 4
-    bottomLine2.style.minimal_width = panel_width
-    bottomLine2.style.maximal_width = panel_width
+    search_text.style.minimal_width = 420
+    search_text.style.maximal_width = 420
+    search_text.style.minimal_height = 26
 
     local selected_index_2 = 1
     if player_data and player_data.selected_history_index then
@@ -1066,8 +1113,11 @@ create_admin_panel = function (data)
     local pagination_table = frame.add({ type = 'table', column_count = 2, name = 'pagination_table' })
 
     local drop_down_2 = pagination_table.add({ type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index_2 })
-    drop_down_2.style.minimal_width = 320
-    drop_down_2.style.maximal_width = 320
+    drop_down_2.style.minimal_width = 300
+    drop_down_2.style.maximal_width = 300
+    drop_down_2.style.minimal_height = 28
+    pagination_table.style.horizontal_spacing = 8
+    pagination_table.style.vertical_align = 'center'
 
     local history_index =
     {

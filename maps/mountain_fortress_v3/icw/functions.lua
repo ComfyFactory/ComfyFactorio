@@ -158,7 +158,7 @@ local add_chests_to_wagon_token =
             local position4 = { wagon.area.right_bottom.x - 5, wagon.area.right_bottom.y - 2 }
 
             if not wagon.entity or not wagon.entity.valid then
-                return error('Entity was invalid, please check this out!')
+                return
             end
 
             local positions =
@@ -881,6 +881,10 @@ end
 function Public.create_wagon_room(icw, wagon)
     local surface = wagon.surface
     local area = wagon.area
+    if icw.default_surface and surface and surface.valid then
+        surface.request_to_generate_chunks({ x = (area.left_top.x + area.right_bottom.x) * 0.5, y = (area.left_top.y + area.right_bottom.y) * 0.5 }, 4)
+        surface.force_generate_chunk_requests()
+    end
     local main_tile_name = get_tile_name()
 
     local tiles = {}
@@ -1262,7 +1266,6 @@ move_room_to_train = function (icw, train, wagon, carriages)
     end
 
     if not train.surface or not train.surface.valid then
-        error('Train surface is invalid, please check this out!')
         return
     end
 
@@ -1305,6 +1308,11 @@ move_room_to_train = function (icw, train, wagon, carriages)
 
     kill_wagon_doors(icw, wagon)
 
+    if icw.default_surface then
+        train.surface.request_to_generate_chunks({ x = (destination_area.left_top.x + destination_area.right_bottom.x) * 0.5, y = (destination_area.left_top.y + destination_area.right_bottom.y) * 0.5 }, 4)
+        train.surface.force_generate_chunk_requests()
+    end
+
     wagon.surface.clone_area(
         {
             source_area = wagon.area,
@@ -1313,7 +1321,7 @@ move_room_to_train = function (icw, train, wagon, carriages)
             clone_tiles = true,
             clone_entities = true,
             clear_destination_entities = true,
-            expand_map = false
+            expand_map = true
         }
     )
 
@@ -1568,7 +1576,6 @@ function Public.reconstruct_all_trains(reset_carriages)
             if icw.default_surface then
                 local new_wagon = icw.wagons[carriages[1].unit_number]
                 if not new_wagon then
-                    error('Wagon not found while creating wagon snake: ' .. carriages[1].unit_number)
                     break
                 end
                 local not_carriage, carriage_index = carriages_not_saved(icw, carriages)

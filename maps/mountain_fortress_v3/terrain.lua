@@ -6056,6 +6056,10 @@ function Public.heavy_functions(data)
             return process_bits(p, data, adjusted_zones)
         end
 
+        if p.y < Orient.spawn_len(-130) then
+            return out_of_map(p, data)
+        end
+
         if top_y < Orient.spawn_len(-150) then
             return out_of_map(p, data)
         end
@@ -6074,6 +6078,10 @@ function Public.heavy_functions(data)
         end
         if top_y < 0 then
             return process_bits(p, data, adjusted_zones)
+        end
+
+        if p.y > Orient.spawn_len(130) then
+            return out_of_map(p, data)
         end
 
         if top_y > Orient.spawn_len(120) then

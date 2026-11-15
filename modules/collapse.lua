@@ -243,9 +243,58 @@ local function custom_callback(entity)
     end
 end
 
+-- can be used as fallback
+local function clear_behind(surface, area, vector)
+    if not area or not vector then
+        return
+    end
+    local depth = 32
+    local behind
+    if vector[1] > 0 then
+        behind = { { area[1][1] - depth, area[1][2] }, { area[1][1], area[2][2] } }
+    elseif vector[1] < 0 then
+        behind = { { area[2][1], area[1][2] }, { area[2][1] + depth, area[2][2] } }
+    elseif vector[2] > 0 then
+        behind = { { area[1][1], area[1][2] - depth }, { area[2][1], area[1][2] } }
+    elseif vector[2] < 0 then
+        behind = { { area[1][1], area[2][2] }, { area[2][1], area[2][2] + depth } }
+    end
+    if not behind then
+        return
+    end
+    local found = surface.find_tiles_filtered({ area = behind, name = 'out-of-map', invert = true })
+    if not found or #found == 0 then
+        return
+    end
+    if this.specific_entities and this.specific_entities.enabled then
+        local entities = this.specific_entities.entities
+        for _, e in pairs(surface.find_entities_filtered({ area = behind })) do
+            custom_callback(e)
+            local removed = observe_removal(e)
+            if e.valid and entities[e.name] and e.health then
+                e.die()
+            elseif e.valid then
+                e.destroy()
+            end
+            removed()
+        end
+    end
+    local clear = {}
+    for i = 1, #found do
+        local tile = found[i]
+        if tile.valid then
+            clear[#clear + 1] = { name = 'out-of-map', position = tile.position }
+        end
+    end
+    if #clear > 0 then
+        surface.set_tiles(clear, true)
+    end
+end
+
 local function progress()
     if not this.start_now then
         this.tiles = nil
+        this.behind_done = nil
         return
     end
 
@@ -257,6 +306,11 @@ local function progress()
     local surface = game.get_surface(surface_index)
     if not surface or not surface.valid then
         return
+    end
+
+    if not this.behind_done then
+        this.behind_done = true
+        clear_behind(surface, this.area, this.vector)
     end
 
     local tiles = this.tiles
@@ -299,6 +353,7 @@ end
 local function progress_reverse()
     if not this.reverse_start_now then
         this.reverse_tiles = nil
+        this.reverse_behind_done = nil
         return
     end
     local surface_index = this.surface_index
@@ -309,6 +364,11 @@ local function progress_reverse()
     local surface = game.get_surface(surface_index)
     if not surface or not surface.valid then
         return
+    end
+
+    if not this.reverse_behind_done then
+        this.reverse_behind_done = true
+        clear_behind(surface, this.reverse_area, this.reverse_vector)
     end
 
     local tiles = this.reverse_tiles
@@ -370,6 +430,7 @@ function Public.set_direction(direction)
     end
     directions[direction](this.position)
     this.direction = direction
+    this.behind_done = nil
 end
 
 function Public.set_reverse_position(position)
@@ -414,6 +475,7 @@ function Public.set_reverse_direction()
 
     directions[direction_reverse[this.direction]](this.reverse_position, true)
     this.direction = direction_reverse[this.direction]
+    this.reverse_behind_done = nil
 end
 
 function Public.set_force_mode(force_mode)
@@ -584,6 +646,8 @@ local function on_init()
     this.disabled = false
     this.reverse_disabled = false
     this.reverse_start_now = false
+    this.behind_done = nil
+    this.reverse_behind_done = nil
     this.amount = 8
     this.start_now = false
 end
