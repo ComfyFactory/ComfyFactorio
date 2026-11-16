@@ -430,6 +430,7 @@ function Public.reset_map(current_task)
 
     WD.set_spawn_along_x(Orient.is_horizontal())
     Explosives.set_growth_axis(Orient.is_horizontal() and 'x' or 'y')
+    Explosives.set_lateral_limit(Orient.zone_width() / 2)
 
     if this.space_age then
         surface.destroy_decoratives({ name = "brown-cup", invert = true })
@@ -494,13 +495,15 @@ function Public.create_locomotive(current_task)
     if not surface or not surface.valid then return end
 
     if adjusted_zones.reversed then
-        Explosives.check_growth_below_void(false)
+        Explosives.check_growth_below_void(true)
+        Explosives.set_void_sign(-1)
         spawn_near_collapse.compare = Math.abs(spawn_near_collapse.compare)
         Collapse.set_position(Orient.world(0, Orient.spawn_len(-130)))
         Collapse.set_direction(Orient.collapse_direction())
         Public.locomotive_spawn(surface, Orient.world(-18, -25), adjusted_zones.reversed)
     else
         Explosives.check_growth_below_void(true)
+        Explosives.set_void_sign(1)
         spawn_near_collapse.compare = Math.abs(spawn_near_collapse.compare) * -1
         Collapse.set_position(Orient.world(0, Orient.spawn_len(130)))
         Collapse.set_direction(Orient.collapse_direction())

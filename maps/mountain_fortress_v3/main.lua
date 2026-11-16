@@ -468,6 +468,14 @@ function Public.init_mtn()
     Explosives.set_whitelist_entity('spidertron')
     Explosives.set_whitelist_entity('car')
     Explosives.set_whitelist_entity('tank')
+    Explosives.set_growth_axis(Orient.is_horizontal() and 'x' or 'y')
+    Explosives.set_lateral_limit(Orient.zone_width() / 2)
+    if Orient.is_reversed() then
+        Explosives.set_void_sign(-1)
+    else
+        Explosives.set_void_sign(1)
+    end
+    Explosives.check_growth_below_void(true)
 end
 
 Server.on_scenario_changed(

@@ -3,6 +3,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Collapse = require 'modules.collapse'
 local Commands = require 'utils.commands'
+local Server = require 'utils.server'
 local Math = require 'utils.math.math'
 local this =
 {
@@ -82,7 +83,18 @@ local function count_active_explosions()
     return count
 end
 
-local function check_y_pos(position)
+local function check_y_pos(position, hard_only)
+    if position and this.settings.sideways_half then
+        local sideways_axis = 'x'
+        if this.settings.growth_axis == 'x' then
+            sideways_axis = 'y'
+        end
+        local sideways = position[sideways_axis]
+        local half = this.settings.sideways_half
+        if not sideways or sideways < -half or sideways >= half then
+            return true
+        end
+    end
     if not this.settings.check_growth_below_void then
         return false
     end
@@ -102,16 +114,45 @@ local function check_y_pos(position)
     end
 
     local radius = 10
-
-    local d = p - c
-    if d ^ 2 < radius ^ 2 then
+    local sign = this.settings.void_sign or 1
+    local d = (p - c) * sign
+    if not hard_only and d ^ 2 < radius ^ 2 then
         return true
     end
 
-    if p >= c then
+    if d >= 0 then
         return true
-    else
-        return false
+    end
+    return false
+end
+
+local function log_outside_explosive(player_index, position, origin_position, origin_tick)
+    if not position or not origin_position or not origin_tick then
+        return
+    end
+    if not this.explosives.outside_logged then
+        this.explosives.outside_logged = {}
+    end
+    local key = origin_to_key(origin_tick, origin_position)
+    if this.explosives.outside_logged[key] then
+        return
+    end
+    this.explosives.outside_logged[key] = true
+    local name = 'unknown'
+    local player
+    if player_index then
+        player = game.get_player(player_index)
+        if player and player.valid then
+            name = player.name
+        end
+    end
+    local message = name .. ' tried to use explosives outside the arena at X:' .. Math.floor(position.x) .. ' Y:' .. Math.floor(position.y) .. ' from X:' .. Math.floor(origin_position.x) .. ' Y:' .. Math.floor(origin_position.y)
+    Server.output_script_data(message)
+    Server.log_antigrief_data('explosives', message)
+    for _, admin in pairs(game.connected_players) do
+        if admin.admin then
+            admin.print(message, { color = { r = 1, g = 0.5, b = 0.1 } })
+        end
     end
 end
 
@@ -125,7 +166,7 @@ local function get_explosion_name(health)
     return 'big-artillery-explosion'
 end
 
-local function cell_birth(surface_index, origin_position, origin_tick, position, health, atomic)
+local function cell_birth(surface_index, origin_position, origin_tick, position, health, atomic, player_index, silent)
     local key = pos_to_key(position)
 
     --Merge cells that are overlapping.
@@ -147,7 +188,9 @@ local function cell_birth(surface_index, origin_position, origin_tick, position,
         position = { x = position.x, y = position.y },
         spawn_tick = game.tick + speed,
         health = health,
-        atomic = atomic
+        atomic = atomic,
+        player_index = player_index,
+        silent = silent or false
     }
 end
 
@@ -161,7 +204,11 @@ local function grow_cell(cell)
             x = cell.position.x + this.explosives.vectors[i][1],
             y = cell.position.y + this.explosives.vectors[i][2]
         }
-        if not this.explosives.cells[pos_to_key(position)] then
+        if check_y_pos(position, true) then
+            if not cell.silent then
+                log_outside_explosive(cell.player_index, position, cell.origin_position, cell.origin_tick)
+            end
+        elseif not this.explosives.cells[pos_to_key(position)] then
             local distance = Math.sqrt((cell.origin_position.x - position.x) ^ 2 + (cell.origin_position.y - position.y) ^ 2)
             if distance < radius then
                 positions[#positions + 1] = position
@@ -170,11 +217,22 @@ local function grow_cell(cell)
     end
 
     if #positions == 0 then
-        positions[#positions + 1] =
+        local position =
         {
             x = cell.position.x + this.explosives.vectors[1][1],
             y = cell.position.y + this.explosives.vectors[1][2]
         }
+        if check_y_pos(position, true) then
+            if not cell.silent then
+                log_outside_explosive(cell.player_index, position, cell.origin_position, cell.origin_tick)
+            end
+        else
+            positions[#positions + 1] = position
+        end
+    end
+
+    if #positions == 0 then
+        return
     end
 
     local new_cell_health = Math.round(cell.health / #positions, 3) - this.explosives.damage_decay
@@ -188,7 +246,7 @@ local function grow_cell(cell)
     end
 
     for _, p in pairs(positions) do
-        cell_birth(cell.surface_index, cell.origin_position, cell.origin_tick, p, new_cell_health, cell.atomic)
+        cell_birth(cell.surface_index, cell.origin_position, cell.origin_tick, p, new_cell_health, cell.atomic, cell.player_index, cell.silent)
     end
 end
 
@@ -240,6 +298,10 @@ local function damage_area(cell)
         return
     end
 
+    if check_y_pos(cell.position, true) then
+        return
+    end
+
     if Math.random(1, 4) == 1 then
         if cell.atomic then
             surface.create_entity({ name = 'nuke-explosion', position = cell.position })
@@ -272,10 +334,12 @@ local function damage_area(cell)
         if cell.health > this.explosives.tiles[key] then
             cell.health = cell.health - this.explosives.tiles[key]
             this.explosives.tiles[key] = nil
-            if Math.abs(tile.position.y) < surface.map_gen_settings.height * 0.5 and Math.abs(tile.position.x) < surface.map_gen_settings.width * 0.5 then
-                if not check_y_pos(tile.position) then
-                    surface.set_tiles({ { name = 'nuclear-ground', position = tile.position } }, true)
-                end
+            local height = surface.map_gen_settings.height
+            local width = surface.map_gen_settings.width
+            local inside_y = height == 0 or Math.abs(tile.position.y) < height * 0.5
+            local inside_x = width == 0 or Math.abs(tile.position.x) < width * 0.5
+            if inside_x and inside_y and not check_y_pos(tile.position) then
+                surface.set_tiles({ { name = 'nuclear-ground', position = tile.position } }, true)
             end
         else
             this.explosives.tiles[key] = this.explosives.tiles[key] - cell.health
@@ -322,6 +386,7 @@ local function tick()
 
     if game.tick % 216000 == 0 then
         this.explosives.tiles = {}
+        this.explosives.outside_logged = {}
     end
 end
 
@@ -400,7 +465,14 @@ local function on_built_entity(event)
         return
     end
 
-    cell_birth(entity.surface.index, { x = entity.position.x, y = entity.position.y }, game.tick, { x = entity.position.x, y = entity.position.y }, health)
+    local position = { x = entity.position.x, y = entity.position.y }
+    if check_y_pos(position, true) then
+        log_outside_explosive(event.player_index, position, position, game.tick)
+        entity.destroy()
+        return
+    end
+
+    cell_birth(entity.surface.index, position, game.tick, position, health, false, event.player_index, false)
     entity.destroy()
 end
 
@@ -440,10 +512,22 @@ local function on_entity_died(event)
 
     local final_damage = amount * damage
 
-    cell_birth(entity.surface.index, { x = entity.position.x, y = entity.position.y }, game.tick, { x = entity.position.x, y = entity.position.y }, final_damage)
+    local position = { x = entity.position.x, y = entity.position.y }
+    local player_index
+    if event.cause and event.cause.valid and event.cause.type == 'character' and event.cause.player then
+        player_index = event.cause.player.index
+    elseif entity.last_user then
+        player_index = entity.last_user.index
+    end
+    if check_y_pos(position, true) then
+        log_outside_explosive(player_index, position, position, game.tick)
+        return
+    end
+
+    cell_birth(entity.surface.index, position, game.tick, position, final_damage, false, player_index, false)
 end
 
-function Public.detonate_chest(entity)
+function Public.detonate_chest(entity, player)
     if this.settings.disabled then
         return false
     end
@@ -474,7 +558,19 @@ function Public.detonate_chest(entity)
         return false
     end
 
-    cell_birth(entity.surface.index, { x = entity.position.x, y = entity.position.y }, game.tick, { x = entity.position.x, y = entity.position.y }, amount * damage)
+    local position = { x = entity.position.x, y = entity.position.y }
+    local player_index
+    if player and player.valid then
+        player_index = player.index
+    elseif entity.last_user then
+        player_index = entity.last_user.index
+    end
+    if check_y_pos(position, true) then
+        log_outside_explosive(player_index, position, position, game.tick)
+        return false
+    end
+
+    cell_birth(entity.surface.index, position, game.tick, position, amount * damage, false, player_index, false)
     return true
 end
 
@@ -495,7 +591,11 @@ function Public.detonate_entity(entity, amount, damage)
         damage = 700
     end
 
-    cell_birth(entity.surface.index, { x = entity.position.x, y = entity.position.y }, game.tick, { x = entity.position.x, y = entity.position.y }, amount * damage, true)
+    local player_index
+    if entity.type == 'character' and entity.player then
+        player_index = entity.player.index
+    end
+    cell_birth(entity.surface.index, { x = entity.position.x, y = entity.position.y }, game.tick, { x = entity.position.x, y = entity.position.y }, amount * damage, true, player_index, true)
     return true
 end
 
@@ -514,6 +614,7 @@ function Public.reset()
     if not this.explosives.whitelist_entity then
         this.explosives.whitelist_entity = {}
     end
+    this.explosives.outside_logged = {}
 end
 
 function Public.set_destructible_tile(tile_name, health)
@@ -548,6 +649,22 @@ function Public.set_growth_axis(axis)
         return
     end
     this.settings.growth_axis = 'y'
+end
+
+function Public.set_sideways_limit(half)
+    if not half or half <= 0 then
+        this.settings.sideways_half = false
+        return
+    end
+    this.settings.sideways_half = half
+end
+
+function Public.set_void_sign(sign)
+    if sign == -1 then
+        this.settings.void_sign = -1
+        return
+    end
+    this.settings.void_sign = 1
 end
 
 function Public.slow_explode(value)

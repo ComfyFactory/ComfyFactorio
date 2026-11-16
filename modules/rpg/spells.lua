@@ -1170,7 +1170,7 @@ spells[#spells + 1] =
         Public.register_cooldown_for_spell(data.player)
 
         if detonate_chest and detonate_chest.valid then
-            local success = Explosives.detonate_chest(detonate_chest)
+            local success = Explosives.detonate_chest(detonate_chest, player)
             if success then
                 Public.remove_mana(player, self.mana_cost)
                 Public.cast_spell(player)
