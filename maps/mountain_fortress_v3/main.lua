@@ -469,7 +469,7 @@ function Public.init_mtn()
     Explosives.set_whitelist_entity('car')
     Explosives.set_whitelist_entity('tank')
     Explosives.set_growth_axis(Orient.is_horizontal() and 'x' or 'y')
-    Explosives.set_lateral_limit(Orient.zone_width() / 2)
+    Explosives.set_sideways_limit(Orient.zone_width() / 2)
     if Orient.is_reversed() then
         Explosives.set_void_sign(-1)
     else

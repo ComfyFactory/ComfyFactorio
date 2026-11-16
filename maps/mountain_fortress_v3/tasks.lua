@@ -430,7 +430,7 @@ function Public.reset_map(current_task)
 
     WD.set_spawn_along_x(Orient.is_horizontal())
     Explosives.set_growth_axis(Orient.is_horizontal() and 'x' or 'y')
-    Explosives.set_lateral_limit(Orient.zone_width() / 2)
+    Explosives.set_sideways_limit(Orient.zone_width() / 2)
 
     if this.space_age then
         surface.destroy_decoratives({ name = "brown-cup", invert = true })
