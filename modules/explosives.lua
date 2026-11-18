@@ -574,12 +574,12 @@ function Public.detonate_chest(entity, player)
     return true
 end
 
-function Public.detonate_entity(entity, amount, damage)
+function Public.detonate_entity(player, amount, damage)
     if this.settings.disabled then
         return false
     end
 
-    if not entity or not entity.valid then
+    if not player or not player.valid then
         return false
     end
 
@@ -591,11 +591,7 @@ function Public.detonate_entity(entity, amount, damage)
         damage = 700
     end
 
-    local player_index
-    if entity.type == 'character' and entity.player then
-        player_index = entity.player.index
-    end
-    cell_birth(entity.surface.index, { x = entity.position.x, y = entity.position.y }, game.tick, { x = entity.position.x, y = entity.position.y }, amount * damage, true, player_index, true)
+    cell_birth(player.surface.index, { x = player.position.x, y = player.position.y }, game.tick, { x = player.position.x, y = player.position.y }, amount * damage, true, player.index, true)
     return true
 end
 
