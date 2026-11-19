@@ -12,8 +12,8 @@ Commands.new('icw_reconnect_train', 'Usable only for admins - reconnects all tra
 			local suc = ICW_Func.reconstruct_all_trains(true)
 			Discord.send_notification(
 				{
-					title = "Trains reconnected",
-					description = player.name .. ' is reconnecting all trains via icw module.',
+					title = "Train reconnection requested",
+					description = player.name .. ' requested reconnection of all trains via ICW.',
 					color = "success",
 					fields =
 					{
@@ -26,7 +26,7 @@ Commands.new('icw_reconnect_train', 'Usable only for admins - reconnects all tra
 				}
 			)
 			if suc then
-				player.print(mapkeeper .. 'All trains have been reconnected!')
+				player.print(mapkeeper .. 'Train reconnection queued.')
 			else
 				player.print(mapkeeper .. 'Failed to reconnect all trains!')
 			end

@@ -68,6 +68,15 @@ Global.register(
     end
 )
 
+Public.quality_size =
+{
+    ['normal'] = 40,
+    ['uncommon'] = 45,
+    ['rare'] = 50,
+    ['epic'] = 55,
+    ['legendary'] = 60
+}
+
 local damage_types = { 'physical', 'explosion', 'laser' }
 
 local buff_to_string =
@@ -143,7 +152,7 @@ local function notify_season_over_to_discord(perm_buff)
             for name, buff_data in pairs(stateful.buffs_collected) do
                 if type(buff_data.amount) ~= 'table' and name ~= 'starting_items' then
                     if name == 'xp_level' or name == 'xp_bonus' or name == 'character_health_bonus'
-                                            or name == 'character_inventory_slots_bonus' or name == 'character_build_distance_bonus' then
+                        or name == 'character_inventory_slots_bonus' or name == 'character_build_distance_bonus' then
                         if buff_data.count and buff_to_string[name] then
                             buffs = buffs .. buff_to_string[name] .. ': ' .. buff_data.count
                         else
@@ -2191,14 +2200,7 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
         Public.refresh_frames()
     end
 
-    local quality_size =
-    {
-        ['normal'] = 40,
-        ['uncommon'] = 45,
-        ['rare'] = 50,
-        ['epic'] = 55,
-        ['legendary'] = 70
-    }
+
 
     local quality_train = this.quality_trains
 
@@ -2209,9 +2211,9 @@ function Public.reset_stateful(refresh_gui, clear_buffs)
 
     ICW.set('wagon_areas',
         {
-            ['cargo-wagon'] = { left_top = { x = -quality_size[quality_train], y = 0 }, right_bottom = { x = quality_size[quality_train], y = 100 } },
-            ['fluid-wagon'] = { left_top = { x = -quality_size[quality_train], y = 0 }, right_bottom = { x = quality_size[quality_train], y = 100 } },
-            ['locomotive'] = { left_top = { x = -quality_size[quality_train], y = 0 }, right_bottom = { x = quality_size[quality_train], y = 100 } }
+            ['cargo-wagon'] = { left_top = { x = -Public.quality_size[quality_train], y = 0 }, right_bottom = { x = Public.quality_size[quality_train], y = 100 } },
+            ['fluid-wagon'] = { left_top = { x = -Public.quality_size[quality_train], y = 0 }, right_bottom = { x = Public.quality_size[quality_train], y = 100 } },
+            ['locomotive'] = { left_top = { x = -Public.quality_size[quality_train], y = 0 }, right_bottom = { x = Public.quality_size[quality_train], y = 100 } }
         })
 end
 

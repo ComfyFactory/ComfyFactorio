@@ -3,7 +3,10 @@ require 'maps.mountain_fortress_v3.icw.commands'
 local Event = require 'utils.event'
 local Functions = require 'maps.mountain_fortress_v3.icw.functions'
 local ICW = require 'maps.mountain_fortress_v3.icw.table'
+local Stateful = require 'maps.mountain_fortress_v3.stateful.table'
 local Public = {}
+
+local quality_size = Stateful.quality_size
 
 Public.reset = ICW.reset
 Public.get_table = ICW.get
@@ -12,16 +15,9 @@ Public.set = ICW.set
 
 local function on_entity_died(event)
     local entity = event.entity
-    if not entity and not entity.valid then
-        return
+    if entity and entity.valid then
+        Functions.kill_wagon(ICW.get(), entity)
     end
-    local wagon_types = ICW.get('wagon_types')
-
-    if entity and entity.valid and not wagon_types[entity.type] then
-        return
-    end
-    local icw = ICW.get()
-    Functions.kill_wagon(icw, entity)
 end
 
 local function on_player_driving_changed_state(event)
@@ -130,6 +126,7 @@ local function nth_20_tick()
 end
 
 local function nth_240_tick()
+    Functions.request_layout_migration()
     Functions.update_minimap()
 end
 
@@ -172,6 +169,29 @@ end
 
 local on_player_or_robot_built_tile = Functions.on_player_or_robot_built_tile
 
+local function on_rolling_stock_built(event)
+    local entity = event.entity
+    if not entity or not entity.valid then
+        return
+    end
+
+    local icw = ICW.get()
+    if not icw.wagon_types[entity.type] then
+        return
+    end
+
+    local half_width = quality_size[entity.quality.name]
+    if not half_width or entity.type == 'artillery-wagon' then
+        return Functions.create_wagon(icw, entity)
+    end
+
+    local areas =
+    {
+        [entity.type] = { left_top = { x = -half_width, y = 0 }, right_bottom = { x = half_width, y = 100 } }
+    }
+    return Functions.create_wagon(icw, entity, areas)
+end
+
 Event.on_init(on_init)
 Event.on_nth_tick(5, nth_5_tick)
 Event.on_nth_tick(20, nth_20_tick)
@@ -190,36 +210,10 @@ Event.add(defines.events.on_player_built_tile, on_player_or_robot_built_tile)
 Event.add(defines.events.on_robot_built_tile, on_player_or_robot_built_tile)
 Event.add(defines.events.on_gui_switch_state_changed, on_gui_switch_state_changed)
 Event.add(defines.events.on_entity_cloned, on_entity_cloned)
-Event.add(
-    defines.events.on_built_entity,
-    function (event)
-        local icw = ICW.get()
-        local quality_size =
-        {
-            ['normal'] = 40,
-            ['uncommon'] = 45,
-            ['rare'] = 50,
-            ['epic'] = 55,
-            ['legendary'] = 70
-        }
-
-        local entity = event.entity
-        if not entity or not entity.valid then
-            return
-        end
-
-        local quality = entity.quality.name
-
-        local quality_areas =
-        {
-            ['cargo-wagon'] = { left_top = { x = -quality_size[quality], y = 0 }, right_bottom = { x = quality_size[quality], y = 100 } },
-            ['fluid-wagon'] = { left_top = { x = -quality_size[quality], y = 0 }, right_bottom = { x = quality_size[quality], y = 100 } },
-            ['locomotive'] = { left_top = { x = -quality_size[quality], y = 0 }, right_bottom = { x = quality_size[quality], y = 100 } }
-        }
-
-        return Functions.create_wagon(icw, event.entity, quality_areas)
-    end
-)
+Event.add(defines.events.on_built_entity, on_rolling_stock_built)
+Event.add(defines.events.on_robot_built_entity, on_rolling_stock_built)
+Event.add(defines.events.script_raised_built, on_rolling_stock_built)
+Event.add(defines.events.script_raised_revive, on_rolling_stock_built)
 Event.add(defines.events.on_player_warp_entered, function (event)
     local icw = ICW.get()
     local player = game.players[event.player_index]
