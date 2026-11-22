@@ -5,12 +5,12 @@ local RelayStation = require 'maps.mountain_fortress_v3.relay_station'
 local Task = require 'utils.task_token'
 local WD = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local SimplexNoise = require 'utils.math.simplex_noise'.d2
 local Math = require 'utils.math.math'
 
 local queue_task = Task.queue_task
 local tiles_per_call = 12
 local total_calls = Math.ceil(1024 / tiles_per_call)
-local regen_decoratives = false
 local generate_map = Public.heavy_functions
 
 local winter_mode = false
@@ -102,6 +102,61 @@ local function convert_generation_positions(data)
     end
     for _, t in pairs(data.treasure) do
         t.position = convert_position(t.position)
+    end
+end
+
+local dirt = { 'brown-hairy-grass', 'brown-carpet-grass', 'brown-asterisk', 'small-rock', 'tiny-rock' }
+local sand = { 'green-desert-bush', 'red-desert-bush', 'brown-fluff-dry', 'small-sand-rock' }
+local snow = { 'lithium-iceberg-tiny', 'tiny-rock' }
+local lichen = { 'white-carpet-grass', 'wispy-lichen', 'green-cup' }
+
+local palettes =
+{
+    grass = { 'green-hairy-grass', 'green-carpet-grass', 'green-small-grass', 'green-bush-mini', 'green-asterisk' },
+    dirt = dirt,
+    sand = sand,
+    ['dry-dirt'] = dirt,
+    ['nuclear-ground'] = { 'small-rock', 'tiny-rock' },
+    ['red-desert-0'] = sand,
+    ['red-desert-1'] = sand,
+    ['red-desert-2'] = sand,
+    ['red-desert-3'] = sand,
+    snow = snow,
+    ice = snow,
+    ['ice-platform'] = false,
+    volcanic = { 'v-brown-hairy-grass', 'v-brown-carpet-grass', 'small-volcanic-rock', 'tiny-volcanic-rock' },
+    fulgoran = { 'fulgoran-ruin-tiny', 'small-fulgoran-gravewort', 'urchin-cactus' },
+    lowland = lichen,
+    midland = lichen,
+    highland = { 'pale-lettuce-lichen-1x1', 'curly-roots-grey', 'tiny-rock' }
+}
+
+local function append_ground_decoratives(data)
+    local surface = data.surface
+    local decoratives = data.decoratives
+    local seed = data.seed
+    local chunk_x = data.top_x / 32
+    local chunk_y = data.top_y / 32
+    local random = game.create_random_generator((seed + chunk_x * 73856093 + chunk_y * 19349663) % 4294967296)
+
+    for offset_x = 0, 31, 4 do
+        for offset_y = 0, 31, 4 do
+            local x = data.top_x + offset_x + random(0, 3)
+            local y = data.top_y + offset_y + random(0, 3)
+            if SimplexNoise(x * 0.07, y * 0.07, seed) > -0.2 then
+                local tile_name = surface.get_tile(x, y).name
+                local palette = palettes[tile_name]
+                if palette == nil then
+                    palette = palettes[tile_name:match('^([^-]+)-')]
+                end
+                if palette then
+                    local name = palette[random(1, #palette)]
+                    if prototypes.decorative[name] then
+                        decoratives[#decoratives + 1] = { name = name, position = { x = x + 0.5, y = y + 0.5 }, amount = 1 }
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -277,8 +332,8 @@ local function do_place_decoratives(data)
     if not surface or not surface.valid then
         return
     end
-    if regen_decoratives then
-        surface.regenerate_decorative(nil, { { data.top_x / 32, data.top_y / 32 } })
+    if data.seed then
+        append_ground_decoratives(data)
     end
 
     local dec = data.decoratives
@@ -730,9 +785,9 @@ local function force_do_chunk(event)
     do_place_rocks(data)
     do_place_entities(data)
     do_place_buildings(data)
-    do_place_decoratives(data)
     do_place_markets(data)
     do_place_treasure(data)
+    do_place_decoratives(data)
     RelayStation.chunk_ready(data.surface, data.area.left_top, data.relay_generation)
 end
 
