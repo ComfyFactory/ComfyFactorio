@@ -8,6 +8,7 @@ local RPG = require 'modules.rpg.table'
 local Spells = require 'modules.rpg.spells'
 local Color = require 'utils.color_presets'
 local Commands = require 'utils.commands'
+local PlayerSettings = require 'utils.gui.player_settings'
 
 local Public = {}
 
@@ -25,6 +26,7 @@ local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 
 local MAX_SPELL_SLOTS = 8
+local dataset = this.settings.dataset
 
 local rpg_settings_keys =
 {
@@ -38,6 +40,19 @@ local rpg_settings_keys =
     'crafting_chance',
     'quality_crafting_chance',
     'show_notification',
+}
+
+local setting_labels =
+{
+    dropdown_select_name = 'Active spell',
+    spell_slot_count = 'Spell slots',
+    enable_entity_spawn = 'Spell casting',
+    show_bars = 'Health and mana bars',
+    stone_path = 'Stone path',
+    show_lvl_txt = 'Level text',
+    crafting_chance = 'Crafting bonuses',
+    quality_crafting_chance = 'Quality crafting bonuses',
+    show_notification = 'Notifications'
 }
 
 Global.register(
@@ -93,17 +108,13 @@ end
 
 local function apply_settings_to_player(player, saved)
     if not saved or type(saved) ~= 'table' then
-        return
+        return false
     end
     local rpg_t = RPG.get_value_from_player(player.index)
     if not rpg_t or type(rpg_t) ~= 'table' then
-        return
+        return false
     end
     for k, v in pairs(saved) do
-        if k == 'show_lvl_txt' then
-            RPG.draw_level_text(player)
-        end
-
         local slot = get_spell_slot_from_name_key(k)
         if slot then
             local spell, spell_index = Spells.has_enough_level_to_access_spell(rpg_t, v)
@@ -119,6 +130,10 @@ local function apply_settings_to_player(player, saved)
         end
     end
     RPG.clamp_active_spell_to_visible_slots(rpg_t)
+    if saved.show_lvl_txt ~= nil then
+        RPG.draw_level_text(player)
+    end
+    return true
 end
 
 local fetch_rpg_settings_token =
@@ -154,6 +169,7 @@ function Public.save_rpg_settings(player)
     end
     set_data(this.settings.dataset, player.name, value)
     this.data[player.name] = value
+    return value
 end
 
 function Public.remove_rpg_settings(player)
@@ -189,21 +205,59 @@ Event.add(
     end
 )
 
+local function save_player_preset(player)
+    local rpg_t = RPG.get_value_from_player(player.index)
+    if not rpg_t or type(rpg_t) ~= 'table' then
+        return
+    end
+    if rpg_t.level < 100 then
+        return nil, { 'gui.player_settings_rpg_level' }
+    end
+    return Public.save_rpg_settings(player)
+end
+
+local function setting_text(value)
+    if type(value) == 'table' then
+        return table.concat(value, ' ')
+    end
+    if type(value) == 'boolean' then
+        return value and 'On' or 'Off'
+    end
+    return tostring(value)
+end
+
+PlayerSettings.register('rpg', dataset, {
+    available = function () return this.settings.enabled end,
+    save = save_player_preset,
+    remove = Public.remove_rpg_settings,
+    apply = apply_settings_to_player,
+    describe = function (value)
+        local lines = {}
+        for _, key in ipairs(rpg_settings_keys) do
+            if value[key] ~= nil then
+                lines[#lines + 1] = setting_labels[key] .. '  ' .. setting_text(value[key])
+            end
+        end
+        for slot = 1, MAX_SPELL_SLOTS do
+            local spell = value[spell_slot_name_key(slot)]
+            if spell then
+                lines[#lines + 1] = 'Spell ' .. slot .. '  ' .. setting_text(spell)
+            end
+        end
+        return table.concat(lines, '\n')
+    end
+})
+
 Commands.new('save-rpg-settings', 'Save your RPG settings to the datastore.')
     :require_backend()
     :callback(
         function (player)
-            local rpg_t = RPG.get_value_from_player(player.index)
-            if not rpg_t or type(rpg_t) ~= 'table' then
-                return
-            end
-            if rpg_t.level < 100 then
+            local value, err = save_player_preset(player)
+            if value then
+                RPG.display_notification(player, 'RPG settings saved.', Color.success)
+            elseif err then
                 RPG.display_notification(player, 'You need to be at least level 100 to save your RPG settings.', Color.error)
-                return
             end
-
-            Public.save_rpg_settings(player)
-            RPG.display_notification(player, 'RPG settings saved.', Color.success)
         end
     )
 

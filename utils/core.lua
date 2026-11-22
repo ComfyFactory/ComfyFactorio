@@ -77,7 +77,7 @@ end
 --- Prints a message to all online admins
 -- @param msg <string|table> table if locale is used
 -- @param source <LuaPlayer|string|nil> string must be the name of a player, nil for server.
-function Public.print_admins(msg, source)
+function Public.print_admins(msg, source, localised_message)
     local source_name
     local chat_color
     if source and game.players[source] then
@@ -96,7 +96,8 @@ function Public.print_admins(msg, source)
     print(formatted_msg)
     for _, p in pairs(game.connected_players) do
         if p.admin then
-            p.print(formatted_msg, chat_color)
+            local display = localised_message and { '', prefix, '(ADMIN) ', source_name, ': ', localised_message } or formatted_msg
+            p.print(display, chat_color)
         end
     end
 end
@@ -357,8 +358,8 @@ end
 --- Takes msg and prints it to all players. Also prints to the log and discord
 -- @param msg <string> The message to print
 -- @param warning_prefixes <string> The name of the module/warning
-function Public.action_warning(warning_prefixes, msg)
-    game.print(prefix .. msg, { color = Color.yellow })
+function Public.action_warning(warning_prefixes, msg, localised_message)
+    game.print(localised_message and { '', prefix, localised_message } or prefix .. msg, { color = Color.yellow })
     msg = format('%s %s', warning_prefixes, msg)
     print(msg)
     Server.to_discord_bold(msg)

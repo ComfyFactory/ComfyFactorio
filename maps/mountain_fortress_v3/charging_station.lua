@@ -8,32 +8,36 @@ local Gui = require 'utils.gui'
 local Color = require 'utils.color_presets'
 
 local Public = {}
-local module_name = '[color=blue][Charging station][/color] '
 local charging_station_name = Gui.uid_name()
 
-local function draw_charging_gui(player, activate_custom_buttons)
-    local button =
-        player.gui.top[charging_station_name] or
-        player.gui.top.add(
-            {
-                type = 'sprite-button',
-                name = charging_station_name,
-                sprite = 'item/battery-mk2-equipment',
-                tooltip =
-                {
-                    'modules.charging_station_tooltip'
-                },
-                style = Gui.button_style
-            }
-        )
-    button.style.minimal_height = 38
-    button.style.maximal_height = 38
+local function draw_charging_gui(player)
+    local use_bottom = BottomFrame.is_custom_buttons_enabled() and not BottomFrame.get_player_data(player).top
+    local use_mod_gui = Gui.get_mod_gui_top_frame()
+    local top = player.gui.top
+    local mod_flow = top.mod_gui_button_flow or (top.mod_gui_top_frame and top.mod_gui_top_frame.mod_gui_inner_frame)
 
-    if activate_custom_buttons then
-        if button and button.valid then
-            button.destroy()
-        end
+    if use_bottom or use_mod_gui then
+        Gui.destroy(top[charging_station_name])
     end
+    if mod_flow and (use_bottom or not use_mod_gui) then
+        Gui.destroy(mod_flow[charging_station_name])
+    end
+    if use_bottom then
+        return
+    end
+
+    local spec =
+    {
+        type = 'sprite-button',
+        name = charging_station_name,
+        sprite = 'item/battery-mk2-equipment',
+        tooltip = { 'modules.charging_station_tooltip' },
+        style = Gui.button_style
+    }
+    local button = use_mod_gui and Gui.add_mod_button(player, spec) or (top[charging_station_name] or top.add(spec))
+    button.style.height = use_mod_gui and 36 or 38
+    button.style.minimal_width = 40
+    button.style.padding = use_mod_gui and -2 or 1
 end
 
 local function discharge_accumulators(surface, position, force, power_needs)
@@ -60,12 +64,12 @@ local function discharge_accumulators(surface, position, force, power_needs)
 end
 
 local function charge(player)
-    local warn = module_name .. 'No valid armor to charge was found.'
+    local warn = { 'mtn_v3_charging.no_armor' }
     if not player.character then
-        return player.print(module_name .. 'It seems that you are not in the realm of living.', { color = Color.warning })
+        return player.print({ 'mtn_v3_charging.character_required' }, { color = Color.warning })
     end
     if player.controller_type == defines.controllers.remote then
-        return player.print(module_name .. 'It seems that you are not in the realm of living.', { color = Color.warning })
+        return player.print({ 'mtn_v3_charging.character_required' }, { color = Color.warning })
     end
     local armor_inventory = player.get_inventory(defines.inventory.character_armor)
     if not armor_inventory.valid then
@@ -82,7 +86,7 @@ local function charge(player)
 
     local ents = player.physical_surface.find_entities_filtered { type = 'accumulator', force = player.force, position = player.physical_position, radius = 13 }
     if not ents or not next(ents) then
-        return player.print(module_name .. 'No accumulators nearby.', { color = Color.warning })
+        return player.print({ 'mtn_v3_charging.no_accumulators_nearby' }, { color = Color.warning })
     end
 
     local equip = grid.equipment
@@ -111,10 +115,8 @@ local function on_player_joined_game(event)
         return
     end
 
-    local activate_custom_buttons = BottomFrame.get('activate_custom_buttons')
-
-    draw_charging_gui(player, activate_custom_buttons)
-    if activate_custom_buttons then
+    draw_charging_gui(player)
+    if BottomFrame.is_custom_buttons_enabled() then
         BottomFrame.add_inner_frame(
             {
                 player = player,
@@ -160,12 +162,7 @@ Event.add(
             return
         end
 
-        local bottom_frame_data = event.data
-        if bottom_frame_data and bottom_frame_data.top then
-            draw_charging_gui(player, false)
-        else
-            draw_charging_gui(player, true)
-        end
+        draw_charging_gui(player)
     end
 )
 

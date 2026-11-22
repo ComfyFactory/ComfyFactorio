@@ -186,6 +186,13 @@ function Public.locomotive_spawn(surface, position, reversed)
         position.y = shifted.y
     end
 
+    local lateral = Orient.lateral(position)
+    local progression = Orient.progression(position)
+    local track_area = Orient.aabb(lateral - 2, progression - 8, lateral + 2, progression + 12 + 6 * extra_wagons)
+    for _, entity in pairs(surface.find_entities_filtered({ area = track_area, force = 'neutral', type = { 'tree', 'simple-entity', 'cliff' } })) do
+        entity.destroy()
+    end
+
     for d = -6, 6, 2 do
         local rail_pos = Orient.offset(position, 0, d)
         surface.create_entity({ name = 'straight-rail', position = rail_pos, force = 'player', direction = rail_dir })
@@ -196,9 +203,13 @@ function Public.locomotive_spawn(surface, position, reversed)
     end
 
     this.locomotive_cargo = surface.create_entity({ name = 'cargo-wagon', position = Orient.offset(position, 0, 3), force = 'player', direction = loco_dir, quality = stateful.quality_trains })
-    if this.locomotive_cargo and this.locomotive_cargo.valid then
-        this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
+    if not (this.locomotive and this.locomotive.valid and this.locomotive_cargo and this.locomotive_cargo.valid) then
+        if this.locomotive and this.locomotive.valid then this.locomotive.destroy() end
+        if this.locomotive_cargo and this.locomotive_cargo.valid then this.locomotive_cargo.destroy() end
+        this.locomotive, this.locomotive_cargo = nil, nil
+        return
     end
+    this.locomotive_cargo.get_inventory(defines.inventory.cargo_wagon).insert({ name = 'raw-fish', count = 8 })
 
     local winter_mode_locomotive = Public.wintery(this.locomotive, 5.5)
     if not winter_mode_locomotive and this.locomotive and this.locomotive.valid then

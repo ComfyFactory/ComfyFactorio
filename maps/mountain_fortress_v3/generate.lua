@@ -5,12 +5,12 @@ local RelayStation = require 'maps.mountain_fortress_v3.relay_station'
 local Task = require 'utils.task_token'
 local WD = require 'modules.wave_defense.table'
 local BiterHealthBooster = require 'modules.biter_health_booster_v2'
+local SimplexNoise = require 'utils.math.simplex_noise'.d2
 local Math = require 'utils.math.math'
 
 local queue_task = Task.queue_task
 local tiles_per_call = 12
 local total_calls = Math.ceil(1024 / tiles_per_call)
-local regen_decoratives = false
 local generate_map = Public.heavy_functions
 
 local winter_mode = false
@@ -102,6 +102,61 @@ local function convert_generation_positions(data)
     end
     for _, t in pairs(data.treasure) do
         t.position = convert_position(t.position)
+    end
+end
+
+local dirt = { 'brown-hairy-grass', 'brown-carpet-grass', 'brown-asterisk', 'small-rock', 'tiny-rock' }
+local sand = { 'green-desert-bush', 'red-desert-bush', 'brown-fluff-dry', 'small-sand-rock' }
+local snow = { 'lithium-iceberg-tiny', 'tiny-rock' }
+local lichen = { 'white-carpet-grass', 'wispy-lichen', 'green-cup' }
+
+local palettes =
+{
+    grass = { 'green-hairy-grass', 'green-carpet-grass', 'green-small-grass', 'green-bush-mini', 'green-asterisk' },
+    dirt = dirt,
+    sand = sand,
+    ['dry-dirt'] = dirt,
+    ['nuclear-ground'] = { 'small-rock', 'tiny-rock' },
+    ['red-desert-0'] = sand,
+    ['red-desert-1'] = sand,
+    ['red-desert-2'] = sand,
+    ['red-desert-3'] = sand,
+    snow = snow,
+    ice = snow,
+    ['ice-platform'] = false,
+    volcanic = { 'v-brown-hairy-grass', 'v-brown-carpet-grass', 'small-volcanic-rock', 'tiny-volcanic-rock' },
+    fulgoran = { 'fulgoran-ruin-tiny', 'small-fulgoran-gravewort', 'urchin-cactus' },
+    lowland = lichen,
+    midland = lichen,
+    highland = { 'pale-lettuce-lichen-1x1', 'curly-roots-grey', 'tiny-rock' }
+}
+
+local function append_ground_decoratives(data)
+    local surface = data.surface
+    local decoratives = data.decoratives
+    local seed = data.seed
+    local chunk_x = data.top_x / 32
+    local chunk_y = data.top_y / 32
+    local random = game.create_random_generator((seed + chunk_x * 73856093 + chunk_y * 19349663) % 4294967296)
+
+    for offset_x = 0, 31, 4 do
+        for offset_y = 0, 31, 4 do
+            local x = data.top_x + offset_x + random(0, 3)
+            local y = data.top_y + offset_y + random(0, 3)
+            if SimplexNoise(x * 0.07, y * 0.07, seed) > -0.2 then
+                local tile_name = surface.get_tile(x, y).name
+                local palette = palettes[tile_name]
+                if palette == nil then
+                    palette = palettes[tile_name:match('^([^-]+)-')]
+                end
+                if palette then
+                    local name = palette[random(1, #palette)]
+                    if prototypes.decorative[name] then
+                        decoratives[#decoratives + 1] = { name = name, position = { x = x + 0.5, y = y + 0.5 }, amount = 1 }
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -277,8 +332,8 @@ local function do_place_decoratives(data)
     if not surface or not surface.valid then
         return
     end
-    if regen_decoratives then
-        surface.regenerate_decorative(nil, { { data.top_x / 32, data.top_y / 32 } })
+    if data.seed then
+        append_ground_decoratives(data)
     end
 
     local dec = data.decoratives
@@ -312,7 +367,7 @@ local function do_place_buildings(data)
                 e.quality = quality
                 e.create_build_effect_smoke = false
                 entity = surface.create_entity(e)
-                entity.custom_status = { diode = defines.entity_status_diode.green, label = 'Custom building that generates free resources.' }
+                entity.custom_status = { diode = defines.entity_status_diode.green, label = { 'mtn_v3_map.free_resource_building' } }
                 if entity and entity.valid then
                     -- force.add_chart_tag(
                     --     surface,
@@ -500,6 +555,13 @@ local function run_chart_update(data)
     end
 end
 
+local function chart_border(data)
+    if data.border_chart_area then
+        game.forces.player.chart(data.surface, data.border_chart_area)
+        data.border_chart_area = nil
+    end
+end
+
 local function map_gen_action(data)
     if data.relay_generation and data.relay_generation ~= RelayStation.surface_generation(data.surface) then return false end
     local state = data.y
@@ -545,6 +607,7 @@ local function map_gen_action(data)
         data.y = y - data.top_y
         return true
     elseif state == 32 then
+        chart_border(data)
         convert_generation_positions(data)
         do_place_tiles(data)
         data.y = 33
@@ -587,7 +650,40 @@ local function map_gen_action(data)
     end
 end
 
-local map_gen_action_token = Task.register(map_gen_action)
+local map_gen_action_token = Task.register(function (data)
+    if not data.starting_chunk then
+        return map_gen_action(data)
+    end
+end)
+
+function Public.prepare_starting_chunks(surface, position)
+    local radius = 1
+    surface.request_to_generate_chunks(position, radius)
+    surface.force_generate_chunk_requests()
+
+    local center_x = Math.floor(position.x / 32)
+    local center_y = Math.floor(position.y / 32)
+    local generation = RelayStation.surface_generation(surface)
+    local chunks = {}
+    for _, data in ipairs(Task.get_queue_tasks(map_gen_action_token)) do
+        if data.surface == surface and Math.abs(data.top_x / 32 - center_x) <= radius and Math.abs(data.top_y / 32 - center_y) <= radius then
+            data.starting_chunk = true
+            data.relay_generation = generation
+            chunks[#chunks + 1] = data
+        end
+    end
+    return chunks
+end
+
+function Public.advance_starting_chunks(chunks)
+    if not chunks or #chunks == 0 then
+        return true
+    end
+
+    local chunk = table.remove(chunks, 1)
+    while map_gen_action(chunk) do end
+    return #chunks == 0
+end
 
 --- Adds generation of a Chunk of the map to the queue
 -- @param event <table> the event table from on_chunk_generated
@@ -682,15 +778,16 @@ local function force_do_chunk(event)
         do_row(row, data, shape)
     end
 
+    chart_border(data)
     convert_generation_positions(data)
     do_place_tiles(data)
     do_place_hidden_tiles(data)
     do_place_rocks(data)
     do_place_entities(data)
     do_place_buildings(data)
-    do_place_decoratives(data)
     do_place_markets(data)
     do_place_treasure(data)
+    do_place_decoratives(data)
     RelayStation.chunk_ready(data.surface, data.area.left_top, data.relay_generation)
 end
 

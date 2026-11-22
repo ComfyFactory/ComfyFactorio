@@ -194,8 +194,7 @@ Config.register_scenario_module(
                 if this.announcements_disabled[player.index] then
                     switch_state = 'right'
                 end
-                Config.add_switch(frame, switch_state, 'chatbot_announcements_switch', 'Chat Bot', 'Periodic server announcements about player count, uptime, and discord.')
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'chatbot_announcements_switch', { 'gui.player_settings_chatbot' }, { 'gui-description.player_settings_chatbot' })
             end),
         handlers =
         {

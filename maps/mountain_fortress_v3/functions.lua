@@ -81,13 +81,13 @@ local disabled_ents =
 
 local random_respawn_messages =
 {
-    'The doctors stitched you up as best they could.',
-    'Ow! Your right leg hurts.',
-    'Ow! Your left leg hurts.',
-    'You can feel your whole body aching.',
-    "You still have some bullet wounds that aren't patched up.",
-    'You feel dizzy but adrenalin is granting you speed.',
-    'Adrenalin is kicking in, but your body is damaged.'
+    'mtn_v3_map.respawn_1',
+    'mtn_v3_map.respawn_2',
+    'mtn_v3_map.respawn_3',
+    'mtn_v3_map.respawn_4',
+    'mtn_v3_map.respawn_5',
+    'mtn_v3_map.respawn_6',
+    'mtn_v3_map.respawn_7'
 }
 
 local health_values =
@@ -175,7 +175,7 @@ local fishy_callback_token =
 
                     if game.tick >= fish_alert_cooldown then
                         WD.set('fish_alert_cooldown', game.tick + 4000)
-                        local msg = 'The biters feast on the cooked fish near collapse! Threat increased by 100!'
+                        local msg = { 'mtn_v3_map.cooked_fish_threat' }
                         Alert.alert_all_players(60, msg, nil, nil, nil, 'global')
                     end
                 end
@@ -192,7 +192,7 @@ local fishy_callback_token =
 
                     if game.tick >= fish_alert_cooldown then
                         WD.set('fish_alert_cooldown', game.tick + 4000)
-                        local msg = 'The biters feast on the grilled fish near collapse! Threat increased by 200!'
+                        local msg = { 'mtn_v3_map.grilled_fish_threat' }
                         Alert.alert_all_players(60, msg, nil, nil, nil, 'global')
                     end
                 end
@@ -339,8 +339,8 @@ local pause_waves_custom_callback_token =
             local wave_number = WD.get_wave()
             if wave_number >= 200 then
                 Collapse.start_now(event.start, not event.start)
-                local status_str = event.start and 'is active once again!' or 'has stopped!'
-                Alert.alert_all_players(30, 'Collapse ' .. status_str, nil, 'achievement/tech-maniac', 0.6, 'global')
+                local message = event.start and { 'mtn_v3_map.collapse_resumed' } or { 'mtn_v3_map.collapse_stopped' }
+                Alert.alert_all_players(30, message, nil, 'achievement/tech-maniac', 0.6, 'global')
             end
         end
     )
@@ -710,7 +710,7 @@ local function do_season_fix()
         'current_season',
         rendering.draw_text
         {
-            text = 'Season: ' .. Public.get_stateful('season'),
+            text = { 'mtn_v3_map.season', Public.get_stateful('season') },
             surface = surface,
             target = { x = welcome_target.x, y = welcome_target.y + season_dy },
             color = { r = 0.98, g = 0.77, b = 0.22 },
@@ -1513,7 +1513,7 @@ remove_boost_movement_speed_on_respawn =
             Modifiers.update_player_modifiers(player)
 
             if not Public.is_task_done() then return end
-            player.print('[color=yellow][Temporary Boost][/color] Movement speed bonus removed!', { color = Color.info })
+            player.print({ 'mtn_v3_map.movement_speed_bonus_removed' }, { color = Color.info })
             local rpg_t = RPG.get_value_from_player(player.index)
             if not rpg_t then
                 return
@@ -1549,7 +1549,7 @@ local boost_movement_speed_on_respawn =
             Modifiers.update_player_modifiers(player)
 
             Task.set_timeout_in_ticks(800, remove_boost_movement_speed_on_respawn, { player = player })
-            player.print('[color=yellow][Temporary Boost][/color] Movement speed bonus applied! Be quick and fetch your corpse!', { color = Color.info })
+            player.print({ 'mtn_v3_map.movement_speed_bonus_applied' }, { color = Color.info })
         end
     )
 
@@ -1600,7 +1600,7 @@ local function on_player_cursor_stack_changed(event)
     if string.find(item.name, 'tnt') then
         -- if final battle, clear stack and print a message
         if Public.get('final_battle') then
-            player.print('TNT cannot be used during the final battle.', { color = Color.warning })
+            player.print({ 'mtn_v3_map.tnt_cannot_be_used_during_the_final_battle' }, { color = Color.warning })
             player.insert(item)
             player.cursor_stack.clear()
             return
@@ -1608,7 +1608,7 @@ local function on_player_cursor_stack_changed(event)
 
         -- if inside the locomotive, insert the stack back to the player inventory
         if Orient.is_interior(player.physical_position) then
-            player.print('TNT cannot be used when inside the locomotive.', { color = Color.warning })
+            player.print({ 'mtn_v3_map.tnt_cannot_be_used_when_inside_the_locomotive' }, { color = Color.warning })
             player.insert(item)
             player.cursor_stack.clear()
             return
@@ -1624,7 +1624,7 @@ local function on_player_cursor_stack_changed(event)
     }
 
     if blacklisted_spawn_items[name] then
-        player.print('You are not allowed to use this item.', { color = Color.warning })
+        player.print({ 'mtn_v3_map.you_are_not_allowed_to_use_this_item' }, { color = Color.warning })
         player.cursor_stack.clear()
         return
     end
@@ -2678,7 +2678,7 @@ end
 
 function Public.render_direction(surface, reversed)
     local counter = Public.get('soft_reset_counter')
-    local text = 'Welcome to Mountain Fortress!'
+    local text = { 'mtn_v3_map.welcome' }
 
     local welcome_target = Orient.world(0, 10)
     local season_dy = 4
@@ -2691,7 +2691,7 @@ function Public.render_direction(surface, reversed)
         'current_season',
         rendering.draw_text
         {
-            text = 'Season: ' .. Public.get_stateful('season'),
+            text = { 'mtn_v3_map.season', Public.get_stateful('season') },
             surface = surface,
             target = season_target,
             color = { r = 0.98, g = 0.77, b = 0.22 },
@@ -2709,7 +2709,7 @@ function Public.render_direction(surface, reversed)
         Public.set('counter',
             rendering.draw_text
             {
-                text = text .. '\nRun: ' .. counter,
+                text = { 'mtn_v3_map.welcome_run', counter },
                 surface = surface,
                 target = welcome_target,
                 color = FunctionColor,
@@ -2760,7 +2760,7 @@ function Public.render_direction(surface, reversed)
         end
         Public.set('direction_attack', rendering.draw_text
             {
-                text = 'Biters will attack this area.',
+                text = { 'mtn_v3_map.biters_will_attack_this_area' },
                 surface = surface,
                 target = attack_pos,
                 color = FunctionColor,
@@ -2791,7 +2791,7 @@ function Public.render_direction(surface, reversed)
         end
         Public.set('direction_attack', rendering.draw_text
             {
-                text = 'Biters will attack this area.',
+                text = { 'mtn_v3_map.biters_will_attack_this_area' },
                 surface = surface,
                 target = attack_pos,
                 color = FunctionColor,
@@ -2989,7 +2989,7 @@ local function on_marked_for_deconstruction(event)
 
     if player.controller_type == defines.controllers.remote then
         entity.cancel_deconstruction(player.force, player)
-        player.print("You cannot deconstruct while in remote view!", { r = 1, g = 0.5, b = 0.5 })
+        player.print({ 'mtn_v3_map.you_cannot_deconstruct_while_in_remote_view' }, { r = 1, g = 0.5, b = 0.5 })
     end
 end
 
@@ -3130,25 +3130,42 @@ function Public.is_creativity_mode_on()
     end
 end
 
+local train_spawner_names
+
 function Public.check_for_spawners_on_train()
     local carriages = ICW.get('carriages')
     local icw_locomotive = Public.get('icw_locomotive')
-    if not carriages or not icw_locomotive then
+    local surface = icw_locomotive and icw_locomotive.surface
+    if not carriages or not surface or not surface.valid then
+        return
+    end
+
+    if not train_spawner_names then
+        train_spawner_names = {}
+        local spawners = prototypes.get_entity_filtered({ { filter = 'type', type = 'unit-spawner' } })
+        for name in pairs(spawners) do
+            train_spawner_names[#train_spawner_names + 1] = name
+        end
+        local captive = prototypes.entity['captive-biter-spawner']
+        if captive and captive.type ~= 'unit-spawner' then
+            train_spawner_names[#train_spawner_names + 1] = captive.name
+        end
+    end
+    if #train_spawner_names == 0 then
         return
     end
 
     for _, carriage in pairs(carriages) do
         local new_area = carriage.new_area
-        if carriage.top_y then
+        if new_area and carriage.top_y then
             local area =
             {
                 left_top = { x = new_area.left_top.x, y = -carriage.top_y },
                 right_bottom = { x = new_area.right_bottom.x, y = carriage.top_y }
             }
-            local surface = icw_locomotive.surface
-            local entities = surface.find_entities_filtered({ area = area })
+            local entities = surface.find_entities_filtered({ area = area, name = train_spawner_names })
             for _, entity in pairs(entities) do
-                if entity.name == 'captive-biter-spawner' or entity.type == 'unit-spawner' then
+                if entity.valid then
                     entity.destroy()
                 end
             end
@@ -3188,7 +3205,7 @@ function Public.on_player_respawned(event)
     if player.character and player.character.valid then
         Task.set_timeout_in_ticks(15, boost_movement_speed_on_respawn, { player = player })
         player.character.health = Math.round(player.character.health * health_values[Math.random(1, #health_values)])
-        player.print(random_respawn_messages[Math.random(1, #random_respawn_messages)])
+        player.print({ random_respawn_messages[Math.random(1, #random_respawn_messages)] })
     end
 end
 
@@ -3307,7 +3324,7 @@ function Public.hinder_buildings_on_planet(event)
                 player.create_local_flying_text(
                     {
                         position = entity.position,
-                        text = (entity.name .. ' cannot be built on the main surface.'),
+                        text = { 'mtn_v3_map.cannot_build_on_main_surface', entity.localised_name },
                         color = { 255, 0, 0 },
                     }
                 )
@@ -3321,7 +3338,7 @@ function Public.hinder_buildings_on_planet(event)
                     {
                         name = 'compi-speech-bubble',
                         position = entity.position,
-                        text = (entity.name .. ' cannot be built on the main surface.'),
+                        text = { 'mtn_v3_map.cannot_build_on_main_surface', entity.localised_name },
                         source = robot,
                         lifetime = 200
                     }
@@ -3536,7 +3553,7 @@ function Public.on_research_finished(event)
     end
 
     if research.name == 'steel-axe' then
-        local msg = 'Steel-axe technology has been researched, 100% has been applied.\nBuy Pickaxe-upgrades in the market to boost it even more!'
+        local msg = { 'mtn_v3_map.steel_axe_researched' }
         Alert.alert_all_players(30, msg, nil, 'achievement/tech-maniac', 0.6, 'global')
     end
 
@@ -3564,7 +3581,7 @@ function Public.set_player_to_god(player)
     end
 
     if not player.character and player.controller_type ~= defines.controllers.spectator then
-        player.print('[color=blue][Spectate][/color] It seems that you are not in the realm of the living.', { color = Color.warning })
+        player.print({ 'mtn_v3_map.spectate_character_required' }, { color = Color.warning })
         return false
     end
 
@@ -3572,7 +3589,7 @@ function Public.set_player_to_god(player)
 
     if spectate[player.index] and spectate[player.index].delay and spectate[player.index].delay > game.tick then
         local cooldown = Math.floor((spectate[player.index].delay - game.tick) / 60) + 1 .. ' seconds!'
-        player.print('[color=blue][Spectate][/color] Retry again in ' .. cooldown, { color = Color.warning })
+        player.print({ 'mtn_v3_map.retry_again_in', cooldown }, { color = Color.warning })
         return false
     end
 
@@ -3613,20 +3630,20 @@ function Public.set_player_to_god(player)
 
     player.tag = ''
 
-    game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is no longer spectating!')
+    game.print({ 'mtn_v3_map.is_no_longer_spectating', player.name })
     Server.to_discord_bold(table.concat { '*** ', '[Spectate] ' .. player.name .. ' is no longer spectating!', ' ***' })
     return true
 end
 
 function Public.set_player_to_spectator(player)
     if player.in_combat then
-        player.print('[color=blue][Spectate][/color] You are in combat. Try again soon.', { color = Color.warning })
+        player.print({ 'mtn_v3_map.you_are_in_combat_try_again_soon' }, { color = Color.warning })
         return false
     end
 
 
     if player.driving then
-        return player.print('[color=blue][Spectate][/color] Please exit the vehicle before continuing', { color = Color.warning })
+        return player.print({ 'mtn_v3_map.please_exit_the_vehicle_before_continuing' }, { color = Color.warning })
     end
 
     local spectate = Public.get('spectate')
@@ -3636,7 +3653,7 @@ function Public.set_player_to_spectator(player)
         {
             verify = false
         }
-        player.print('[color=blue][Spectate][/color] Please click the spectate button again if you really want to this.', { color = Color.warning })
+        player.print({ 'mtn_v3_map.spectate_confirm' }, { color = Color.warning })
         return false
     end
 
@@ -3653,7 +3670,7 @@ function Public.set_player_to_spectator(player)
 
     player.tag = '[img=utility/create_ghost_on_entity_death_modifier_icon]'
     player.set_controller({ type = defines.controllers.spectator })
-    game.print('[color=blue][Spectate][/color] ' .. player.name .. ' is now spectating.')
+    game.print({ 'mtn_v3_map.is_now_spectating', player.name })
     Server.to_discord_bold(table.concat { '*** ', '[Spectate] ' .. player.name .. ' is now spectating.', ' ***' })
 
     if spectate[player.index] and not spectate[player.index].delay then

@@ -129,12 +129,12 @@ end
 
 local messages =
 {
-    ' likes to play in magma.',
-    ' got melted.',
-    ' tried to swim in lava.',
-    ' was incinerated.',
-    " couldn't put the fire out.",
-    ' was turned into their molten form.'
+    'mtn_v3_train.lava_death_1',
+    'mtn_v3_train.lava_death_2',
+    'mtn_v3_train.lava_death_3',
+    'mtn_v3_train.lava_death_4',
+    'mtn_v3_train.lava_death_5',
+    'mtn_v3_train.lava_death_6'
 }
 
 local function is_around_train(data)
@@ -212,7 +212,7 @@ local function hurt_players_outside_of_aura()
                         end
                         if death_mode then
                             if entity.name == 'character' then
-                                game.print(player.name .. messages[Math.random(1, #messages)], { color = { r = 200, g = 0, b = 0 } })
+                                game.print({ messages[Math.random(1, #messages)], player.name }, { color = { r = 200, g = 0, b = 0 } })
                             end
                             if entity.valid then
                                 entity.die()
@@ -240,7 +240,7 @@ local function hurt_players_outside_of_aura()
                             if entity.valid then
                                 if entity.health - damage <= 0 then
                                     if entity.name == 'character' then
-                                        game.print(player.name .. messages[Math.random(1, #messages)], { color = { r = 200, g = 0, b = 0 } })
+                                        game.print({ messages[Math.random(1, #messages)], player.name }, { color = { r = 200, g = 0, b = 0 } })
                                     end
                                 end
                             end
@@ -438,80 +438,72 @@ local function get_driver_action(entity)
         local total_time = player.online_time + Session.get_session_player(player)
 
         if total_time and total_time < playtime_required_to_drive_train then
-            player.print('[color=blue][Locomotive][/color] Not enough playtime acquired to drive the train.')
+            player.print({ 'mtn_v3_train.not_enough_playtime_acquired_to_drive_the_train' })
             driver.driving = false
             return
         end
     end
 
     if player.cursor_stack and player.cursor_stack.valid_for_read and player.cursor_stack.name == 'raw-fish' then
-        player.print('[color=blue][Locomotive][/color] Unequip your fishy if you want to drive.')
+        player.print({ 'mtn_v3_train.unequip_your_fishy_if_you_want_to_drive' })
         driver.driving = false
         return
     end
 
     local armor = driver.get_inventory(defines.inventory.character_armor)
     if armor and armor[1] and armor[1].valid_for_read and valid_armors[armor[1].name] then
-        player.print('[color=blue][Locomotive][/color] Unequip your armor if you want to drive.')
+        player.print({ 'mtn_v3_train.unequip_your_armor_if_you_want_to_drive' })
         driver.driving = false
     end
 end
 
 
-local function check_health(locomotive_health, locomotive_max_health)
-    local m = locomotive_health / locomotive_max_health
-    if locomotive_health > locomotive_max_health then
-        Public.set('locomotive_health', locomotive_max_health)
+function Public.sync_train_health(health)
+    local this = Public.get()
+    local max_health = this.locomotive_max_health
+    health = Math.max(0, Math.min(health, max_health))
+    this.locomotive_health = health
+    if health == max_health then
+        this.poison_deployed = false
     end
 
-
-
-    local health_text = Public.get('health_text')
+    local health_text = this.health_text
     if health_text and health_text.valid then
-        health_text.text = 'HP: ' .. Math.round(locomotive_health) .. ' / ' .. Math.round(locomotive_max_health)
+        health_text.text = { 'mtn_v3_train.hp', Math.round(health), Math.round(max_health) }
     end
 
-    local carriages = Public.get('carriages')
-    if carriages then
-        for i = 1, #carriages do
-            local entity = carriages[i]
-            if not (entity and entity.valid) then
-                return
-            end
-            get_driver_action(entity)
-            if entity.type == 'locomotive' then
-                entity.health = entity.max_health * m
-            else
-                entity.health = entity.max_health * m
+    if this.carriages then
+        local ratio = health / max_health
+        for _, entity in pairs(this.carriages) do
+            if entity.valid then
+                entity.health = entity.max_health * ratio
             end
         end
     end
+    return health
 end
 
 local function set_locomotive_health()
-    local locomotive_health = Public.get('locomotive_health')
-    local locomotive_max_health = Public.get('locomotive_max_health')
-    local locomotive = Public.get('locomotive')
-
+    local this = Public.get()
+    local locomotive = this.locomotive
     if not locomotive or not locomotive.valid then
         return
     end
 
-    -- locomotive.surface.create_entity(
-    --     {
-    --         name = 'big-demolisher-ash-cloud',
-    --         position = locomotive.position,
-    --     }
-    -- )
+    this.locomotive_position = locomotive.position
 
-    Public.set('locomotive_position', locomotive.position)
-
-    if locomotive_health <= 0 then
-        Public.game_is_over()
-        Public.set('locomotive_health', 0)
+    if this.carriages then
+        for _, entity in pairs(this.carriages) do
+            if entity.valid then
+                get_driver_action(entity)
+            end
+        end
     end
 
-    check_health(locomotive_health, locomotive_max_health)
+    local health = Public.sync_train_health(this.locomotive_health)
+    if health == 0 and not this.notified_game_over and not this.game_won then
+        Public.game_is_over()
+    end
 end
 
 local function validate_index()
@@ -656,7 +648,7 @@ local function on_gui_opened(event)
     local trusted_player = Session.get_trusted_player(player)
 
     if not trusted_player then
-        player.print('[Antigrief] You have not grown accustomed to this technology yet.', { color = Color.warning })
+        player.print({ 'mtn_v3_map.technology_restricted' }, { color = Color.warning })
         player.opened = nil
     end
 end
@@ -789,7 +781,7 @@ function Public.render_train_hp()
         'caption',
         rendering.draw_text
         {
-            text = 'Comfy Choo Choo',
+            text = { 'mtn_v3_train.comfy_choo_choo' },
             surface = surface,
             target = { entity = locomotive, offset = { 0, -3.5 } },
             color = { 0, 0, 255 },
@@ -805,7 +797,7 @@ function Public.render_train_hp()
         'health_text',
         rendering.draw_text
         {
-            text = 'HP: ' .. locomotive_health .. ' / ' .. locomotive_max_health,
+            text = { 'mtn_v3_train.hp', locomotive_health, locomotive_max_health },
             surface = surface,
             target = { entity = locomotive, offset = { 0, -2.0 } },
             color = { 0, 0, 255 },

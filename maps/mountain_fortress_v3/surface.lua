@@ -182,7 +182,7 @@ function Public.create_landing_surface()
 
     rendering.draw_text
     {
-        text = 'Init zone',
+        text = { 'mtn_v3_map.init_zone' },
         surface = surface,
         target = { 0, -50 },
         color = { r = 0.98, g = 0.66, b = 0.22 },
@@ -194,7 +194,7 @@ function Public.create_landing_surface()
 
     rendering.draw_text
     {
-        text = 'Map is resetting, please wait a moment. All GUI buttons are disabled at the moment.',
+        text = { 'mtn_v3_map.map_is_resetting_please_wait_a_moment_all' },
         surface = surface,
         target = { 0, -40 },
         color = { r = 0.98, g = 0.66, b = 0.22 },

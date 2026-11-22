@@ -46,8 +46,7 @@ function Public.create(legacy)
 end
 
 function Public.describe(reward)
-    return reward.coins .. ' coins + ' .. reward.xp .. ' shared XP pool + '
-        .. reward.count .. ' [item=' .. reward.item .. ']'
+    return { 'mtn_v3_ctf.reward', reward.coins, reward.xp, reward.count, reward.item }
 end
 
 local function insert(loco, name, count)

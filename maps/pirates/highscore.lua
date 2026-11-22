@@ -6,6 +6,7 @@ local Event = require('utils.event')
 local Global = require('utils.global')
 local Server = require('utils.server')
 local Gui = require('utils.gui')
+local Style = require('utils.gui_style')
 local Math = require('maps.pirates.math')
 local Token = require('utils.token')
 require('utils.core')
@@ -491,7 +492,8 @@ local function score_gui(data)
 	local frame = data.frame
 	frame.clear()
 
-	local columnwidth = 96
+	local width = math.max(540, Style.content_width(player, frame))
+	local widths = Style.column_widths(width, { 125, 120, 95, 75, 65, 85, 70 }, Style.spacing.xs)
 
 	-- local flow = frame.add {type = 'flow'}
 	-- local sFlow = flow.style
@@ -516,6 +518,7 @@ local function score_gui(data)
 
 	-- Score per player
 	local t = frame.add({ type = 'table', column_count = 7 })
+	t.style.horizontal_spacing = Style.spacing.xs
 
 	-- Score headers
 	local headers = {
@@ -554,7 +557,7 @@ local function score_gui(data)
 	}
 
 	local sorting_pref = this.sort_by[player.index] or {}
-	for _, header in ipairs(headers) do
+	for index, header in ipairs(headers) do
 		local cap = header.caption
 
 		-- log(header.caption)
@@ -570,13 +573,11 @@ local function score_gui(data)
 			type = 'label',
 			caption = cap,
 			name = header.name,
+			tooltip = header.tooltip or header.caption,
 		})
-		if header.tooltip then
-			label.tooltip = header.tooltip
-		end
-		label.style.font = 'default-listbox'
-		label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 } -- yellow
-		label.style.minimal_width = columnwidth
+		Style.table_heading(label)
+		label.style.width = widths[index]
+		label.style.single_line = true
 		label.style.horizontal_align = 'right'
 	end
 
@@ -591,17 +592,6 @@ local function score_gui(data)
 			score_list = sort_list(sort.method, sort.column, score_list)
 		end
 	end
-
-	-- New pane for scores (while keeping headers at same position)
-	local scroll_pane = frame.add({
-		type = 'scroll-pane',
-		name = 'score_scroll_pane',
-		direction = 'vertical',
-		horizontal_scroll_policy = 'never',
-		vertical_scroll_policy = 'auto',
-	})
-	scroll_pane.style.maximal_height = 400
-	t = scroll_pane.add({ type = 'table', column_count = 7 })
 
 	-- Score entries
 	for _, entry in pairs(score_list) do
@@ -641,15 +631,17 @@ local function score_gui(data)
 		}
 		local default_color = { r = 0.9, g = 0.9, b = 0.9 }
 
-		for _, column in ipairs(line) do
+		for index, column in ipairs(line) do
 			local label = t.add({
 				type = 'label',
 				caption = column.caption,
+				tooltip = column.caption,
 				color = column.color or default_color,
 			})
 			label.style.font = 'default'
-			label.style.minimal_width = columnwidth
-			label.style.maximal_width = columnwidth
+			label.style.bottom_padding = Style.spacing.xs
+			label.style.width = widths[index]
+			label.style.single_line = true
 			label.style.horizontal_align = 'right'
 		end -- foreach column
 	end -- foreach entry

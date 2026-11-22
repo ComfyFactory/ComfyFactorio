@@ -1,66 +1,30 @@
 local Gui = require 'utils.gui'
+local Style = require 'utils.gui_style'
 local Token = require 'utils.token'
 
 local module_name = Gui.uid_name()
 
 local Public = {}
 
-local mod_name_width = 280
-local version_width = 120
+local version_width = 88
+local cell_padding = Style.spacing.md
+local table_border_width = 8
+
+local function add_columns(list, name, version, name_width)
+    local name_label = list.add({ type = 'label', caption = name })
+    name_label.style.width = name_width
+    name_label.style.single_line = true
+
+    local version_label = list.add({ type = 'label', caption = version })
+    version_label.style.width = version_width
+    version_label.style.single_line = true
+    version_label.style.horizontal_align = 'right'
+    return name_label, version_label
+end
 
 local function build_mod_list_gui(data)
     local frame = data.frame
-    local total_height = (frame.style.minimal_height or 500) - 60
-
     frame.clear()
-
-    local t = frame.add({ type = 'table', column_count = 2 })
-    local label =
-        t.add
-        {
-            type = 'label',
-            caption = 'Current active mods'
-        }
-
-    label.style.font = 'heading-2'
-    label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
-    label.style.horizontal_align = 'center'
-
-    local line = frame.add({ type = 'line' })
-    line.style.top_margin = 8
-    line.style.bottom_margin = 8
-
-    local scroll_pane = frame.add(
-        {
-            type = 'scroll-pane',
-            name = 'mod_list_scroll_pane',
-            direction = 'vertical',
-            horizontal_scroll_policy = 'never',
-            vertical_scroll_policy = 'auto'
-        }
-    )
-    scroll_pane.style.maximal_height = total_height - 50
-    scroll_pane.style.minimal_height = total_height - 50
-
-    t = scroll_pane.add({ type = 'table', name = 'mod_list_table', column_count = 2 })
-
-    local mod_label = t.add({ type = 'label', caption = 'Mod' })
-    mod_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
-    mod_label.style.font = 'heading-2'
-    mod_label.style.top_padding = 6
-    mod_label.style.minimal_height = 40
-    mod_label.style.minimal_width = mod_name_width
-    mod_label.style.maximal_width = mod_name_width
-    mod_label.style.horizontal_align = 'left'
-
-    local version_label = t.add({ type = 'label', caption = 'Version' })
-    version_label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
-    version_label.style.font = 'heading-2'
-    version_label.style.top_padding = 6
-    version_label.style.minimal_height = 40
-    version_label.style.minimal_width = version_width
-    version_label.style.maximal_width = version_width
-    version_label.style.horizontal_align = 'center'
 
     local names = {}
     for name in pairs(script.active_mods) do
@@ -68,25 +32,29 @@ local function build_mod_list_gui(data)
     end
     table.sort(names)
 
-    local row_color = { r = 0.90, g = 0.90, b = 0.90 }
+    local heading = Style.heading(frame, { 'gui.comfy_active_mods', #names })
+    heading.style.bottom_margin = Style.spacing.xs
+
+    local name_width = math.max(80, Style.content_width(data.player, frame) - version_width - 4 * cell_padding - table_border_width)
+    local list = frame.add({ type = 'table', name = 'mod_list_table', column_count = 2, style = 'bordered_table' })
+    list.style.horizontal_spacing = 0
+    list.style.vertical_spacing = 0
+    list.style.top_cell_padding = 1
+    list.style.bottom_cell_padding = 1
+    list.style.left_cell_padding = cell_padding
+    list.style.right_cell_padding = cell_padding
+
+    local name_header, version_header = add_columns(list, { 'gui-manage-mods.name-column-header' }, { 'gui-manage-mods.version-column-header' }, name_width)
+    Style.table_heading(name_header)
+    Style.table_heading(version_header)
+
     for _, name in ipairs(names) do
         local version = script.active_mods[name]
-        local l = t.add({ type = 'label', caption = name })
-        l.style.top_padding = 8
-        l.style.bottom_padding = 8
-        l.style.minimal_width = mod_name_width
-        l.style.maximal_width = mod_name_width
-        l.style.font = 'default-semibold'
-        l.style.font_color = row_color
-        l.style.horizontal_align = 'left'
-        l = t.add({ type = 'label', caption = version })
-        l.style.top_padding = 8
-        l.style.bottom_padding = 8
-        l.style.minimal_width = version_width
-        l.style.maximal_width = version_width
-        l.style.font = 'default-semibold'
-        l.style.font_color = row_color
-        l.style.horizontal_align = 'center'
+        local name_label, version_label = add_columns(list, name, version, name_width)
+        name_label.tooltip = name
+        name_label.style.font_color = Style.colors.text
+        version_label.tooltip = version
+        version_label.style.font_color = Style.colors.muted
     end
 end
 

@@ -24,7 +24,6 @@ local convert_chest_to_linked = Gui.uid_name()
 local item_name_frame_name = Gui.uid_name()
 local close_name = Gui.uid_name()
 
-local module_name = '[Linked Chests] '
 local deepcopy = table.deepcopy
 local insert = table.insert
 local pairs = pairs
@@ -168,7 +167,7 @@ local function draw_convert_chest_button(parent, entity)
             sprite = 'item/' .. entity.name,
             name = convert_chest_to_linked,
             style = Gui.button_style,
-            tooltip = '[color=blue][Linked chest][/color]\nYou can easily convert this chest to an linked chest.\nAllowing items to be moved instantly.\n\nCosts ' .. this.cost_to_convert .. ' coins.'
+            tooltip = { 'mtn_v3_linked_chests.convert_tooltip', this.cost_to_convert }
         }
     Gui.set_data(button, entity)
 end
@@ -488,7 +487,7 @@ local function refresh_main_frame(data)
         local share_one_bottom_flow = share_tbl.add { type = 'flow' }
         share_one_bottom_flow.style.minimal_width = 40
 
-        local share_two_label = share_one_bottom_flow.add({ type = 'label', caption = 'Share Name: ' })
+        local share_two_label = share_one_bottom_flow.add({ type = 'label', caption = { 'mtn_v3_linked_chests.share_name' } })
         share_two_label.style.font = 'heading-2'
         local share_two_text = share_one_bottom_flow.add({ type = 'textfield', name = 'share_name', text = container.share.name })
         share_two_text.enabled = false
@@ -497,7 +496,7 @@ local function refresh_main_frame(data)
         share_two_text.allow_negative = false
         share_two_text.style.minimal_width = 25
     elseif mode == 2 then
-        local linker_tooltip = '[color=yellow]Link Info:[/color]\nThis will only work if there are any current placed linked chests.'
+        local linker_tooltip = { 'mtn_v3_linked_chests.link_info' }
 
         if container then
             local disconnect = volatile_tbl.add { type = 'table', column_count = 2, name = 'disconnect' }
@@ -506,30 +505,30 @@ local function refresh_main_frame(data)
             local linked_container = fetch_container(container.linked_to)
 
             if not next(get_all_linked_containers) then
-                local link_label = linker.add({ type = 'label', caption = 'No chests found. ' })
+                local link_label = linker.add({ type = 'label', caption = { 'mtn_v3_linked_chests.no_chests_found' } })
                 link_label.style.font = 'heading-2'
-                local link_info_label = linker.add({ type = 'label', caption = 'A chest needs an unique share name.' })
+                local link_info_label = linker.add({ type = 'label', caption = { 'mtn_v3_linked_chests.a_chest_needs_an_unique_share_name' } })
                 link_info_label.style.font = 'heading-2'
                 return
             end
 
             if container.linked_to and linked_container then
-                local disconnect_label = disconnect.add({ type = 'label', caption = 'Disconnect link? ' })
+                local disconnect_label = disconnect.add({ type = 'label', caption = { 'mtn_v3_linked_chests.disconnect_link' } })
                 disconnect_label.style.font = 'heading-2'
                 local disconnect_button = disconnect.add({ type = 'checkbox', name = 'disconnect_state', state = false })
-                disconnect_button.tooltip = 'Click to disconnect this link!'
+                disconnect_button.tooltip = { 'mtn_v3_linked_chests.click_to_disconnect_this_link' }
                 disconnect_button.style.minimal_height = 25
 
                 if not trusted_player then
                     disconnect_button.enabled = false
-                    disconnect_button.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
+                    disconnect_button.tooltip = { 'mtn_v3_map.technology_restricted' }
                 end
 
                 local share_tbl = volatile_tbl.add { type = 'table', column_count = 8, name = 'share_tbl' }
                 local share_one_bottom_flow = share_tbl.add { type = 'flow' }
                 share_one_bottom_flow.style.minimal_width = 40
 
-                local share_two_label = share_one_bottom_flow.add({ type = 'label', caption = 'Linked with: ' })
+                local share_two_label = share_one_bottom_flow.add({ type = 'label', caption = { 'mtn_v3_linked_chests.linked_with' } })
                 share_two_label.style.font = 'heading-2'
                 local share_two_text = share_one_bottom_flow.add({ type = 'textfield', text = linked_container.share.name })
                 share_two_text.enabled = false
@@ -538,7 +537,7 @@ local function refresh_main_frame(data)
                 share_two_text.allow_negative = false
                 share_two_text.style.minimal_width = 25
             else
-                local link_chest_label = linker.add({ type = 'label', caption = 'Link with chest:\n', tooltip = linker_tooltip })
+                local link_chest_label = linker.add({ type = 'label', caption = { 'mtn_v3_linked_chests.link_with_chest' }, tooltip = linker_tooltip })
                 link_chest_label.style.font = 'heading-2'
                 local chest_scroll_pane =
                     linker.add
@@ -561,7 +560,7 @@ local function refresh_main_frame(data)
                     local carriage_label = chest_scroll_pane.add
                         {
                             type = 'label',
-                            caption = 'Carriage no. ' .. carriage_container.index .. (carriage_container.name and ' (' .. carriage_container.name .. ')' or ''),
+                            caption = { 'mtn_v3_linked_chests.carriage_no', carriage_container.index, carriage_container.name and ' (' .. carriage_container.name .. ')' or '' },
                             alignment = 'center'
                         }
                     carriage_label.style.minimal_width = 400
@@ -586,11 +585,11 @@ local function refresh_main_frame(data)
                                         name = item_name_frame_name,
                                         style = 'slot_button',
                                         sprite = 'item/' .. source_chest.chest.name,
-                                        tooltip = 'Chest: [color=yellow]' .. source_chest.share.name .. '[/color]\nRight click to show on map.'
+                                        tooltip = { 'mtn_v3_linked_chests.chest_location_tooltip', source_chest.share.name }
                                     }
                                 if not trusted_player then
                                     chest_item_gui.enabled = false
-                                    chest_item_gui.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
+                                    chest_item_gui.tooltip = { 'mtn_v3_map.technology_restricted' }
                                 end
                                 Gui.set_data(chest_item_gui, { name = nil, unit_number = unit_number, share = source_chest.share.name })
                             end
@@ -611,11 +610,11 @@ local function refresh_main_frame(data)
                                         name = item_name_frame_name,
                                         style = 'slot_button',
                                         sprite = 'item/' .. source_chest.chest.name,
-                                        tooltip = 'Chest: [color=yellow]' .. source_chest.share.name .. '[/color]\nRight click to show on map.'
+                                        tooltip = { 'mtn_v3_linked_chests.chest_location_tooltip', source_chest.share.name }
                                     }
                                 if not trusted_player then
                                     chest_item_gui.enabled = false
-                                    chest_item_gui.tooltip = '[Antigrief] You have not grown accustomed to this technology yet.'
+                                    chest_item_gui.tooltip = { 'mtn_v3_map.technology_restricted' }
                                 end
                                 Gui.set_data(chest_item_gui, { name = nil, unit_number = unit_number, share = source_chest.share.name })
                                 chest_index = chest_index + 1
@@ -659,7 +658,7 @@ local function gui_opened(event)
     local inside_frame, close_button
     local frame = player.gui.center[tostring(unit_number)]
     if not frame or not frame.valid then
-        frame, inside_frame, close_button = Gui.add_main_frame_with_toolbar(player, 'center', tostring(unit_number), nil, close_name, 'Linked chest')
+        frame, inside_frame, close_button = Gui.add_main_frame_with_toolbar(player, 'center', tostring(unit_number), nil, close_name, { 'mtn_v3_linked_chests.title' })
     end
 
     if close_button then
@@ -681,7 +680,7 @@ local function gui_opened(event)
         btntbl.add
         {
             type = 'sprite-button',
-            tooltip = '[color=blue]Info![/color]\nChest ID: ' .. unit_number .. '\n\nFor a smoother link:\nSHIFT + RMB on the source entity\nSHIFT + LMB on the destination entity.\n\nTo mine a linked chest, disconnect the link first.',
+            tooltip = { 'mtn_v3_linked_chests.controls', unit_number },
             sprite = Gui.info_icon
         }
     btn.style.height = 20
@@ -727,7 +726,7 @@ local function on_built_entity(event, mode, bypass)
         local final_battle = WPT.get('final_battle')
         if final_battle then
             entity.destroy()
-            player.print(module_name .. 'Game will reset shortly.', { color = Color.warning })
+            player.print({ 'mtn_v3_linked_chests.game_will_reset_shortly' }, { color = Color.warning })
             return
         end
 
@@ -736,7 +735,7 @@ local function on_built_entity(event, mode, bypass)
                 player.insert({ name = 'linked-chest', count = 1 })
             end
             entity.destroy()
-            player.print(module_name .. 'Linked chests only work on the main surface.', { color = Color.warning })
+            player.print({ 'mtn_v3_linked_chests.linked_chests_only_work_on_the_main_surface' }, { color = Color.warning })
             return
         end
 
@@ -745,7 +744,7 @@ local function on_built_entity(event, mode, bypass)
                 player.insert({ name = 'linked-chest', count = 1 })
             end
             entity.destroy()
-            player.print(module_name .. 'Linked chests only work inside the locomotive aura.', { color = Color.warning })
+            player.print({ 'mtn_v3_linked_chests.linked_chests_only_work_inside_the_locomotive_aura' }, { color = Color.warning })
             return
         end
 
@@ -756,7 +755,7 @@ local function on_built_entity(event, mode, bypass)
                 player.insert({ name = 'linked-chest', count = 1 })
             end
             entity.destroy()
-            player.print('[Antigrief] You have not grown accustomed to this technology yet.', { color = Color.warning })
+            player.print({ 'mtn_v3_map.technology_restricted' }, { color = Color.warning })
             return
         end
     end
@@ -826,7 +825,7 @@ local function built_entity_robot(event)
                             player.insert({ name = 'linked-chest', count = 1 })
                         end
                         entity.destroy()
-                        player.print(module_name .. 'Linked chests only work on the main surface.', { color = Color.warning })
+                        player.print({ 'mtn_v3_linked_chests.linked_chests_only_work_on_the_main_surface' }, { color = Color.warning })
                         return
                     end
 
@@ -835,7 +834,7 @@ local function built_entity_robot(event)
                             player.insert({ name = 'linked-chest', count = 1 })
                         end
                         entity.destroy()
-                        player.print(module_name .. 'Linked chests only work inside the locomotive aura.', { color = Color.warning })
+                        player.print({ 'mtn_v3_linked_chests.linked_chests_only_work_inside_the_locomotive_aura' }, { color = Color.warning })
                         return
                     end
 
@@ -846,20 +845,20 @@ local function built_entity_robot(event)
                             player.insert({ name = 'linked-chest', count = 1 })
                         end
                         entity.destroy()
-                        player.print('[Antigrief] You have not grown accustomed to this technology yet.', { color = Color.warning })
+                        player.print({ 'mtn_v3_map.technology_restricted' }, { color = Color.warning })
                         return
                     end
 
                     if entity.link_id == 99999 then
                         if entity.type == 'entity-ghost' then
                             entity.destroy()
-                            player.print(module_name .. 'Blueprinted removed chests does not work.', { color = Color.warning })
+                            player.print({ 'mtn_v3_linked_chests.blueprinted_removed_chests_does_not_work' }, { color = Color.warning })
                             return
                         end
                         if entity.type ~= 'entity-ghost' then
                             player.insert({ name = 'linked-chest', count = 1 })
                             entity.destroy()
-                            player.print(module_name .. 'Blueprinted removed chests does not work.', { color = Color.warning })
+                            player.print({ 'mtn_v3_linked_chests.blueprinted_removed_chests_does_not_work' }, { color = Color.warning })
                             return
                         end
                     end
@@ -954,7 +953,7 @@ local function update_gui()
                         style = 'slot_button',
                         number = item_count,
                         name = item_name,
-                        tooltip = { '', { localized_name }, '\nCount: ', item_count }
+                        tooltip = { 'mtn_v3_linked_chests.item_count', { localized_name }, item_count }
                     }
                 btn.enabled = false
             end
@@ -1123,7 +1122,7 @@ local function on_entity_settings_pasted(event)
     local destination_link_id = destination.link_id
 
     if source_link_id == 99999 or destination_link_id == 99999 then
-        player.print(module_name .. 'Chests with link id 99999 are disabled.', { color = Color.warning })
+        player.print({ 'mtn_v3_linked_chests.chests_with_link_id_99999_are_disabled' }, { color = Color.warning })
         return
     end
 
@@ -1131,7 +1130,7 @@ local function on_entity_settings_pasted(event)
     local destination_container = fetch_container(destination.unit_number)
 
     if not source_container then
-        player.print(module_name .. 'The source container was not found.', { color = Color.warning })
+        player.print({ 'mtn_v3_linked_chests.the_source_container_was_not_found' }, { color = Color.warning })
         return
     end
 
@@ -1142,49 +1141,49 @@ local function on_entity_settings_pasted(event)
     local source_share = source_container.share
 
     if content_mismatches(source_link_id, destination_link_id) then
-        player.print(module_name .. 'The destination chest that you are trying to paste to mismatches with the original chest.', { color = Color.fail })
+        player.print({ 'mtn_v3_linked_chests.the_destination_chest_that_you_are_trying_to' }, { color = Color.fail })
         destination_container.chest.link_id = destination_container.link_id
         return
     end
 
     if source_container.mode == 1 and destination_container.mode == 1 then
-        player.print(module_name .. 'Destination chest cannot be linked since source chest is of same mode.', { color = Color.fail })
+        player.print({ 'mtn_v3_linked_chests.destination_chest_cannot_be_linked_since_source_chest' }, { color = Color.fail })
         destination_container.chest.link_id = destination_container.link_id
         return
     end
 
     if source_container.linked_to and destination_container.linked_to then
-        player.print(module_name .. 'The destination chest is already linked.', { color = Color.fail })
+        player.print({ 'mtn_v3_linked_chests.the_destination_chest_is_already_linked' }, { color = Color.fail })
         destination_container.chest.link_id = destination_container.link_id
         return
     end
 
     if source_container.mode == 2 and not source_container.linked_to then
-        player.print(module_name .. 'The source chest is not linked to anything.', { color = Color.fail })
+        player.print({ 'mtn_v3_linked_chests.the_source_chest_is_not_linked_to_anything' }, { color = Color.fail })
         destination_container.chest.link_id = destination_container.link_id
         return
     end
 
     if source_container.share.name == '' and not source_container.linked_to then
-        player.print(module_name .. 'The source chest is not shared.', { color = Color.fail })
+        player.print({ 'mtn_v3_linked_chests.the_source_chest_is_not_shared' }, { color = Color.fail })
         destination_container.chest.link_id = destination_container.link_id
         return
     end
 
     if source_container.chest.unit_number == source_container.share.name and not source_container.linked_to then
-        player.print(module_name .. 'The source chest is not shared.', { color = Color.fail })
+        player.print({ 'mtn_v3_linked_chests.the_source_chest_is_not_shared' }, { color = Color.fail })
         destination_container.chest.link_id = destination_container.link_id
         return
     end
 
     if destination_container.linked_to then
-        player.print(module_name .. 'The destination chest is already linked.', { color = Color.fail })
+        player.print({ 'mtn_v3_linked_chests.the_destination_chest_is_already_linked' }, { color = Color.fail })
         destination_container.chest.link_id = destination_container.link_id
         return
     end
 
     if destination_container.mode == 1 then
-        player.print(module_name .. 'The destination chest cannot be linked.', { color = Color.fail })
+        player.print({ 'mtn_v3_linked_chests.the_destination_chest_cannot_be_linked' }, { color = Color.fail })
         destination_container.chest.link_id = destination_container.link_id
         return
     end
@@ -1202,7 +1201,7 @@ local function on_entity_settings_pasted(event)
         destination_container.chest.get_inventory(defines.inventory.chest).set_bar()
     end
 
-    player.print(module_name .. 'Successfully pasted settings.', { color = Color.success })
+    player.print({ 'mtn_v3_linked_chests.successfully_pasted_settings' }, { color = Color.success })
 end
 
 function Public.add(surface, position, force, name, icw)
@@ -1290,9 +1289,9 @@ Event.on_nth_tick(10000,
                     if chest and chest.valid and not containers[chest.unit_number] and not WPT.locomotive.is_around_train(chest) then
                         if not this.invalid_containers[chest.unit_number] or chest.get_inventory(defines.inventory.chest).get_bar() ~= 1 then
                             this.invalid_containers[chest.unit_number] = true
-                            Server.output_script_data(module_name .. 'Found a container that was not linked, disabling it: ' .. chest.unit_number)
-                            Server.output_script_data(module_name .. 'Chest name: ' .. chest.name)
-                            Server.output_script_data(module_name .. 'Chest position: ' .. serpent.line(chest.position))
+                            Server.output_script_data('LinkedChests - Found a container that was not linked, disabling it: ' .. chest.unit_number)
+                            Server.output_script_data('LinkedChests - Chest name: ' .. chest.name)
+                            Server.output_script_data('LinkedChests - Chest position: ' .. serpent.line(chest.position))
                             chest.get_inventory(defines.inventory.chest).set_bar(1)
                         end
                     end
@@ -1357,7 +1356,7 @@ Gui.on_click(
         local trusted_player = Session.get_trusted_player(player)
 
         if not trusted_player then
-            player.print('[Antigrief] You have not grown accustomed to this technology yet.', { color = Color.warning })
+            player.print({ 'mtn_v3_map.technology_restricted' }, { color = Color.warning })
             return
         end
 
@@ -1365,7 +1364,7 @@ Gui.on_click(
             local entity = Gui.get_data(event.element)
             if entity and entity.valid then
                 if not WPT.locomotive.is_around_train(entity) or active_surface_index ~= entity.surface.index then
-                    player.print(module_name .. 'The placed entity is not near the locomotive or is on the wrong surface.', { color = Color.warning })
+                    player.print({ 'mtn_v3_linked_chests.the_placed_entity_is_not_near_the_locomotive' }, { color = Color.warning })
                     return
                 end
 
@@ -1382,7 +1381,7 @@ Gui.on_click(
                 on_built_entity(event, true)
             end
         else
-            player.print(module_name .. 'Not enough coins.', { color = Color.warning })
+            player.print({ 'mtn_v3_linked_chests.not_enough_coins' }, { color = Color.warning })
         end
     end
 )

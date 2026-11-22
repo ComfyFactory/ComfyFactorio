@@ -87,7 +87,7 @@ local function buff_main_frame(player, voted_index)
         return
     end
 
-    local main_frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'screen', main_frame_name, nil, nil, 'Buff selection')
+    local main_frame, inside_frame = Gui.add_main_frame_with_toolbar(player, 'screen', main_frame_name, nil, nil, { 'mtn_v3_round.buff_selection' })
     if not inside_frame then
         return
     end
@@ -105,15 +105,15 @@ local function buff_main_frame(player, voted_index)
             }
         button_flow.style.horizontal_align = 'center'
         button_flow.style.horizontally_stretchable = true
-        local b = button_flow.add({ type = 'button', name = selection_button_name, caption = buff.name .. ' (' .. buff.count .. ')' })
+        local b = button_flow.add({ type = 'button', name = selection_button_name, caption = { 'mtn_v3_round.buff_votes', Stateful.localised_buff_name(buff.raw, buff.name), buff.count } })
         b.style.horizontal_align = 'center'
         b.style.vertical_align = 'center'
         b.style.font_color = buff.color
         b.style.font = 'heading-2'
-        b.tooltip = buff.tooltip
+        b.tooltip = { '?', { 'mtn_v3_buffs.' .. buff.raw.name .. '_tooltip' }, buff.tooltip }
         if voted_index and voted_index == i then
             b.enabled = false
-            b.tooltip = b.tooltip .. '\nYou have already voted for this buff.'
+            b.tooltip = { 'mtn_v3_round.buff_already_voted_tooltip', b.tooltip }
         end
     end
 
@@ -129,7 +129,7 @@ local function buff_main_frame(player, voted_index)
         leader_flow.add(
             {
                 type = 'label',
-                caption = 'Current leader: ' .. leader.name .. ' (' .. leader.count .. ')'
+                caption = { 'mtn_v3_round.current_leader', leader.name, leader.count }
             }
         )
     end
@@ -178,7 +178,7 @@ local function set_buffs_voting()
     end
 
     if buff_selection.index ~= index then
-        local message = table.concat({ '*** Current buff has changed to ', buff.name, '! ***' })
+        local message = { 'mtn_v3_round.buff_changed', Stateful.localised_buff_name(buff.raw, buff.name) }
         game.print(message, { color = buff.print_color })
     end
     buff_selection.index = index
@@ -233,7 +233,7 @@ Gui.on_click(
         end
 
         if buff_selection.all_votes[player.name] and buff_selection.all_votes[player.name].index == i then
-            player.print('You have already voted for ' .. buff_selection.buffs[i].name .. '.', { color = buff_selection.buffs[i].print_color })
+            player.print({ 'mtn_v3_round.you_have_already_voted_for', Stateful.localised_buff_name(buff_selection.buffs[i].raw, buff_selection.buffs[i].name) }, { color = buff_selection.buffs[i].print_color })
             clear_main_frame(player)
             return
         end
@@ -252,7 +252,7 @@ Gui.on_click(
         set_buffs_voting()
         refresh_buff_frames()
         clear_main_frame(player)
-        local message = '*** ' .. player.name .. ' has voted for ' .. buff_selection.buffs[i].name .. '! ***'
+        local message = { 'mtn_v3_round.buff_vote', player.name, Stateful.localised_buff_name(buff_selection.buffs[i].raw, buff_selection.buffs[i].name) }
         game.print(message, { color = buff_selection.buffs[i].print_color })
     end
 )
@@ -323,13 +323,13 @@ function Public.reward_goal_completion()
                 end
             end
         end
-        return 'Coins have been granted to the whole team'
+        return { 'mtn_v3_round.objective_coins' }, 'Coins have been granted to the whole team'
     else
         local rng = Math.random(8192, 16384)
         local scale_factor = 0.8 + (zone / 20)
         rng = Math.floor(rng * scale_factor)
         RPG.add_to_global_pool(rng)
-        return 'XP has been granted to the global pool'
+        return { 'mtn_v3_round.objective_xp' }, 'XP has been granted to the global pool'
     end
 end
 
@@ -418,7 +418,7 @@ Event.on_nth_tick(60, function ()
             return
         end
 
-        local str = 'Votes have closed! Buff granted: ' .. buff.name .. '!'
+        local str = { 'mtn_v3_round.buff_voting_closed', Stateful.localised_buff_name(buff.raw, buff.name) }
         game.print(str)
         Server.to_discord_embed(str)
         Public.set('game_reset_tick', 5400)

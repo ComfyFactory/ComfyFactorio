@@ -42,15 +42,15 @@ local clear_breach_text_and_render = function ()
 
     local zone1_text1 = Public.get('zone1_text1')
     if zone1_text1 and zone1_text1.valid then
-        Public.get('zone1_text1').text = 'Collapse has begun!'
+        Public.get('zone1_text1').text = { 'mtn_v3_breach.collapse_has_begun' }
     end
     local zone1_text2 = Public.get('zone1_text2')
     if zone1_text2 and zone1_text2.valid then
-        zone1_text2.text = 'Collapse has begun!'
+        zone1_text2.text = { 'mtn_v3_breach.collapse_has_begun' }
     end
     local zone1_text3 = Public.get('zone1_text3')
     if zone1_text3 and zone1_text3.valid then
-        zone1_text3.text = 'Collapse has begun!'
+        zone1_text3.text = { 'mtn_v3_breach.collapse_has_begun' }
     end
 end
 
@@ -185,7 +185,7 @@ local breach_wall_warning_teleport = function (player, check_trusted)
     return true
 end
 
-local breach_wall_enforced = function (player)
+local breach_wall_enforced = function (player, boundary)
     if not player or not player.valid then
         return
     end
@@ -202,15 +202,18 @@ local breach_wall_enforced = function (player)
         return
     end
 
-    local adjusted_zones = Public.get('adjusted_zones')
+    local sign = Orient.progression(position) < 0 and -1 or 1
+    local target = Orient.world(Orient.lateral(position), sign * Math.max(0, boundary - 10))
+    local safe_position = surface.find_non_colliding_position('character', target, 8, 0.5) or target
+    if not Public.teleport_player(player, safe_position, surface) then
+        local spawn = player.force.get_spawn_position(surface)
+        if Math.abs(Orient.progression(spawn)) >= boundary or not Public.teleport_player(player, spawn, surface) then
+            return false
+        end
+    end
 
     local message = ({ 'breached_wall.warning_teleport_enforced', player.name })
     Alert.alert_all_players(40, message, nil, nil, nil, 'global')
-    if adjusted_zones.reversed then
-        Public.teleport_player(player, Orient.offset(position, 0, -10), surface)
-    else
-        Public.teleport_player(player, Orient.offset(position, 0, 10), surface)
-    end
     Modifiers.update_single_modifier(player, 'character_running_speed_modifier', 'breached_wall', -0.85)
     Task.set_duration_task(15, 200, damage_indicator_token, { player_index = player.index })
     if player.driving then
@@ -237,27 +240,56 @@ local spidertron_too_far =
     )
 
 local function update_locomotive_barrier()
-    local current_task = Public.get('current_task')
-    if not current_task.done or Public.get('final_battle') or Public.get('game_lost') then
+    local this = Public.get()
+    local locomotive = this.locomotive
+    local surface = locomotive and locomotive.valid and locomotive.surface
+    local active = this.current_task.done and not this.final_battle and not this.game_lost and surface
+    local barrier = this.locomotive_barrier
+    if barrier and (not active or barrier.surface ~= surface) then
+        for _, line in pairs(barrier.lines) do
+            if line.valid then
+                line.destroy()
+            end
+        end
+        this.locomotive_barrier = nil
+        barrier = nil
+    end
+
+    if not active then
         return
     end
 
-    local locomotive = Public.get('locomotive')
-    if not (locomotive and locomotive.valid) then
-        return
+    if not barrier then
+        barrier = { surface = surface, lines = {} }
+        this.locomotive_barrier = barrier
     end
 
-    local gap = Public.get('gap_between_locomotive')
+    local gap = this.gap_between_locomotive
     local boundary = Math.max(300, Math.abs(Orient.progression(locomotive.position)) + gap.neg_gap)
     local half_width = Orient.zone_width() / 2
-    local surface = locomotive.surface
-    for _, sign in ipairs({ -1, 1 }) do
-        local source = Orient.world(-half_width, boundary * sign)
-        local target = Orient.world(half_width, boundary * sign)
-        for _ = 1, 3 do
-            surface.create_entity({ name = 'electric-beam', position = source, source = source, target = target, duration = 30 })
+    local horizontal = Orient.is_horizontal()
+    local moved = barrier.boundary ~= boundary or barrier.half_width ~= half_width or barrier.horizontal ~= horizontal
+    for sign = -1, 1, 2 do
+        local line = barrier.lines[sign]
+        if not line or not line.valid then
+            barrier.lines[sign] = rendering.draw_line
+                {
+                    surface = surface,
+                    from = Orient.world(-half_width, boundary * sign),
+                    to = Orient.world(half_width, boundary * sign),
+                    color = { r = 0.35, g = 0.75, b = 1, a = 0.85 },
+                    width = 3,
+                    dash_length = 2,
+                    gap_length = 0.5
+                }
+        elseif moved then
+            line.from = Orient.world(-half_width, boundary * sign)
+            line.to = Orient.world(half_width, boundary * sign)
         end
     end
+    barrier.boundary = boundary
+    barrier.half_width = half_width
+    barrier.horizontal = horizontal
 end
 
 local check_distance_between_player_and_locomotive = function (player)
@@ -439,7 +471,7 @@ local compare_player_and_train = function (player, entity)
 
     local color = Color.yellow
     if locomotive_distance_too_far_pre_warning and not locomotive_distance_too_far then
-        local msg = 'Warning! You are getting too far away from the train!'
+        local msg = { 'mtn_v3_breach.train_distance_warning' }
         player.create_local_flying_text(
             {
                 position = position,
@@ -449,7 +481,7 @@ local compare_player_and_train = function (player, entity)
         )
         player.print(msg, { color = color })
     elseif locomotive_distance_too_far then
-        local msg = 'Warning! You are too far away from the train! TURN BACK!'
+        local msg = { 'mtn_v3_breach.train_distance_limit' }
         player.create_local_flying_text(
             {
                 position = position,
@@ -519,7 +551,7 @@ local function distance(player)
         local enforce_wave_200_before_collapse = Public.get('enforce_wave_200_before_collapse')
         if enforce_wave_200_before_collapse then
             if wave_number < 200 then
-                breach_wall_enforced(player)
+                breach_wall_enforced(player, max + (adjusted_zones.reversed and 32 or 0))
                 return
             end
         else
@@ -556,7 +588,7 @@ local function distance(player)
                 local main_market_items = Public.get('main_market_items')
                 if not main_market_items['spidertron'] then
                     local bw = Public.get('bw')
-                    local spider_tooltip = 'BiterStunner 9000'
+                    local spider_tooltip = { 'mtn_v3_breach.spider_tooltip' }
                     local rng
                     if bw then
                         rng = Math.random(30000, 80000)
@@ -613,6 +645,12 @@ local function distance(player)
 end
 
 local function on_player_changed_position(event)
+    local player_index = event.player_index
+    local checks = Public.get('breach_position_checks')
+    if checks and checks[player_index] == event.tick then
+        return
+    end
+
     local final_battle = Public.get('final_battle')
     if final_battle then
         return
@@ -623,7 +661,7 @@ local function on_player_changed_position(event)
         return
     end
 
-    local player = game.get_player(event.player_index)
+    local player = game.get_player(player_index)
     if not player or not player.valid then
         return
     end
@@ -652,9 +690,10 @@ local function on_player_changed_position(event)
         return
     end
 
+    checks[player_index] = event.tick
     check_distance_between_player_and_locomotive(player)
-
     distance(player)
+    checks[player_index] = nil
 end
 
 local function on_player_driving_changed_state(event)

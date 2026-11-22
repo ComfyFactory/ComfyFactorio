@@ -206,6 +206,7 @@ stds.factorio =
                     {
                         'compare',
                         'deepcopy',
+                        'equals',
                         'deep_copy',
                         'add_all',
                         'fast_remove'
@@ -219,6 +220,7 @@ stds.factorio =
             {
                 'compare',
                 'deepcopy',
+                'equals',
                 'deep_copy',
                 'add_all',
                 'fast_remove'

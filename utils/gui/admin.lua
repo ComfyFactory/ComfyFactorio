@@ -3,6 +3,7 @@
 local Event = require 'utils.event'
 local Jailed = require 'utils.datastore.jail_data'
 local Gui = require 'utils.gui'
+local Style = require 'utils.gui_style'
 local AntiGrief = require 'utils.antigrief'
 local SpamProtection = require 'utils.spam_protection'
 local Color = require 'utils.color_presets'
@@ -488,11 +489,6 @@ local function create_mini_camera_gui(player, caption, position, surface)
         player.gui.center['mini_camera'].destroy()
     end
     local frame = player.gui.center.add({ type = 'frame', name = 'mini_camera', caption = caption })
-    surface = tonumber(surface)
-    surface = game.surfaces[surface]
-    if not surface or not surface.valid then
-        return
-    end
 
     local camera =
         frame.add(
@@ -641,8 +637,9 @@ end
 
 
 
-local function draw_events(player_data)
+local function draw_events(player_data, player)
     local frame = player_data.frame
+    local width = math.max(400, Style.content_width(player, frame))
     local history = frame.pagination_table.admin_history_select.items[frame.pagination_table.admin_history_select.selected_index]
     local target_player_name = frame['admin_player_select'].items[frame['admin_player_select'].selected_index]
     player_data.target_player_name = target_player_name
@@ -658,13 +655,12 @@ local function draw_events(player_data)
                     name = 'datalog',
                     direction = 'vertical',
                     horizontal_scroll_policy = 'never',
-                    vertical_scroll_policy = 'auto'
+                    vertical_scroll_policy = 'auto-and-reserve-space'
                 }
             )
         scroll_pane.style.maximal_height = 220
         scroll_pane.style.minimal_height = 96
-        scroll_pane.style.minimal_width = 492
-        scroll_pane.style.maximal_width = 492
+        scroll_pane.style.width = width
         scroll_pane.style.padding = 6
     end
 
@@ -685,7 +681,7 @@ local function draw_events(player_data)
             row.style.font = 'default'
             row.style.font_color = { r = 0.78, g = 0.76, b = 0.70 }
             row.style.single_line = false
-            row.style.maximal_width = 470
+            row.style.maximal_width = width - 24
         end
     )
 end
@@ -727,26 +723,22 @@ local function text_changed(event)
         return
     end
 
-    draw_events(player_data)
+    draw_events(player_data, player)
 end
 
-local accent = { r = 0.78, g = 0.58, b = 0.32 }
-local ink = { r = 0.86, g = 0.84, b = 0.78 }
-local muted = { r = 0.66, g = 0.64, b = 0.58 }
-local danger = { r = 255, g = 0.25, b = 0.22 }
+local muted = Style.colors.muted
 
 local function paint_button(button, width, harmful)
+    Style.button(button, harmful and 'danger' or nil)
     button.style.font = 'default-semibold'
-    button.style.font_color = harmful and danger or ink
-    button.style.minimal_width = width
-    button.style.maximal_width = width
-    button.style.minimal_height = 28
-    button.style.maximal_height = 28
+    button.style.width = width
     button.style.top_padding = 0
     button.style.bottom_padding = 0
     button.style.left_padding = 6
     button.style.right_padding = 6
 end
+
+local page_button_width, page_count_width, page_button_gap = 32, 48, 4
 
 local function create_pagination_buttons(player_data, frame, table_count)
     if table_count == 0 then
@@ -770,7 +762,7 @@ local function create_pagination_buttons(player_data, frame, table_count)
             type = 'flow',
             direction = 'horizontal'
         }
-    button_flow.style.horizontal_spacing = 4
+    button_flow.style.horizontal_spacing = page_button_gap
     button_flow.style.vertical_align = 'center'
     local prev_button =
         button_flow.add
@@ -781,7 +773,7 @@ local function create_pagination_buttons(player_data, frame, table_count)
             style = 'back_button'
         }
     prev_button.style.font = 'default-semibold'
-    prev_button.style.minimal_width = 28
+    prev_button.style.width = page_button_width
     prev_button.style.minimal_height = 28
     prev_button.tooltip = 'Previous page\nHolding [color=#c79452]shift[/color] while pressing LMB/RMB will jump to the first page.'
 
@@ -795,7 +787,7 @@ local function create_pagination_buttons(player_data, frame, table_count)
     count_label.style.font = 'default'
     count_label.style.font_color = muted
     count_label.style.horizontal_align = 'center'
-    count_label.style.minimal_width = 48
+    count_label.style.width = page_count_width
     player_data.count_label = count_label
 
     local next_button =
@@ -807,11 +799,12 @@ local function create_pagination_buttons(player_data, frame, table_count)
             style = 'forward_button'
         }
     next_button.style.font = 'default-semibold'
-    next_button.style.minimal_width = 28
+    next_button.style.width = page_button_width
     next_button.style.minimal_height = 28
     next_button.tooltip = 'Next page\nHolding [color=#c79452]shift[/color] while pressing LMB/RMB will jump to the last page.'
 
     player_data.table_count = table_count
+    return 2 * (page_button_width + page_button_gap) + page_count_width
 end
 
 create_admin_panel = function (data)
@@ -849,36 +842,31 @@ create_admin_panel = function (data)
         end
     end
 
-    local checkbox_caption = 'Currently showing: connected players only.'
-    if checkbox_state then
-        checkbox_caption = 'Currently showing: all players that have played on this server.'
-    end
-
-    local list_toggle = frame.add({ type = 'checkbox', name = listable_players_name, caption = checkbox_caption, state = checkbox_state or false })
+    local list_toggle = frame.add({
+        type = 'checkbox', name = listable_players_name, caption = 'Include offline players', state = checkbox_state or false
+    })
     list_toggle.style.font_color = muted
     list_toggle.style.bottom_margin = 6
 
-    local panel_width = 492
-    local player_button_width = 116
-    local global_button_width = 236
+    local panel_width = math.max(400, Style.content_width(player, frame))
+    local actions_width = panel_width - 2 * Style.spacing.md
+    local player_button_widths = Style.column_widths(actions_width, { 1, 1, 1, 1 }, Style.spacing.sm)
+    local global_button_widths = Style.column_widths(actions_width, { 1, 1 }, Style.spacing.sm)
 
     local drop_down = frame.add({ type = 'drop-down', name = 'admin_player_select', items = player_names, selected_index = selected_index })
     drop_down.style.minimal_width = panel_width
     drop_down.style.maximal_width = panel_width
-    drop_down.style.minimal_height = 28
+    drop_down.style.minimal_height = Style.dimensions.button_height
     drop_down.style.bottom_margin = 8
 
-    local player_box = frame.add({ type = 'frame', direction = 'vertical', style = 'inside_shallow_frame_with_padding' })
-    player_box.style.minimal_width = panel_width
-    player_box.style.padding = 8
-    player_box.style.bottom_margin = 8
-    local player_caption = player_box.add({ type = 'label', caption = 'Player actions' })
-    player_caption.style.font = 'default-bold'
-    player_caption.style.font_color = accent
+    local player_box = Style.surface(frame, 'player_actions', panel_width)
+    player_box.visible = selected_index < #player_names or frame.tags.comfy_view == 'full'
+    player_box.style.bottom_margin = Style.spacing.xs
+    local player_caption = Style.heading(player_box, 'Player actions')
     player_caption.style.bottom_margin = 6
 
     local t = player_box.add({ type = 'table', column_count = 4 })
-    t.style.horizontal_spacing = 6
+    t.style.horizontal_spacing = Style.spacing.sm
     t.style.vertical_spacing = 6
     local harmful =
     {
@@ -972,20 +960,19 @@ create_admin_panel = function (data)
                 )
         end
     end
-    for _, button in pairs(buttons) do
-        paint_button(button, player_button_width, harmful[button.name])
+    for index, button in ipairs(buttons) do
+        paint_button(button, player_button_widths[(index - 1) % #player_button_widths + 1], harmful[button.name])
     end
 
-    local global_box = frame.add({ type = 'frame', direction = 'vertical', style = 'inside_shallow_frame_with_padding' })
-    global_box.style.minimal_width = panel_width
-    global_box.style.padding = 8
-    global_box.style.bottom_margin = 8
-    local global_label = global_box.add({ type = 'label', caption = 'Global actions' })
-    global_label.style.font = 'default-bold'
-    global_label.style.font_color = accent
-    global_label.style.bottom_margin = 6
-    local actionTable = global_box.add({ type = 'table', column_count = 2 })
-    actionTable.style.horizontal_spacing = 6
+    local global_box = Style.surface(frame, 'global_actions', panel_width)
+    global_box.style.bottom_margin = Style.spacing.xs
+    local show_global = player_data.show_global_actions
+    if show_global == nil then
+        show_global = frame.tags.comfy_view == 'full'
+    end
+    global_box.add({ type = 'checkbox', name = 'comfy_admin_global_actions', caption = { 'gui.comfy_global_actions' }, state = show_global })
+    local actionTable = global_box.add({ type = 'table', name = 'actions', column_count = 2, visible = show_global })
+    actionTable.style.horizontal_spacing = Style.spacing.sm
     actionTable.style.vertical_spacing = 6
     local global_harmful =
     {
@@ -1045,8 +1032,8 @@ create_admin_panel = function (data)
             }
         )
     }
-    for _, button in pairs(bottomButtons) do
-        paint_button(button, global_button_width, global_harmful[button.name])
+    for index, button in ipairs(bottomButtons) do
+        paint_button(button, global_button_widths[(index - 1) % #global_button_widths + 1], global_harmful[button.name])
     end
 
     local histories = {}
@@ -1088,21 +1075,19 @@ create_admin_panel = function (data)
         return
     end
 
-    local history_caption = frame.add({ type = 'label', caption = 'History' })
-    history_caption.style.font = 'default-bold'
-    history_caption.style.font_color = accent
+    local history_caption = Style.heading(frame, 'History')
     history_caption.style.top_margin = 2
     history_caption.style.bottom_margin = 4
 
     local search_table = frame.add({ type = 'table', column_count = 2 })
-    search_table.style.horizontal_spacing = 8
+    search_table.style.horizontal_spacing = Style.spacing.md
     search_table.style.bottom_margin = 6
     local search_label = search_table.add({ type = 'label', caption = 'Search' })
     search_label.style.font_color = muted
+    search_label.style.width = 46
     local search_text = search_table.add({ type = 'textfield' })
     search_text.text = player_data.search_text or ''
-    search_text.style.minimal_width = 420
-    search_text.style.maximal_width = 420
+    search_text.style.width = panel_width - 46 - Style.spacing.md
     search_text.style.minimal_height = 26
 
     local selected_index_2 = 1
@@ -1113,10 +1098,8 @@ create_admin_panel = function (data)
     local pagination_table = frame.add({ type = 'table', column_count = 2, name = 'pagination_table' })
 
     local drop_down_2 = pagination_table.add({ type = 'drop-down', name = 'admin_history_select', items = histories, selected_index = selected_index_2 })
-    drop_down_2.style.minimal_width = 300
-    drop_down_2.style.maximal_width = 300
     drop_down_2.style.minimal_height = 28
-    pagination_table.style.horizontal_spacing = 8
+    pagination_table.style.horizontal_spacing = Style.spacing.md
     pagination_table.style.vertical_align = 'center'
 
     local history_index =
@@ -1138,14 +1121,23 @@ create_admin_panel = function (data)
     local si = frame.pagination_table.admin_history_select.selected_index
     local history = frame.pagination_table.admin_history_select.items[si]
 
-    create_pagination_buttons(player_data, pagination_table, (history_index[history] and type(history_index[history]) == 'table' and #history_index[history] or history_index[history]))
+    local controls_width = create_pagination_buttons(player_data, pagination_table, (history_index[history] and type(history_index[history]) == 'table' and #history_index[history] or history_index[history]))
+    drop_down_2.style.width = controls_width and panel_width - controls_width - Style.spacing.md or panel_width
 
     player_data.frame = frame
 
-    draw_events(player_data)
+    draw_events(player_data, player)
 end
 
 local create_admin_panel_token = Token.register(create_admin_panel)
+
+Gui.on_checked_state_changed('comfy_admin_global_actions', function (event)
+    local frame = Gui.get_player_active_frame(event.player)
+    if frame and frame.name == 'Admin' and event.player.admin and event.element.parent == frame.global_actions then
+        get_player_data(event.player).show_global_actions = event.element.state
+        frame.global_actions.actions.visible = event.element.state
+    end
+end)
 
 local admin_functions =
 {
@@ -1171,73 +1163,32 @@ local admin_global_functions =
     ['clear_biters'] = clear_biters
 }
 
-local function get_surface_from_string(str)
-    if not str then
+local function get_history_location(caption)
+    if type(caption) ~= 'string' then
         return
     end
-    if str == '' then
+
+    local line = lower(caption)
+    -- chefkiss
+    local x, y, index = line:match('%s+x:(%S+)%s+y:(%S+)%s+surface:%s*(%d+)%s*$')
+    if not index then
+        x, y, index = line:match('%s+lt_x:(%S+) at lt_y:(%S+) at rb_x:%S+ at rb_y:%S+%s+surface:%s*(%d+)%s*$')
+    end
+
+    x, y = tonumber(x), tonumber(y)
+    if not x or not y or math.abs(x) == math.huge or math.abs(y) == math.huge then
         return
     end
-    str = string.lower(str)
-    local start = string.find(str, 'surface:')
-    local sname = string.len(str)
-    local surface = string.sub(str, start + 8, sname)
-    if not surface then
-        return false
-    end
 
-    return surface
-end
-
-local function get_position_from_string(str)
-    if not str then
+    index = tonumber(index)
+    if not index or index < 1 or index > 0xffffffff then
         return
     end
-    if str == '' then
-        return
-    end
-    str = string.lower(str)
-    local x_pos = string.find(str, 'x:')
-    local y_pos = string.find(str, 'y:')
-    if not x_pos then
-        return false
-    end
-    if not y_pos then
-        return false
-    end
-    x_pos = x_pos + 2
-    y_pos = y_pos + 2
 
-    local a = 1
-    for i = 1, string.len(str), 1 do
-        local s = string.sub(str, x_pos + i, x_pos + i)
-        if not s then
-            break
-        end
-        if string.byte(s) == 32 then
-            break
-        end
-        a = a + 1
+    local surface = game.surfaces[index]
+    if surface and surface.valid then
+        return { x = x, y = y }, surface
     end
-    local x = string.sub(str, x_pos, x_pos + a)
-
-    local a1 = 1
-    for i = 1, string.len(str), 1 do
-        local s = string.sub(str, y_pos + i, y_pos + i)
-        if not s then
-            break
-        end
-        if string.byte(s) == 32 then
-            break
-        end
-        a1 = a1 + 1
-    end
-
-    local y = string.sub(str, y_pos, y_pos + a1)
-    x = tonumber(x)
-    y = tonumber(y)
-    local position = { x = x, y = y }
-    return position
 end
 
 local function on_gui_click(event)
@@ -1254,7 +1205,7 @@ local function on_gui_click(event)
         return
     end
 
-    if frame.name ~= 'Admin' then
+    if frame.name ~= 'Admin' or not player.admin then
         return
     end
 
@@ -1309,30 +1260,24 @@ local function on_gui_click(event)
         return
     end
 
-    if not frame then
+    if element.type ~= 'label' or element.parent ~= frame.datalog then
         return
     end
-    if not element.caption then
-        return
-    end
-    local position = get_position_from_string(element.caption)
+
+    local caption = element.caption
+    local position, surface = get_history_location(caption)
     if not position then
         return
     end
 
-    local surface = get_surface_from_string(element.caption)
-    if not surface then
-        return
-    end
-
     if player.gui.center['mini_camera'] then
-        if player.gui.center['mini_camera'].caption == element.caption then
+        if player.gui.center['mini_camera'].caption == caption then
             player.gui.center['mini_camera'].destroy()
             return
         end
     end
 
-    create_mini_camera_gui(player, element.caption, position, surface)
+    create_mini_camera_gui(player, caption, position, surface)
 end
 
 local function on_gui_closed(event)
@@ -1342,6 +1287,9 @@ local function on_gui_closed(event)
 end
 
 local function on_gui_selection_state_changed(event)
+    if not event.element or not event.element.valid then
+        return
+    end
     local player = game.get_player(event.player_index)
     local name = event.element.name
 
@@ -1378,6 +1326,9 @@ local function on_gui_selection_state_changed(event)
         end
         if frame.name ~= 'Admin' then
             return
+        end
+        if frame.player_actions then
+            frame.player_actions.visible = event.element.selected_index < #event.element.items or frame.tags.comfy_view == 'full'
         end
 
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Admin Player Select')

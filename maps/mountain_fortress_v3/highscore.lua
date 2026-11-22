@@ -3,12 +3,12 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
 local Gui = require 'utils.gui'
+local Style = require 'utils.gui_style'
 local Task = require 'utils.task_token'
 local Score = require 'utils.gui.score'
 local WD = require 'modules.wave_defense.table'
 local Core = require 'utils.core'
 local SpamProtection = require 'utils.spam_protection'
-local Math = require 'utils.math.math'
 
 local module_name = Gui.uid_name()
 local score_dataset = 'highscores'
@@ -457,28 +457,18 @@ local sorting_symbol = { ascending = '▲', descending = '▼' }
 
 local function get_score_list()
     local score_force = this.score_table['player']
-    if not score_force then
-        return
-    end
-    local whitelisted_score_tbl = {}
-    sort_and_whitelist(whitelisted_score_tbl, 'killscore', score_force.players)
-    sort_and_whitelist(whitelisted_score_tbl, 'mined_entities', score_force.players)
-    sort_and_whitelist(whitelisted_score_tbl, 'built_entities', score_force.players)
-    remove_non_top_10(whitelisted_score_tbl, score_force.players)
+    local players = score_force and score_force.players
     local score_list = {}
-    if not score_force then
-        score_list[#score_list + 1] =
-        {
-            name = 'Nothing here yet',
-            killscore = 0,
-            built_entities = 0,
-            mined_entities = 0
-        }
+    if not players then
         return score_list
     end
+    local whitelisted_score_tbl = {}
+    sort_and_whitelist(whitelisted_score_tbl, 'killscore', players)
+    sort_and_whitelist(whitelisted_score_tbl, 'mined_entities', players)
+    sort_and_whitelist(whitelisted_score_tbl, 'built_entities', players)
+    remove_non_top_10(whitelisted_score_tbl, players)
 
-    for p, _ in pairs(score_force.players) do
-        local score = score_force.players[p]
+    for _, score in pairs(players) do
         insert(
             score_list,
             {
@@ -492,66 +482,47 @@ local function get_score_list()
     return score_list
 end
 
-local function add_global_stats(frame)
+local function add_global_stats(frame, width)
     local score = this.score_table['player']
     if not score then
         return
     end
 
-    local t = frame.add { type = 'table', column_count = 6 }
+    local columns = width >= 650 and 5 or (width >= 420 and 3 or 2)
+    local spacing = Style.spacing.sm
+    local cell_width = math.floor((width - (columns - 1) * spacing) / columns)
+    local metrics = frame.add { type = 'table', column_count = columns }
+    metrics.style.horizontal_spacing = spacing
+    metrics.style.vertical_spacing = Style.spacing.xs
+    metrics.style.bottom_margin = Style.spacing.sm
 
-    local rocket_label = t.add { type = 'label', caption = 'Rockets: ' }
-    rocket_label.style.font = 'default-game'
-    rocket_label.style.font_color = { r = 175, g = 75, b = 255 }
-    rocket_label.style.minimal_width = 100
-
-    local launched_rockets_label = t.add { type = 'label', caption = score.rockets_launched }
-    launched_rockets_label.style.font = 'heading-2'
-    launched_rockets_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
-    launched_rockets_label.style.minimal_width = 100
-
-    local dead_bugs_label = t.add { type = 'label', caption = 'Dead bugs: ' }
-    dead_bugs_label.style.font = 'default-game'
-    dead_bugs_label.style.font_color = { r = 0.90, g = 0.3, b = 0.3 }
-    dead_bugs_label.style.minimal_width = 100
-
-    local biters_killed_label = t.add { type = 'label', caption = score.biters_killed }
-    biters_killed_label.style.font = 'heading-2'
-    biters_killed_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
-    biters_killed_label.style.minimal_width = 100
-
-    local breached_zones_label = t.add { type = 'label', caption = 'Breached zones: ' }
-    breached_zones_label.style.font = 'default-game'
-    breached_zones_label.style.font_color = { r = 0, g = 128, b = 0 }
-    breached_zones_label.style.minimal_width = 100
-    local zone = score.breached_zone - 1
-    if score.breached_zone == 0 then
-        zone = 0
+    local stats =
+    {
+        { 'Rockets', score.rockets_launched },
+        { 'Enemies killed', score.biters_killed },
+        { 'Breached zones', score.breached_zone and math.max(0, score.breached_zone - 1) },
+        { 'Highest wave', score.wave_number },
+        { 'Last run time', score.total_time and Core.format_time(score.total_time) }
+    }
+    for _, stat in ipairs(stats) do
+        local cell = metrics.add { type = 'flow', direction = 'vertical' }
+        cell.style.width = cell_width
+        cell.style.vertical_spacing = 0
+        Style.text(cell, stat[1], cell_width, Style.colors.muted)
+        local value = stat[2] or 'N/A'
+        local label = Style.text(cell, value, cell_width)
+        label.style.font = 'default-semibold'
+        label.tooltip = tostring(value)
     end
-    local zone_label = t.add { type = 'label', caption = zone }
-    zone_label.style.font = 'heading-2'
-    zone_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
-    zone_label.style.minimal_width = 100
+end
 
-    local highest_wave_label = t.add { type = 'label', caption = 'Highest wave: ' }
-    highest_wave_label.style.font = 'default-game'
-    highest_wave_label.style.font_color = { r = 128, g = 128, b = 0.9 }
-    highest_wave_label.style.minimal_width = 100
-
-    local wave_number_label = t.add { type = 'label', caption = score.wave_number }
-    wave_number_label.style.font = 'heading-2'
-    wave_number_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
-    wave_number_label.style.minimal_width = 100
-
-    local last_total_label = t.add { type = 'label', caption = 'Last run total time: ' }
-    last_total_label.style.font = 'default-game'
-    last_total_label.style.font_color = { r = 0.9, g = 128, b = 128 }
-    last_total_label.style.minimal_width = 100
-
-    local format_time_label = t.add { type = 'label', caption = Core.format_time(score.total_time) }
-    format_time_label.style.font = 'heading-2'
-    format_time_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
-    format_time_label.style.minimal_width = 100
+local function add_score_cell(scores, width, align, caption, tooltip, name)
+    local label = scores.add { type = 'label', name = name, caption = caption, tooltip = tooltip }
+    label.style.width = width
+    label.style.single_line = false
+    label.style.horizontal_align = align
+    label.style.font_color = Style.colors.text
+    return label
 end
 
 local function show_score(data)
@@ -559,135 +530,58 @@ local function show_score(data)
     local frame = data.frame
     frame.clear()
 
-    local flow = frame.add { type = 'flow' }
-    local sFlow = flow.style
-    sFlow.horizontally_stretchable = true
-    sFlow.horizontal_align = 'center'
-    sFlow.vertical_align = 'center'
-
-    local stats = flow.add { type = 'label', caption = 'Highest score so far:' }
-    local s_stats = stats.style
-    s_stats.font = 'heading-1'
-    s_stats.font_color = { r = 0.98, g = 0.66, b = 0.22 }
-    s_stats.horizontal_align = 'center'
-    s_stats.vertical_align = 'center'
-
-    -- Global stats : rockets, biters kills
-    add_global_stats(frame)
-
-    -- Separator
-    local line = frame.add { type = 'line' }
-    line.style.top_margin = 8
-    line.style.bottom_margin = 8
-
-    -- Score per player
-    local t = frame.add { type = 'table', column_count = 4 }
+    local width = Style.content_width(player, frame)
+    Style.heading(frame, 'Highest score so far')
+    add_global_stats(frame, width)
 
     -- Score headers
     local headers =
     {
-        { name = 'score_player', caption = 'Player' },
-        { column = 'killscore', name = 'score_killscore', caption = 'Killscore' },
-        { column = 'built_entities', name = 'score_built_entities', caption = 'Built structures' },
-        { column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities' }
+        { name = 'score_player', caption = { 'mtn_v3_highscore.player' }, align = 'left' },
+        { column = 'killscore', name = 'score_killscore', caption = { 'mtn_v3_highscore.killscore' } },
+        { column = 'built_entities', name = 'score_built_entities', caption = { 'mtn_v3_highscore.built_structures' } },
+        { column = 'mined_entities', name = 'score_mined_entities', caption = { 'mtn_v3_highscore.mined_entities' } }
     }
 
+    local scores = frame.add { type = 'table', name = 'highscore_table', column_count = #headers, style = 'bordered_table' }
+    local cell_padding = Style.spacing.sm
+    local table_border_width = 8
+    scores.style.horizontal_spacing = 0
+    scores.style.vertical_spacing = 0
+    scores.style.left_cell_padding = cell_padding
+    scores.style.right_cell_padding = cell_padding
+    scores.style.top_cell_padding = Style.spacing.xs
+    scores.style.bottom_cell_padding = Style.spacing.xs
+    local widths = Style.column_widths(width - #headers * 2 * cell_padding - table_border_width, { 180, 110, 130, 130 })
+
     local sorting_pref = this.sort_by[player.index]
-    for _, header in ipairs(headers) do
+    for index, header in ipairs(headers) do
         local cap = header.caption
 
         -- Add sorting symbol if any
         if header.column and sorting_pref.column == header.column then
             local symbol = sorting_symbol[sorting_pref.method]
-            cap = symbol .. cap
+            cap = { '', symbol, ' ', cap }
         end
 
-        -- Header
-        local label =
-            t.add
-            {
-                type = 'label',
-                caption = cap,
-                name = header.name
-            }
-        label.style.font = 'default-listbox'
-        label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 } -- yellow
-        label.style.minimal_width = 150
-        label.style.horizontal_align = 'right'
+        Style.table_heading(add_score_cell(scores, widths[index], header.align or 'right', cap, header.caption, header.name))
     end
 
-    -- Score list
-    local score_list = get_score_list()
-    if not score_list then
-        return
-    end
-
-    score_list = sort_list(sorting_pref.method, sorting_pref.column, score_list)
-
-    -- New pane for scores (while keeping headers at same position)
-    local scroll_pane =
-        frame.add(
-            {
-                type = 'scroll-pane',
-                name = 'score_scroll_pane',
-                direction = 'vertical',
-                horizontal_scroll_policy = 'never',
-                vertical_scroll_policy = 'auto'
-            }
-        )
-    scroll_pane.style.maximal_height = 400
-    scroll_pane.style.minimal_width = 700
-
-    t = scroll_pane.add { type = 'table', column_count = 4 }
-
-    -- Score entries
-    local i = 0
-    for _, entry in pairs(score_list) do
-        i = i + 1
-        local p
-        if not (entry and entry.name) then
-            p = { color = { r = Math.random(1, 255), g = Math.random(1, 255), b = Math.random(1, 255) } }
-        else
-            p = game.get_player(entry.name)
-            if not p then
-                p = { color = { r = Math.random(1, 255), g = Math.random(1, 255), b = Math.random(1, 255) } }
-            end
+    local score_list = sort_list(sorting_pref.method, sorting_pref.column, get_score_list())
+    for _, entry in ipairs(score_list) do
+        local name = entry.name or ''
+        local name_label = add_score_cell(scores, widths[1], 'left', name, name)
+        local p = entry.name and game.get_player(entry.name)
+        if p and p.valid then
+            local color = p.color
+            name_label.style.font_color = { r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4 }
         end
-        local special_color =
-        {
-            r = p.color.r * 0.6 + 0.4,
-            g = p.color.g * 0.6 + 0.4,
-            b = p.color.b * 0.6 + 0.4,
-            a = 1
-        }
-
-        local k = entry.killscore > 0 and entry.killscore or ''
-        local b = entry.built_entities > 0 and entry.built_entities or ''
-        local m = entry.mined_entities > 0 and entry.mined_entities or ''
-
-        line =
-        {
-            { caption = entry.name, color = special_color },
-            { caption = tostring(k) },
-            { caption = tostring(b) },
-            { caption = tostring(m) }
-        }
-        local default_color = { r = 0.9, g = 0.9, b = 0.9 }
-
-        for _, column in ipairs(line) do
-            local label =
-                t.add
-                {
-                    type = 'label',
-                    caption = column.caption,
-                    color = column.color or default_color
-                }
-            label.style.font = 'default'
-            label.style.minimal_width = 150
-            label.style.maximal_width = 150
-            label.style.horizontal_align = 'right'
-        end -- foreach column
-    end -- foreach entry
+        for index = 2, #headers do
+            local value = entry[headers[index].column]
+            local caption = value > 0 and tostring(value) or ''
+            add_score_cell(scores, widths[index], 'right', caption, caption)
+        end
+    end
 end
 
 local show_score_token = Task.register(show_score)
@@ -764,7 +658,7 @@ Server.on_data_set_changed(
     end
 )
 
-Gui.add_tab_to_gui({ name = module_name, caption = 'Highscore', id = show_score_token, admin = false, only_server_sided = true })
+Gui.add_tab_to_gui({ name = module_name, caption = 'Highscore', localised_caption = { 'mtn_v3_highscore.highscore' }, id = show_score_token, admin = false, only_server_sided = true })
 
 Gui.on_click(
     module_name,

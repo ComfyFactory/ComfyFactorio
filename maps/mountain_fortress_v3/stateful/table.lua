@@ -33,14 +33,14 @@ local this =
 
 local deep_copy = table.deep_copy
 local dataset = 'scenario_settings'
-local dataset_key = 'mtn_v3'
-local dataset_key_modded = 'mtn_v3_modded'
-local dataset_key_dev = 'mtn_v3_dev'
-local dataset_key_dev_modded = 'mtn_v3_dev_modded'
-local dataset_key_previous = 'mtn_v3_previous'
-local dataset_key_modded_previous = 'mtn_v3_modded_previous'
-local dataset_key_previous_dev = 'mtn_v3_previous_dev'
-local dataset_key_modded_previous_dev = 'mtn_v3_previous_dev'
+local season_keys =
+{
+    official = { current = 'mtn_v3', previous = 'mtn_v3_previous' },
+    official_modded = { current = 'mtn_v3_modded', previous = 'mtn_v3_modded_previous' },
+    development = { current = 'mtn_v3_dev', previous = 'mtn_v3_previous_dev' },
+    development_modded = { current = 'mtn_v3_dev_modded', previous = 'mtn_v3_modded_previous_dev' }
+}
+local season_load_timeout = 300
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local minerals_lookup_table = {}
 local enemies_lookup_table = {}
@@ -343,7 +343,7 @@ local search_corpse_token =
 
             entity.destroy()
 
-            local text = player.name .. "'s corpse was consumed by the biters."
+            local text = { 'mtn_v3_round.corpse_consumed', player.name }
 
             game.print(text)
         end
@@ -1278,6 +1278,16 @@ local function resolve_buff_poll_name(buff)
     return '[item=' .. buff.quality_item .. ',quality=' .. quality .. '] ' .. buff.poll_name
 end
 
+function Public.localised_buff_name(buff, fallback)
+    local name = { '?', { 'mtn_v3_buffs.' .. buff.name }, fallback or buff.poll_name or buff.name }
+    if not buff.quality_item then
+        return name
+    end
+    local starting_items = Public.get_func('starting_items')
+    local item_data = starting_items[buff.quality_item]
+    return { 'mtn_v3_buffs.quality_name', buff.quality_item, item_data and item_data.quality or 'normal', name }
+end
+
 local function copy_buff_with_display(buff)
     local copy = {}
     for key, value in pairs(buff) do
@@ -1685,148 +1695,198 @@ local function grant_non_limit_reached_buff_permanent()
     return copy_buff_with_display(keepers[1])
 end
 
-local function apply_startup_settings(settings)
-    local current_date = Server.get_current_date(false, true)
-    if not current_date then
+local function get_season_keys()
+    if Server.check_server_name(Public.discord_name) then
+        return Public.is_modded and season_keys.official_modded or season_keys.official
+    end
+    return Public.is_modded and season_keys.development_modded or season_keys.development
+end
+
+local function season_backend_available()
+    if not game.is_multiplayer() then
+        return false
+    end
+    local server_name = Server.get_server_name()
+    return server_name and server_name ~= '' and Server.get_current_time()
+end
+
+local function legacy_season_loaded()
+    return this.settings_applied and this.current_date ~= nil
+end
+
+local function can_save_season(keys)
+    if not season_backend_available() then
+        return false
+    end
+    local load = this.season_load
+    if load then
+        return load.status == 'ready' and load.key == keys.current
+    end
+    return legacy_season_loaded()
+end
+
+local function season_snapshot()
+    local current_streak = this.current_streak or 0
+    local best_streak = this.best_streak or 0
+    if current_streak > best_streak then
+        best_streak = current_streak
+        Server.output_script_data('New best win streak: ' .. best_streak)
+    end
+    this.best_streak = best_streak
+    return
+    {
+        rounds_survived = this.rounds_survived,
+        current_streak = current_streak,
+        best_streak = best_streak,
+        season = this.season,
+        test_mode = this.test_mode,
+        buffs = this.buffs,
+        permanent_buffs = this.permanent_buffs,
+        objectives_time_spent = this.season_objective_times,
+        current_date = this.current_date,
+        disable_shutdown = this.disable_shutdown,
+        restart_scenario = this.restart_scenario
+    }
+end
+
+local function save_season_snapshot(snapshot, archive)
+    local keys = get_season_keys()
+    if not can_save_season(keys) then
+        return
+    end
+    local value = deep_copy(snapshot)
+    if not archive and this.season_load then
+        this.season_load.last_saved = value
+    end
+    Server.set_data(dataset, archive and keys.previous or keys.current, value)
+end
+
+local function apply_season_snapshot(settings, current_time, keep_state)
+    local season = tonumber(settings.season) or (keep_state and this.season) or 1
+    local same_season = keep_state and season == this.season
+    this.current_streak = tonumber(settings.current_streak) or (same_season and this.current_streak) or 0
+    this.best_streak = Math.max(this.current_streak, tonumber(settings.best_streak) or (same_season and this.best_streak) or 0)
+    this.season = season
+    this.rounds_survived = tonumber(settings.rounds_survived) or (same_season and this.rounds_survived) or 0
+    this.current_date = tonumber(settings.current_date) or (same_season and this.current_date) or current_time
+    this.buffs = type(settings.buffs) == 'table' and settings.buffs or (same_season and this.buffs) or {}
+    this.permanent_buffs = type(settings.permanent_buffs) == 'table' and settings.permanent_buffs or (same_season and this.permanent_buffs) or {}
+    if not same_season or settings.objectives_time_spent ~= nil then
+        this.season_objective_times = settings.objectives_time_spent
+    end
+    if not same_season or settings.test_mode ~= nil then
+        this.test_mode = settings.test_mode == true
+    end
+    if not same_season or settings.disable_shutdown ~= nil then
+        this.disable_shutdown = settings.disable_shutdown
+    end
+    if not same_season or settings.restart_scenario ~= nil then
+        this.restart_scenario = settings.restart_scenario
+    end
+end
+
+local function apply_startup_settings()
+    if not this.current_date or not can_save_season(get_season_keys()) then
         return
     end
 
     local current_time = Server.get_current_time()
-    if not current_time then
+    local current_date = Server.get_current_date(false, true, current_time)
+    local stored_date = Server.get_current_date(false, true, this.current_date)
+    if not current_date or not stored_date then
         return
     end
 
-    current_date = Math.round(Utils.convert_date(current_date.year, current_date.month, current_date.day))
-
-    local server_name_matches = Server.check_server_name(Public.discord_name)
-
-    settings = settings or {}
-    local stored_date = this.current_date
-    if not stored_date then
+    local current_day = Math.round(Utils.convert_date(current_date.year, current_date.month, current_date.day))
+    local stored_day = Math.round(Utils.convert_date(stored_date.year, stored_date.month, stored_date.day))
+    local elapsed_days = current_day - stored_day
+    this.time_to_reset = this.reset_after - elapsed_days
+    if elapsed_days < this.reset_after then
         return
     end
-    local stored_date_raw = Server.get_current_date(false, true, stored_date)
-    local converted_stored_date = Math.round(Utils.convert_date(stored_date_raw.year, stored_date_raw.month, stored_date_raw.day))
-    local time_to_reset = (current_date - converted_stored_date)
-    this.time_to_reset = this.reset_after - time_to_reset
-    if time_to_reset and time_to_reset >= this.reset_after then
-        local perm_buff = grant_non_limit_reached_buff_permanent()
-        this.permanent_buffs[#this.permanent_buffs + 1] = perm_buff
-        Public.save_settings_before_reset()
-        Public.set_season_scores()
 
-        local s = this.season or 1
-        game.server_save('Season_' .. s .. '_Mtn_v3_' .. tostring(current_time))
-        notify_season_over_to_discord(perm_buff)
-        settings.current_date = current_time
-        settings.test_mode = false
-        settings.rounds_survived = 0
-        settings.buffs = {}
-        this.buffs = {}
-        this.buffs_collected = {}
-        this.permanent_buffs_collected = {}
-        this.rounds_survived = 0
-        settings.permanent_buffs = this.permanent_buffs
-        this.season = this.season + 1
-        this.current_streak = 0
-        this.best_streak = 0
-        this.current_date = current_time
-        settings.season = this.season
-        this.time_to_reset = this.reset_after
-        local message = ({ 'stateful.reset' })
-        local message_discord = ({ 'stateful.reset_discord' })
-        game.print(message)
-        Server.to_discord_embed(message_discord, true)
+    local perm_buff = grant_non_limit_reached_buff_permanent()
+    this.permanent_buffs[#this.permanent_buffs + 1] = perm_buff
+    Public.save_settings_before_reset()
+    Public.set_season_scores()
+    game.server_save('Season_' .. this.season .. '_Mtn_v3_' .. tostring(current_time))
+    notify_season_over_to_discord(perm_buff)
 
-        if server_name_matches then
-            if Public.is_modded then
-                Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
-            else
-                Server.set_data(dataset, dataset_key, deep_copy(settings))
-            end
-        else
-            if Public.is_modded then
-                Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
-            else
-                Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
-            end
-        end
+    this.test_mode = false
+    this.buffs = {}
+    this.buffs_collected = {}
+    this.permanent_buffs_collected = {}
+    this.rounds_survived = 0
+    this.current_streak = 0
+    this.best_streak = 0
+    this.season_objective_times = nil
+    this.season = this.season + 1
+    this.current_date = current_time
+    this.time_to_reset = this.reset_after
+    save_season_snapshot(season_snapshot())
 
-        if not settings.disable_shutdown then
-            game.print(({ 'entity.notify_shutdown' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
-            local notify_shutdown = ({ 'entity.shutdown_game' })
-            Server.to_discord_bold(notify_shutdown, true)
-            Task.set_timeout_in_ticks(10, shutdown_scenario_token)
-        end
+    game.print({ 'stateful.reset' })
+    Server.to_discord_embed({ 'stateful.reset_discord' }, true)
 
-        if settings.restart_scenario then
-            game.print(({ 'entity.notify_restart' }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
-            local notify_restart = ({ 'entity.notify_restart' })
-            Server.to_discord_bold(notify_restart, true)
-            Task.set_timeout_in_ticks(10, start_scenario_token)
-        end
+    if not this.disable_shutdown then
+        game.print({ 'entity.notify_shutdown' }, { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        Server.to_discord_bold({ 'entity.shutdown_game' }, true)
+        Task.set_timeout_in_ticks(10, shutdown_scenario_token)
+    end
+
+    if this.restart_scenario then
+        game.print({ 'entity.notify_restart' }, { color = { r = 0.22, g = 0.88, b = 0.22 } })
+        Server.to_discord_bold({ 'entity.notify_restart' }, true)
+        Task.set_timeout_in_ticks(10, start_scenario_token)
     end
 end
 
+local function use_local_season(load, reason)
+    load.status = 'local'
+    Server.output_script_data('Mtn season settings ' .. reason .. '. Using the save file for this scenario run.')
+end
+
+-- Keep the callback in its original token registration slot for older saves.
 local apply_settings_token =
-    Task.register(
-        function (data)
-            local server_name_matches = Server.check_server_name(Public.discord_name)
-            local settings = data and data.value or nil
-            local current_time = Server.get_current_time()
-            if not current_time then
-                return
-            end
-
-            if not settings then
-                settings =
-                {
-                    rounds_survived = 0,
-                    current_date = tonumber(current_time),
-                    season = 1
-                }
-                if server_name_matches then
-                    if Public.is_modded then
-                        Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
-                    else
-                        Server.set_data(dataset, dataset_key, deep_copy(settings))
-                    end
-                else
-                    if Public.is_modded then
-                        Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
-                    else
-                        Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
-                    end
-                end
-                return
-            end
-
-            if not settings.current_date then
-                settings.current_date = tonumber(current_time)
-            end
-
-            if not settings.season then
-                settings.season = 1
-            end
-
-            this.current_date = settings.current_date
-            this.buffs = settings.buffs or {}
-            this.permanent_buffs = settings.permanent_buffs or {}
-
-            this.rounds_survived = settings.rounds_survived
-            this.season = settings.season
-            this.best_streak = settings.best_streak or 0
-            this.current_streak = settings.current_streak or 0
-
-            apply_startup_settings(settings)
-            local current_season = Public.get('current_season')
-            if current_season and current_season.valid then
-                ---@diagnostic disable-next-line: param-type-mismatch
-                current_season.text = 'Season: ' .. this.season
-            end
-
-            this.objectives = {}
+    Task.register(function (data)
+        local load = this.season_load
+        if not load or load.status ~= 'reading' or not data or data.data_set ~= dataset or data.key ~= load.key then
+            return
         end
+        if data.cancelled or game.tick >= load.deadline then
+            use_local_season(load, 'timed out')
+            return
+        end
+        if Public.is_task_done() then
+            use_local_season(load, 'arrived after the round started')
+            return
+        end
+        if not season_backend_available() or get_season_keys().current ~= load.key then
+            use_local_season(load, 'could not be matched to the active server')
+            return
+        end
+
+        local settings = data.value
+        if type(settings) ~= 'table' and (settings ~= nil or load.refreshing) then
+            use_local_season(load, 'were unavailable or invalid')
+            return
+        end
+
+        apply_season_snapshot(settings or {}, Server.get_current_time(), load.refreshing)
+        load.status = 'ready'
+        load.refreshing = nil
+        load.last_saved = nil
+        this.settings_applied = true
+        if not settings then
+            save_season_snapshot(season_snapshot())
+        end
+        apply_startup_settings()
+        local current_season = Public.get('current_season')
+        if current_season and current_season.valid then
+            ---@diagnostic disable-next-line: param-type-mismatch
+            current_season.text = { 'mtn_v3_map.season', this.season }
+        end
+    end
     )
 
 -- Activates delayed techs
@@ -1846,82 +1906,25 @@ function Public.activate_delayed_techs(force)
     end
 end
 
--- local Alert = require 'utils.alert'
--- local Stateful = require 'maps.mountain_fortress_v3.stateful.table'
--- local buff = Stateful.save_settings()
--- Alert.alert_all_players(100, 'Buff granted from previous run: ' .. buff.discord)
--- Alert.alert_all_players(100, 'Buff granted from previous run: ' .. buff.discord)
--- Alert.alert_all_players(100, 'Buff granted from previous run: ' .. buff.discord)
 function Public.save_settings(buff)
     local granted_buff = buff or grant_non_limit_reached_buff()
     this.buffs[#this.buffs + 1] = granted_buff
 
-    local settings =
-    {
-        objectives_time_spent = this.objectives_time_spent,
-        rounds_survived = this.rounds_survived,
-        season = this.season,
-        test_mode = this.test_mode,
-        buffs = this.buffs,
-        permanent_buffs = this.permanent_buffs,
-        current_date = this.current_date
-    }
-
-    if this.current_streak > this.best_streak then
-        this.best_streak = this.current_streak
-        settings.best_streak = this.best_streak
-        settings.current_streak = this.current_streak
-        Server.output_script_data('New best win streak: ' .. this.best_streak)
-    end
-
-    local server_name_matches = Server.check_server_name(Public.discord_name)
-    if server_name_matches then
-        if Public.is_modded then
-            Server.set_data(dataset, dataset_key_modded, deep_copy(settings))
-        else
-            Server.set_data(dataset, dataset_key, deep_copy(settings))
-        end
-    else
-        if Public.is_modded then
-            Server.set_data(dataset, dataset_key_dev_modded, deep_copy(settings))
-        else
-            Server.set_data(dataset, dataset_key_dev, deep_copy(settings))
-        end
-    end
-
+    this.season_objective_times = this.objectives_time_spent
+    save_season_snapshot(season_snapshot())
     return granted_buff
 end
 
-function Public.save_settings_before_reset()
-    local settings =
-    {
-        rounds_survived = this.rounds_survived,
-        season = this.season,
-        test_mode = this.test_mode,
-        buffs = this.buffs,
-        permanent_buffs = this.permanent_buffs,
-    }
-    if this.current_streak > this.best_streak then
-        this.best_streak = this.current_streak
-        settings.best_streak = this.best_streak
-        settings.current_streak = this.current_streak
-        Server.output_script_data('New best win streak: ' .. this.best_streak)
+function Public.reset_win_streak()
+    if (this.current_streak or 0) == 0 then
+        return
     end
+    this.current_streak = 0
+    save_season_snapshot(season_snapshot())
+end
 
-    local server_name_matches = Server.check_server_name(Public.discord_name)
-    if server_name_matches then
-        if Public.is_modded then
-            Server.set_data(dataset, dataset_key_modded_previous, deep_copy(settings))
-        else
-            Server.set_data(dataset, dataset_key_previous, deep_copy(settings))
-        end
-    else
-        if Public.is_modded then
-            Server.set_data(dataset, dataset_key_modded_previous_dev, deep_copy(settings))
-        else
-            Server.set_data(dataset, dataset_key_previous_dev, deep_copy(settings))
-        end
-    end
+function Public.save_settings_before_reset()
+    save_season_snapshot(season_snapshot(), true)
 end
 
 function Public.record_flag_delivery(run_id, mission_id, generation)
@@ -2374,145 +2377,74 @@ function Public.enable(state)
     this.enabled = state or false
 end
 
-function Public.stateful_on_server_started()
-    if this.settings_applied then
-        return
+local function get_season_load(key)
+    local load = this.season_load
+    if load and (not key or not load.key or key == load.key) then
+        return load
+    end
+    if not load and key and legacy_season_loaded() then
+        load = { status = 'ready', key = key }
+    else
+        load = { status = 'waiting', key = key or nil, deadline = game.tick + season_load_timeout }
+    end
+    this.season_load = load
+    return load
+end
+
+local function advance_season_load(refresh)
+    local key = season_backend_available() and get_season_keys().current
+    local load = get_season_load(key)
+    if refresh and key and load.status == 'ready' and load.refresh_requested then
+        load.status = 'waiting'
+        load.refreshing = true
+        load.refresh_requested = nil
+        load.deadline = game.tick + season_load_timeout
     end
 
-    local server_name_matches = Server.check_server_name(Public.discord_name)
-
-    this.settings_applied = true
-
-    if server_name_matches then
-        if Public.is_modded then
-            Server.try_get_data(dataset, dataset_key_modded, apply_settings_token)
-        else
-            Server.try_get_data(dataset, dataset_key, apply_settings_token)
+    if load.status == 'waiting' or load.status == 'reading' then
+        local time_left = load.deadline - game.tick
+        if time_left <= 0 then
+            local reading = load.status == 'reading'
+            use_local_season(load, 'timed out')
+            if reading then
+                Server.cancel_try_get_data(dataset, load.key, apply_settings_token)
+            end
+        elseif load.status == 'waiting' and key then
+            load.status = 'reading'
+            load.key = key
+            Server.try_get_data_timeout(dataset, key, apply_settings_token, time_left)
         end
-    else
-        if Public.is_modded then
-            Server.try_get_data(dataset, dataset_key_dev_modded, apply_settings_token)
-        else
-            Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
-        end
-        this.test_mode = true
+    end
+    return load.status == 'ready' or load.status == 'local'
+end
+
+function Public.season_settings_ready()
+    if not game.is_multiplayer() then
+        return true
+    end
+    return advance_season_load(true)
+end
+
+function Public.stateful_on_server_started()
+    if game.is_multiplayer() and not Public.is_task_done() then
+        advance_season_load(false)
     end
 end
 
-Event.add(
-    ServerCommands.events.on_server_started,
-    function ()
-        if this.settings_applied then
-            return
-        end
+Event.add(ServerCommands.events.on_server_started, Public.stateful_on_server_started)
 
-        local server_name_matches = Server.check_server_name(Public.discord_name)
-
-        this.settings_applied = true
-
-        if server_name_matches then
-            if Public.is_modded then
-                Server.try_get_data(dataset, dataset_key_modded, apply_settings_token)
-            else
-                Server.try_get_data(dataset, dataset_key, apply_settings_token)
-            end
-        else
-            if Public.is_modded then
-                Server.try_get_data(dataset, dataset_key_dev_modded, apply_settings_token)
-            else
-                Server.try_get_data(dataset, dataset_key_dev, apply_settings_token)
-            end
-            this.test_mode = true
-        end
+Server.on_data_set_changed(dataset, function (data)
+    if type(data.value) ~= 'table' or not season_backend_available() or data.key ~= get_season_keys().current then
+        return
     end
-)
 
-Server.on_data_set_changed(
-    dataset_key,
-    function (data)
-        if data.value then
-            local settings = data.value
-            if settings.rounds_survived ~= nil then
-                this.rounds_survived = settings.rounds_survived
-            end
-            if settings.season ~= nil then
-                this.season = settings.season
-            end
-            if settings.best_streak ~= nil then
-                this.best_streak = settings.best_streak
-            end
-            if settings.test_mode ~= nil then
-                this.test_mode = settings.test_mode
-            end
-            if settings.buffs ~= nil then
-                this.buffs = settings.buffs
-            end
-            if settings.current_date ~= nil then
-                this.current_date = settings.current_date
-            end
-        end
+    local load = get_season_load(data.key)
+    if load.status ~= 'ready' or (load.last_saved and table.equals(load.last_saved, data.value)) then
+        return
     end
-)
-
-Server.on_data_set_changed(
-    dataset_key_modded,
-    function (data)
-        if data.value then
-            local settings = data.value
-            if settings.rounds_survived ~= nil then
-                this.rounds_survived = settings.rounds_survived
-            end
-            if settings.season ~= nil then
-                this.season = settings.season
-            end
-            if settings.best_streak ~= nil then
-                this.best_streak = settings.best_streak
-            end
-            if settings.test_mode ~= nil then
-                this.test_mode = settings.test_mode
-            end
-            if settings.buffs ~= nil then
-                this.buffs = settings.buffs
-            end
-            if settings.permanent_buffs ~= nil then
-                this.permanent_buffs = settings.permanent_buffs
-            end
-            if settings.current_date ~= nil then
-                this.current_date = settings.current_date
-            end
-        end
-    end
-)
-
-Server.on_data_set_changed(
-    dataset_key_dev,
-    function (data)
-        if data.value then
-            local settings = data.value
-            if settings.rounds_survived ~= nil then
-                this.rounds_survived = settings.rounds_survived
-            end
-            if settings.season ~= nil then
-                this.season = settings.season
-            end
-            if settings.best_streak ~= nil then
-                this.best_streak = settings.best_streak
-            end
-            if settings.test_mode ~= nil then
-                this.test_mode = settings.test_mode
-            end
-            if settings.buffs ~= nil then
-                this.buffs = settings.buffs
-            end
-            if settings.permanent_buffs ~= nil then
-                this.permanent_buffs = settings.permanent_buffs
-            end
-            if settings.current_date ~= nil then
-                this.current_date = settings.current_date
-            end
-        end
-    end
-)
+    -- Read the latest snapshot when the next round is initialized.
+    load.refresh_requested = true
+end)
 
 Public.buff_to_string = buff_to_string
 Public.get_item_produced_count = get_item_produced_count
@@ -2531,10 +2463,9 @@ if _DEBUG then
     local settings = require 'maps.mountain_fortress_v3.stateful._stateful_debug'
     Event.on_init(
         function ()
-            local cbl = Task.get(apply_settings_token)
             storage.tokens.utils_server.admins['Gerkiz'] = true
             storage.tokens.utils_server.server_time.secs = 1187954
-            cbl(settings)
+            apply_season_snapshot(settings.value, Server.get_current_time(), false)
         end
     )
 end

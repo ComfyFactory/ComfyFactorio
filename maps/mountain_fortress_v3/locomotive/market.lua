@@ -60,7 +60,7 @@ local function add_mystical_chest(surface)
         end
         rendering.draw_text
         {
-            text = 'Mystical chest',
+            text = { 'mtn_v3_market.mystical_chest' },
             surface = surface,
             target = this.mystical_chest,
             scale = 1.2,
@@ -119,32 +119,26 @@ local function get_player_quality_int(player)
     return player_data.quality
 end
 
+local function get_currency_quality(player)
+    if Public.get('is_coin_quality_enabled') then
+        return get_player_quality(player)
+    end
+    return 'normal'
+end
+
 local function get_item_count(player, name)
     if not player or not player.valid then
         return 0
     end
 
-    local player_data = get_player_data(player)
-    local quality_list = Public.get('quality_list')
-    local quality = quality_list[player_data.quality]
-    local inventory = player.get_main_inventory()
-
-    local is_coin_quality_enabled = Public.get('is_coin_quality_enabled')
-    if not is_coin_quality_enabled then
-        quality = 'normal'
-    end
-
-    return inventory.get_item_count({ name = name, quality = quality })
+    return player.get_main_inventory().get_item_count({ name = name, quality = get_currency_quality(player) })
 end
 
 local function remove_item_count(player, name, count)
     if not player or not player.valid then
         return 0
     end
-    local player_data = get_player_data(player)
-    local quality_list = Public.get('quality_list')
-    local quality = quality_list[player_data.quality]
-    player.remove_item({ name = name, count = count, quality = quality })
+    player.remove_item({ name = name, count = count, quality = get_currency_quality(player) })
 end
 
 local function get_items(player)
@@ -188,7 +182,7 @@ local function get_items(player)
             stack = 1,
             value = 'coin',
             price = pickaxe_cost,
-            tooltip = ({ 'main_market.purchase_pickaxe', offer, upgrades.pickaxe_tier, market_limits.pickaxe_tier_limit }),
+            tooltip = ({ 'main_market.purchase_pickaxe', Public.localised_pickaxe_name(offer), upgrades.pickaxe_tier, market_limits.pickaxe_tier_limit }),
             sprite = 'achievement/delivery-service',
             enabled = true,
             upgrade = true,
@@ -618,7 +612,7 @@ local function get_items(player)
             stack = 1,
             value = 'coin',
             price = 300,
-            tooltip = { '', { 'item-name.burner-generator' }, ' bought: ', upgrades.burner_generator.bought, '/', upgrades.burner_generator.limit },
+            tooltip = { 'mtn_v3_market.burner_generator_bought', { 'item-name.burner-generator' }, upgrades.burner_generator.bought, upgrades.burner_generator.limit },
             upgrade = false,
             static = true
         }
@@ -811,7 +805,7 @@ local function get_items(player)
                 stack = 1,
                 value = 'coin',
                 price = zone_purchase_price,
-                tooltip = 'Purchase Gleba zone for index ' .. next_index .. ' (' .. gleba_count .. '/1)',
+                tooltip = { 'mtn_v3_market.purchase_zone', { 'space-location-name.gleba' }, next_index, gleba_count },
                 sprite = 'space-location/gleba',
                 upgrade = true,
                 static = true,
@@ -828,7 +822,7 @@ local function get_items(player)
                 stack = 1,
                 value = 'coin',
                 price = zone_purchase_price,
-                tooltip = 'Purchase Aquilo zone for index ' .. next_index .. ' (' .. aquilo_count .. '/1)',
+                tooltip = { 'mtn_v3_market.purchase_zone', { 'space-location-name.aquilo' }, next_index, aquilo_count },
                 sprite = 'space-location/aquilo',
                 upgrade = true,
                 static = true,
@@ -845,7 +839,7 @@ local function get_items(player)
                 stack = 1,
                 value = 'coin',
                 price = zone_purchase_price,
-                tooltip = 'Purchase Vulcanus zone for index ' .. next_index .. ' (' .. vulcanus_count .. '/1)',
+                tooltip = { 'mtn_v3_market.purchase_zone', { 'space-location-name.vulcanus' }, next_index, vulcanus_count },
                 sprite = 'space-location/vulcanus',
                 upgrade = true,
                 static = true,
@@ -862,7 +856,7 @@ local function get_items(player)
                 stack = 1,
                 value = 'coin',
                 price = zone_purchase_price,
-                tooltip = 'Purchase Fulgora zone for index ' .. next_index .. ' (' .. fulgora_count .. '/1)',
+                tooltip = { 'mtn_v3_market.purchase_zone', { 'space-location-name.fulgora' }, next_index, fulgora_count },
                 sprite = 'space-location/fulgora',
                 upgrade = true,
                 static = true,
@@ -920,6 +914,10 @@ local function close_market_gui(player)
     end
 end
 
+local function normalize_search(text)
+    return (text:lower():gsub('-', ' '):gsub('%s+', ' '):match('^%s*(.-)%s*$'))
+end
+
 local function redraw_market_items(gui, player, search_text)
     if not validate_player(player) then
         return
@@ -950,19 +948,14 @@ local function redraw_market_items(gui, player, search_text)
 
     local upgrade_table = gui.add({ type = 'table', column_count = 6 })
 
-    local quality = get_player_quality(player)
+    local currency_quality = get_currency_quality(player)
+    local query = search_text and search_text.valid and normalize_search(search_text.text) or ''
 
     local prototype_data_disk_bonus = Public.get('prototype_data_disk_bonus')
     local player_items = get_items(player)
     for item, data in pairs(player_items) do
         if data.upgrade then
-            if not search_text then
-                goto continue
-            end
-            if not search_text.text then
-                goto continue
-            end
-            if not string.lower(item:gsub('-', ' ')):find(search_text.text) then
+            if query ~= '' and not normalize_search(item):find(query, 1, true) then
                 goto continue
             end
             local item_count = data.stack
@@ -1020,21 +1013,17 @@ local function redraw_market_items(gui, player, search_text)
 
     for item, data in pairs(player_items) do
         if not data.upgrade and not data.player_upgrade then
-            if not search_text then
+            if query ~= '' and not normalize_search(item):find(query, 1, true) then
                 goto continue
             end
-            if not search_text.text then
-                goto continue
-            end
-            if not string.lower(item:gsub('-', ' ')):find(search_text.text) then
-                goto continue
-            end
-            local item_count = data.stack * slider_value
-            local item_cost = data.price * slider_value
+            local quantity = item == 'burner-generator' and 1 or slider_value
+            local item_count = data.stack * quantity
+            local item_cost = data.price
 
             if prototype_data_disk_bonus then
                 item_cost = item_cost * prototype_data_disk_bonus
             end
+            item_cost = Math.floor(item_cost * quantity)
 
             local frame = items_table.add({ type = 'flow' })
             frame.style.vertical_align = 'bottom'
@@ -1072,7 +1061,7 @@ local function redraw_market_items(gui, player, search_text)
                 frame.add(
                     {
                         type = 'label',
-                        caption = concat { '[item=', data.value, ',quality=' .. quality .. ']: ' } .. format_number(Math.floor(item_cost), true)
+                        caption = concat { '[item=', data.value, ',quality=' .. currency_quality .. ']: ' } .. format_number(item_cost, true)
                     }
                 )
             label.style.font = 'default-bold'
@@ -1097,13 +1086,7 @@ local function redraw_market_items(gui, player, search_text)
 
     for item, data in pairs(player_items) do
         if data.player_upgrade then
-            if not search_text then
-                goto continue
-            end
-            if not search_text.text then
-                goto continue
-            end
-            if not string.lower(item:gsub('-', ' ')):find(search_text.text) then
+            if query ~= '' and not normalize_search(item):find(query, 1, true) then
                 goto continue
             end
             local item_cost = data.price
@@ -1170,17 +1153,10 @@ end
 local function slider_changed(event)
     local player = game.players[event.player_index]
     local players = Public.get('players')
-    if not players then
-        return
-    end
-    local slider_value
-
-    slider_value = players
-    if not slider_value then
-        return
-    end
-    slider_value = slider_value[player.index].data
-    if not slider_value then
+    local entry = players and players[event.player_index]
+    local data = entry and entry.data
+    local element = event.element
+    if not (data and element and element.valid and element == data.slider and data.text_input and data.text_input.valid) then
         return
     end
 
@@ -1188,19 +1164,8 @@ local function slider_changed(event)
     if is_spamming then
         return
     end
-    slider_value = slider_value.slider
-    if not slider_value then
-        return
-    end
-    slider_value = slider_value.slider_value
-    if not slider_value then
-        return
-    end
-    slider_value = Math.ceil(slider_value)
-    if players[player.index] and players[player.index].data and players[player.index].data.text_input then
-        players[player.index].data.text_input.text = tostring(slider_value)
-        redraw_market_items(players[player.index].data.item_frame, player, players[player.index].data.search_text)
-    end
+    data.text_input.text = tostring(Math.ceil(element.slider_value))
+    redraw_market_items(data.item_frame, player, data.search_text)
 end
 
 local function text_changed(event)
@@ -1213,31 +1178,23 @@ local function text_changed(event)
     end
 
     local players = Public.get('players')
-    if not players then
+    local entry = players and players[event.player_index]
+    local data = entry and entry.data
+    if not data then
         return
     end
 
     local player = game.players[event.player_index]
 
-    local data = players[player.index].data
-    if not data then
+    if element == data.search_text then
+        redraw_market_items(data.item_frame, player, element)
+        return
+    end
+    if element ~= data.text_input or not (data.slider and data.slider.valid) then
         return
     end
 
-    local is_spamming = SpamProtection.is_spamming(player, 2, 'Locomotive Text Changed')
-    if is_spamming then
-        return
-    end
-
-    if not data.text_input or not data.text_input.valid then
-        return
-    end
-
-    if not data.text_input.text then
-        return
-    end
-
-    local value = tonumber(data.text_input.text)
+    local value = tonumber(element.text)
 
     if not value then
         return
@@ -1251,7 +1208,7 @@ local function text_changed(event)
         value = 1
     end
 
-    data.slider.slider_value = tostring(value)
+    data.slider.slider_value = value
 
     redraw_market_items(data.item_frame, player, data.search_text)
 end
@@ -1434,16 +1391,13 @@ local function gui_click(event)
         return
     end
 
-    if not element.valid then
+    if not (element and element.valid) then
         return
     end
     local name = element.name
 
-    if not player.opened then
-        return
-    end
-
-    if not player.opened == main_frame_name then
+    local frame = player.gui.screen[main_frame_name]
+    if not (frame and frame.valid and player.opened == frame) then
         return
     end
 
@@ -1452,9 +1406,6 @@ local function gui_click(event)
         return
     end
 
-    if not data then
-        return
-    end
     local item = get_items(player)[name]
     if not item then
         return
@@ -1467,41 +1418,7 @@ local function gui_click(event)
     end
 
     local player_item_count = get_item_count(player, item.value)
-    local slider_value = Math.ceil(data.slider.slider_value)
-    local cost = (price * slider_value)
-    local item_count = item.stack * slider_value
-
     local this = Public.get()
-
-    if name == 'linked-chest' then
-        local converted_chests = LinkedChests.get('converted_chests')
-        LinkedChests.set('converted_chests', converted_chests + 1)
-    end
-
-    if name == 'burner-generator' then
-        if this.upgrades.burner_generator.bought >= this.upgrades.burner_generator.limit then
-            redraw_market_items(data.item_frame, player, data.search_text)
-            player.print(({ 'locomotive.limit_reached' }), { r = 0.98, g = 0.66, b = 0.22 })
-            return
-        end
-        remove_item_count(player, item.value, price)
-
-        player.insert({ name = name, count = item.stack })
-
-        Event.raise(Public.events.on_market_item_purchased, { cost = price })
-
-        if item.stack > this.upgrades.burner_generator.limit then
-            item.stack = this.upgrades.burner_generator.limit
-        end
-
-        this.upgrades.burner_generator.bought = this.upgrades.burner_generator.bought + item.stack
-
-        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + price
-        redraw_market_items(data.item_frame, player, data.search_text)
-        redraw_coins_left(data.coins_left, player)
-
-        return
-    end
 
     if name == 'upgrade_pickaxe' then
         remove_item_count(player, item.value, price)
@@ -1518,7 +1435,7 @@ local function gui_click(event)
                 'locomotive.pickaxe_bought_info',
                 shopkeeper,
                 player.name,
-                offer,
+                Public.localised_pickaxe_name(offer),
                 format_number(price, true)
             })
         Alert.alert_all_players(5, message, nil, nil, nil, 'global')
@@ -1540,7 +1457,18 @@ local function gui_click(event)
         return
     end
     if name == 'locomotive_max_health' then
+        if this.game_lost or this.locomotive_health <= 0 then
+            return
+        end
         remove_item_count(player, item.value, price)
+
+        local health_per_upgrade = 20000
+        this.locomotive_max_health = this.locomotive_max_health + health_per_upgrade
+        Public.sync_train_health(this.locomotive_health + health_per_upgrade)
+
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + price
+        this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
+
         local message = ({ 'locomotive.health_bought_info', shopkeeper, player.name, format_number(price, true) })
 
         Event.raise(Public.events.on_market_item_purchased, { cost = price })
@@ -1552,40 +1480,6 @@ local function gui_click(event)
                 player.name .. ' has upgraded the train health for ' .. format_number(price, true) .. ' coins.'
             }
         )
-
-        local health_per_upgrade = 20000
-        this.locomotive_health = this.locomotive_health + health_per_upgrade
-        this.locomotive_max_health = this.locomotive_max_health + health_per_upgrade
-
-        if this.locomotive_health >= this.locomotive_max_health then
-            this.locomotive_health = this.locomotive_max_health
-        end
-        --[[
-        this.locomotive_max_health = this.locomotive_max_health + (this.locomotive_max_health * 0.5)
-        This exists as a reminder to never ever screw up health pool ever again.
-       ]]
-        local m = this.locomotive_health / this.locomotive_max_health
-
-
-        if this.carriages then
-            for i = 1, #this.carriages do
-                local entity = this.carriages[i]
-                if not (entity and entity.valid) then
-                    return
-                end
-                if entity.type == 'locomotive' then
-                    entity.health = entity.max_health * m
-                else
-                    entity.health = entity.max_health * m
-                end
-            end
-        end
-
-        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + price
-        this.upgrades.health_upgrades = this.upgrades.health_upgrades + item.stack
-        if this.health_text and this.health_text.valid then
-            this.health_text.text = 'HP: ' .. Math.round(this.locomotive_health) .. ' / ' .. Math.round(this.locomotive_max_health)
-        end
 
         redraw_market_items(data.item_frame, player, data.search_text)
         redraw_coins_left(data.coins_left, player)
@@ -1892,32 +1786,32 @@ local function gui_click(event)
 
         local zone_count = get_zone_purchase_count(item.zone_name)
         if zone_count >= 1 then
-            player.print('This zone type has already been purchased 1 time!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
+            player.print({ 'mtn_v3_market.this_zone_type_has_already_been_purchased_1' }, { color = { r = 0.98, g = 0.66, b = 0.22 } })
             return
         end
 
         local next_index = get_next_available_index()
         if not next_index then
-            player.print('All zone slots are already purchased!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
+            player.print({ 'mtn_v3_market.all_zone_slots_are_already_purchased' }, { color = { r = 0.98, g = 0.66, b = 0.22 } })
             return
         end
 
         local adjusted_zones = Public.get('adjusted_zones')
         if adjusted_zones and adjusted_zones.zone_by_index and adjusted_zones.zone_by_index[next_index] then
-            player.print('This zone has already been generated!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
+            player.print({ 'mtn_v3_market.this_zone_has_already_been_generated' }, { color = { r = 0.98, g = 0.66, b = 0.22 } })
             return
         end
 
         local zone_player_item_count = get_item_count(player, item.value)
         if zone_player_item_count < price then
-            player.print('Not enough coins!', { color = { r = 0.98, g = 0.66, b = 0.22 } })
+            player.print({ 'mtn_v3_market.not_enough_coins' }, { color = { r = 0.98, g = 0.66, b = 0.22 } })
             return
         end
 
         remove_item_count(player, item.value, price)
         purchased_zones[next_index] = { zone = item.zone_name, player = player.name }
 
-        local message = ({ 'locomotive.zone_purchased', shopkeeper, player.name, item.zone_name, next_index, format_number(price, true) })
+        local message = ({ 'locomotive.zone_purchased', shopkeeper, player.name, { 'space-location-name.' .. item.zone_name }, next_index, format_number(price, true) })
         Alert.alert_all_players(5, message, nil, nil, nil, 'global')
         Server.to_discord_bold(
             table.concat
@@ -1932,36 +1826,52 @@ local function gui_click(event)
         return
     end
 
-    local quality = get_player_quality(player)
-
-    if player_item_count >= cost then
-        if player.can_insert({ name = name, count = item_count, quality = quality }) then
-            player.play_sound({ path = 'entity-close/stone-furnace', volume_modifier = 0.65 })
-            local inserted_count = player.insert({ name = name, count = item_count, quality = quality })
-            if inserted_count < item_count then
-                player.play_sound({ path = 'utility/cannot_build', volume_modifier = 0.65 })
-                player.print(({ 'locomotive.full_inventory', inserted_count, name }), { r = 0.98, g = 0.66, b = 0.22 })
-                player.print(({ 'locomotive.change_returned' }), { r = 0.98, g = 0.66, b = 0.22 })
-                player.insert({ name = name, count = inserted_count, quality = quality })
-                remove_item_count(player, item.value, Math.ceil(price * (inserted_count / item.stack)))
-
-                Event.raise(Public.events.on_market_item_purchased, { cost = Math.ceil(price * (inserted_count / item.stack)) })
-            else
-                remove_item_count(player, item.value, cost)
-                Event.raise(Public.events.on_market_item_purchased, { cost = cost })
-            end
-            redraw_market_items(data.item_frame, player, data.search_text)
-            redraw_coins_left(data.coins_left, player)
-        else
-            player.play_sound({ path = 'utility/cannot_build', volume_modifier = 0.65 })
-            if (Math.random(1, 10) > 1) then
-                player.print(({ 'locomotive.notify_full_inventory_1' }), { r = 0.98, g = 0.66, b = 0.22 })
-                player.print(({ 'locomotive.notify_full_inventory_2' }), { r = 0.98, g = 0.66, b = 0.22 })
-            else
-                player.print(({ 'locomotive.notify_full_inventory_2' }), { r = 0.98, g = 0.66, b = 0.22 })
-            end
-        end
+    local burner_generator = name == 'burner-generator' and this.upgrades.burner_generator
+    if burner_generator and burner_generator.bought >= burner_generator.limit then
+        redraw_market_items(data.item_frame, player, data.search_text)
+        player.print(({ 'locomotive.limit_reached' }), { r = 0.98, g = 0.66, b = 0.22 })
+        return
     end
+
+    local quantity = burner_generator and 1 or Math.ceil(data.slider.slider_value)
+    local item_count = item.stack * quantity
+    local cost = Math.floor(price * quantity)
+    if player_item_count < cost then
+        return
+    end
+
+    local quality = burner_generator and 'normal' or get_player_quality(player)
+    local inserted_count = player.insert({ name = name, count = item_count, quality = quality })
+    if inserted_count == 0 then
+        player.play_sound({ path = 'utility/cannot_build', volume_modifier = 0.65 })
+        if Math.random(1, 10) > 1 then
+            player.print(({ 'locomotive.notify_full_inventory_1' }), { r = 0.98, g = 0.66, b = 0.22 })
+        end
+        player.print(({ 'locomotive.notify_full_inventory_2' }), { r = 0.98, g = 0.66, b = 0.22 })
+        return
+    end
+
+    player.play_sound({ path = 'entity-close/stone-furnace', volume_modifier = 0.65 })
+    if inserted_count < item_count then
+        player.play_sound({ path = 'utility/cannot_build', volume_modifier = 0.65 })
+        player.print(({ 'locomotive.full_inventory', inserted_count, prototypes.item[item.value].localised_name }), { r = 0.98, g = 0.66, b = 0.22 })
+        player.print(({ 'locomotive.change_returned' }), { r = 0.98, g = 0.66, b = 0.22 })
+        cost = Math.min(cost, Math.ceil(price * (inserted_count / item.stack)))
+    end
+    if cost > 0 then
+        remove_item_count(player, item.value, cost)
+    end
+    if name == 'linked-chest' then
+        local converted_chests = LinkedChests.get('converted_chests')
+        LinkedChests.set('converted_chests', converted_chests + inserted_count)
+    elseif burner_generator then
+        burner_generator.bought = burner_generator.bought + inserted_count
+        this.upgrades.train_upgrade_contribution = this.upgrades.train_upgrade_contribution + cost
+    end
+
+    Event.raise(Public.events.on_market_item_purchased, { cost = cost })
+    redraw_market_items(data.item_frame, player, data.search_text)
+    redraw_coins_left(data.coins_left, player)
 end
 
 local function gui_closed(event)
@@ -2129,7 +2039,7 @@ local function create_market(data, rebuild)
 
     rendering.draw_text
     {
-        text = 'Market',
+        text = { 'locomotive.market_name' },
         surface = surface,
         target = { entity = this.market, offset = { 0, -2 } },
         scale = 1.5,

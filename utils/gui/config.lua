@@ -1,16 +1,19 @@
 local FlyingText = require 'utils.functions.flying_texts'
 local Event = require 'utils.event'
-local Color = require 'utils.color_presets'
 local Utils = require 'utils.core'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
+local PlayerSettings = require 'utils.gui.player_settings'
+local Style = require 'utils.gui_style'
 local Task = require 'utils.task_token'
 
 local module_name = Gui.uid_name()
 
 local Public = {}
+local module_order = {}
+local refresh_local_settings
 
 local this =
 {
@@ -42,6 +45,9 @@ local spaghett_entity_blacklist =
 
 function Public.register_scenario_module(data)
     assert(data.id, "Scenario module requires id")
+    if not this.scenario_registry[data.id] then
+        module_order[#module_order + 1] = data.id
+    end
     this.scenario_registry[data.id] = data
 end
 
@@ -51,21 +57,24 @@ local function handle_registered_event(event, player)
             local handler = Task.get(mod.handlers[event.element.name])
             if handler then
                 handler(player, event)
+                if not mod.admin_only then
+                    refresh_local_settings(player)
+                end
                 return
             end
         end
     end
 end
 
-local function get_actor(event, prefix, msg, admins_only)
+local function get_actor(event, prefix, msg, admins_only, locale_key)
     local player = game.get_player(event.player_index)
     if not player or not player.valid then
         return
     end
     if admins_only then
-        Utils.print_admins(msg, player.name)
+        Utils.print_admins(msg, player.name, locale_key and { locale_key })
     else
-        Utils.action_warning(prefix, player.name .. ' ' .. msg)
+        Utils.action_warning(prefix, player.name .. ' ' .. msg, locale_key and { locale_key, player.name })
     end
 end
 
@@ -202,34 +211,74 @@ local pirates_functions =
 }
 
 local function add_switch(element, switch_state, name, description_main, description)
-    local t = element.add({ type = 'table', column_count = 5 })
-    local on_label = t.add({ type = 'label', caption = 'ON' })
-    on_label.style.padding = 0
-    on_label.style.left_padding = 10
-    on_label.style.font_color = { 0.77, 0.77, 0.77 }
-    local switch = t.add({ type = 'switch', name = name })
-    switch.switch_state = switch_state
-    switch.style.padding = 0
-    switch.style.margin = 0
-    local off_label = t.add({ type = 'label', caption = 'OFF' })
-    off_label.style.padding = 0
-    off_label.style.font_color = { 0.70, 0.70, 0.70 }
+    local row = Style.toolbar(element)
+    row.style.minimal_height = Style.dimensions.row_height
+    row.style.horizontally_stretchable = true
 
-    local desc_main_label = t.add({ type = 'label', caption = description_main })
-    desc_main_label.style.padding = 2
-    desc_main_label.style.left_padding = 10
-    desc_main_label.style.minimal_width = 120
-    desc_main_label.style.font = 'heading-2'
-    desc_main_label.style.font_color = { 0.88, 0.88, 0.99 }
+    local details = row.add({ type = 'flow', direction = 'vertical' })
+    local row_width = element.tags.row_width
+    local text_width
+    if row_width then
+        row.style.width = row_width
+        text_width = row_width - 104
+        details.style.width = text_width
+    else
+        details.style.horizontally_stretchable = true
+        text_width = math.max(120, element.style.minimal_width - 2 * Style.spacing.md - 110)
+    end
+    local title = Style.text(details, description_main, text_width)
+    title.style.font = 'default-semibold'
+    Style.text(details, description, text_width, Style.colors.muted)
 
-    local desc_label = t.add({ type = 'label', caption = description })
-    desc_label.style.padding = 2
-    desc_label.style.left_padding = 10
-    desc_label.style.single_line = false
-    desc_label.style.font = 'default-semibold'
-    desc_label.style.font_color = { 0.85, 0.85, 0.85 }
+    local switch = row.add({
+        type = 'switch',
+        name = name,
+        left_label_caption = 'ON',
+        right_label_caption = 'OFF',
+        switch_state = switch_state
+    })
 
     return switch
+end
+
+local function draw_modules(player, rows, admin_only)
+    for _, id in ipairs(module_order) do
+        local mod = this.scenario_registry[id]
+        if mod and mod.gui_rows and (mod.admin_only or false) == admin_only then
+            local render = Task.get(mod.gui_rows)
+            if render then
+                render(player, rows)
+            end
+        end
+    end
+end
+
+local function draw_local_settings(player, rows)
+    local switch_state = player.controller_type == defines.controllers.spectator and 'left' or 'right'
+    add_switch(rows, switch_state, 'spectator_switch', { 'gui.spectator_mode' }, { 'gui-description.spectator_mode' })
+
+    if storage.auto_hotbar_enabled then
+        switch_state = storage.auto_hotbar_enabled[player.index] and 'left' or 'right'
+        add_switch(rows, switch_state, 'auto_hotbar_switch', 'AutoHotbar', 'Automatically fills your hotbar with placeable items.')
+    end
+    draw_modules(player, rows, false)
+end
+
+refresh_local_settings = function (player)
+    local frame = Gui.get_player_active_frame(player)
+    local section = frame and frame.comfy_config_local
+    if section then
+        Gui.clear(section.settings_rows)
+        draw_local_settings(player, section.settings_rows)
+    end
+end
+
+local function add_section(frame, name, caption, width)
+    local section = frame.add({ type = 'flow', name = name, direction = 'vertical', tags = { width = width } })
+    section.style.vertical_spacing = Style.spacing.xs
+    section.style.bottom_margin = Style.spacing.md
+    Style.heading(section, caption)
+    return section
 end
 
 local function build_config_gui(data)
@@ -237,122 +286,28 @@ local function build_config_gui(data)
     if not player then return end
     local frame = data.frame
 
-    local switch_state
-    local label
+    Gui.clear(frame)
 
-    local admin = player.admin
-    frame.clear()
+    local width = Style.content_width(player, frame)
+    local section = add_section(frame, 'comfy_config_local', { 'gui.config_local_settings' }, width)
+    draw_local_settings(player, Style.settings_table(section, 'settings_rows', width))
 
-    local scroll_pane =
-        frame.add
-        {
-            type = 'scroll-pane',
-            horizontal_scroll_policy = 'never'
-        }
-    local scroll_style = scroll_pane.style
-    scroll_style.vertically_squashable = true
-    scroll_style.minimal_height = 350
-    scroll_style.bottom_padding = 2
-    scroll_style.left_padding = 2
-    scroll_style.right_padding = 2
-    scroll_style.top_padding = 2
+    section = add_section(frame, 'comfy_config_server', { 'gui.config_server_settings' }, width)
+    PlayerSettings.refresh(player, section)
 
-    label = scroll_pane.add({ type = 'label', caption = 'Player Settings' })
-    label.style.font = 'default-bold'
-    label.style.padding = 0
-    label.style.left_padding = 10
-    label.style.horizontal_align = 'left'
-    label.style.vertical_align = 'bottom'
-    label.style.font_color = { 0.55, 0.55, 0.99 }
-
-    scroll_pane.add({ type = 'line' })
-
-    switch_state = 'right'
-    if player.controller_type == defines.controllers.spectator then
-        switch_state = 'left'
+    if not player.admin then
+        return
     end
-    add_switch(scroll_pane, switch_state, 'spectator_switch', { 'gui.spectator_mode' }, { 'gui-description.spectator_mode' })
+    section = add_section(frame, 'comfy_config_admin', { 'gui.config_admin_settings' }, width)
+    local rows = Style.settings_table(section, 'settings_rows', width)
+    local allowed = game.permissions.get_group('Default').allows_action(defines.input_action.open_blueprint_library_gui)
+    add_switch(rows, allowed and 'left' or 'right', 'blueprint_toggle', 'Blueprint Library', 'Toggles the usage of blueprint strings and the library.')
+    add_switch(rows, this.gui_config.spaghett.enabled and 'left' or 'right', 'spaghett_toggle', { 'gui.spaghett_mode' }, { 'gui-description.spaghett_mode' })
+    draw_modules(player, rows, true)
 
-    scroll_pane.add({ type = 'line' })
-
-    if storage.auto_hotbar_enabled then
-        switch_state = 'right'
-        if storage.auto_hotbar_enabled[player.index] then
-            switch_state = 'left'
-        end
-        add_switch(scroll_pane, switch_state, 'auto_hotbar_switch', 'AutoHotbar', 'Automatically fills your hotbar with placeable items.')
-        scroll_pane.add({ type = 'line' })
-    end
-
-    for _, mod in pairs(this.scenario_registry) do
-        if mod.gui_rows and not mod.admin_only then
-            local handler = Task.get(mod.gui_rows)
-            if handler then
-                handler(player, scroll_pane)
-            end
-        end
-    end
-
-    if admin then
-        label = scroll_pane.add({ type = 'label', caption = 'Admin Settings' })
-        label.style.font = 'default-bold'
-        label.style.padding = 0
-        label.style.left_padding = 10
-        label.style.top_padding = 10
-        label.style.horizontal_align = 'left'
-        label.style.vertical_align = 'bottom'
-        label.style.font_color = { 0.77, 0.11, 0.11 }
-
-        scroll_pane.add({ type = 'line' })
-
-        for _, mod in pairs(this.scenario_registry) do
-            if mod.gui_rows and mod.admin_only then
-                local handler = Task.get(mod.gui_rows)
-                if handler then
-                    handler(player, scroll_pane)
-                end
-            end
-        end
-
-        switch_state = 'right'
-        if game.permissions.get_group('Default').allows_action(defines.input_action.open_blueprint_library_gui) then
-            switch_state = 'left'
-        end
-        add_switch(scroll_pane, switch_state, 'blueprint_toggle', 'Blueprint Library', 'Toggles the usage of blueprint strings and the library.')
-
-        scroll_pane.add({ type = 'line' })
-
-        switch_state = 'right'
-        if this.gui_config.spaghett.enabled then
-            switch_state = 'left'
-        end
-        add_switch(scroll_pane, switch_state, 'spaghett_toggle', { 'gui.spaghett_mode' }, { 'gui-description.spaghett_mode' })
-
-        scroll_pane.add({ type = 'line' })
-
-        if storage.tokens.maps_pirates_memory then
-            label = scroll_pane.add({ type = 'label', caption = 'Pirates Settings' })
-            label.style.font = 'default-bold'
-            label.style.padding = 0
-            label.style.left_padding = 10
-            label.style.top_padding = 10
-            label.style.horizontal_align = 'left'
-            label.style.vertical_align = 'bottom'
-            label.style.font_color = Color.green
-
-            local Memory = storage.tokens.maps_pirates_memory
-            switch_state = 'right'
-            if Memory.disband_crews then
-                switch_state = 'left'
-            end
-            add_switch(scroll_pane, switch_state, 'toggle_disband', 'Disband Crews', 'On = Enables crew disband.\nOff = Disables crew disband.')
-        end
-    end
-    for _, e in pairs(scroll_pane.children) do
-        if e.type == 'line' then
-            e.style.padding = 0
-            e.style.margin = 0
-        end
+    local memory = storage.tokens.maps_pirates_memory
+    if memory then
+        add_switch(rows, memory.disband_crews and 'left' or 'right', 'toggle_disband', 'Disband Crews', 'Allows crews to disband.')
     end
 end
 
@@ -373,11 +328,14 @@ local function on_gui_switch_state_changed(event)
 
 
     if functions[event.element.name] then
+        local name = event.element.name
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Functions Elem')
-        if is_spamming then
-            return
+        if not is_spamming then
+            functions[name](event)
         end
-        functions[event.element.name](event)
+        if name == 'spectator_switch' then
+            refresh_local_settings(player)
+        end
         return
     elseif pirates_functions[event.element.name] then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Config Pirates Elem')

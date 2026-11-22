@@ -3,7 +3,6 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local Orient = require 'maps.mountain_fortress_v3.orientation'
 local Event = require 'utils.event'
 
-local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
 local function reset_forces()
     local starting_planet = Public.get_planet()
@@ -84,7 +83,7 @@ local function scheduled_surface_clearing()
     local operation = scheduler.operation
 
     if operation == 'warn' then
-        game.print(mapkeeper .. ' Preparing to remove old entites and clearing surface - this might lag the server a bit.')
+        game.print({ 'mtn_v3_reset.preparing_to_remove_old_entites_and_clearing_surface' })
         scheduler.operation = 'player_clearing'
         scheduler.start_after = tick + 100
     elseif operation == 'player_clearing' then
@@ -93,7 +92,7 @@ local function scheduled_surface_clearing()
             clear_scheduler(scheduler)
             return
         end
-        game.print(mapkeeper .. ' Removing old entities.')
+        game.print({ 'mtn_v3_reset.removing_old_entities' })
 
         local ent = surface.find_entities_filtered { force = 'player', limit = 1000 }
         for _, e in pairs(ent) do
@@ -110,7 +109,7 @@ local function scheduled_surface_clearing()
             return
         end
 
-        game.print(mapkeeper .. ' Clearing old surface.')
+        game.print({ 'mtn_v3_reset.clearing_old_surface' })
         surface.clear()
         if scheduler.remove_surface then
             scheduler.operation = 'delete'
@@ -125,12 +124,12 @@ local function scheduled_surface_clearing()
             return
         end
 
-        game.print(mapkeeper .. ' Deleting old surface.')
+        game.print({ 'mtn_v3_reset.deleting_old_surface' })
 
         scheduler.operation = 'done'
         scheduler.start_after = tick + 100
     elseif operation == 'done' then
-        game.print(mapkeeper .. ' Done clearing old surface.')
+        game.print({ 'mtn_v3_reset.done_clearing_old_surface' })
         clear_scheduler(scheduler)
     end
 end
@@ -163,19 +162,11 @@ function Public.soft_reset_map(old_surface)
         end
     end
 
-    local message = table.concat({ mapkeeper .. ' Welcome to Mtn Fortress!' })
+    local message = { 'mtn_v3_reset.welcome' }
     local message_to_discord = table.concat({ '** Welcome to Mtn Fortress! **' })
 
     if this.soft_reset_counter > 1 then
-        message =
-            table.concat(
-                {
-                    mapkeeper,
-                    ' The world has been reshaped, welcome to attempt number ',
-                    tostring(this.soft_reset_counter),
-                    '!'
-                }
-            )
+        message = { 'mtn_v3_reset.reshaped_world', this.soft_reset_counter }
     end
     game.print(message, { color = { r = 0.98, g = 0.66, b = 0.22 } })
     Server.to_discord_embed(message_to_discord)
