@@ -15,9 +15,12 @@ local FlyingText = require 'utils.functions.flying_texts'
 require 'modules.satellite_score'
 
 local Functions = require 'maps.minesweeper.functions'
+local Constants = require 'maps.minesweeper.constants'
+
 local Map_score = require 'utils.gui.map_score'
 local Map = require 'modules.map_info'
 local Global = require 'utils.global'
+
 
 local minesweeper = {}
 
@@ -28,73 +31,10 @@ Global.register(
     end
 )
 
-local number_colors =
-{
-    [1] = { 0, 0, 210 },
-    [2] = { 0, 100, 0 },
-    [3] = { 180, 0, 0 },
-    [4] = { 0, 0, 120 },
-    [5] = { 120, 0, 0 },
-    [6] = { 0, 110, 110 },
-    [7] = { 0, 0, 0 },
-    [8] = { 125, 125, 125 },
-    [11] = { 185, 0, 255 }
-}
-
-local rendering_tile_values =
-{
-    ['nuclear-ground'] = { offset = { 0.6, -0.2 }, zoom = 3, font = 'scenario-message-dialog' },
-    --['stone-path'] = {offset = {0.54, -0.27}, zoom = 3, font = 'default-large'},
-    ['stone-path'] = { offset = { 0.52, -0.28 }, zoom = 3, font = 'default-large-bold' },
-    ['concrete'] = { offset = { 0.52, -0.28 }, zoom = 3, font = 'default-large-bold' },
-    ['hazard-concrete-left'] = { offset = { 0.52, -0.28 }, zoom = 3, font = 'default-large-bold' },
-    ['hazard-concrete-right'] = { offset = { 0.52, -0.28 }, zoom = 3, font = 'default-large-bold' },
-    ['refined-concrete'] = { offset = { 0.54, -0.26 }, zoom = 3, font = 'default-game' },
-    ['refined-hazard-concrete-left'] = { offset = { 0.54, -0.26 }, zoom = 3, font = 'default-game' },
-    ['refined-hazard-concrete-right'] = { offset = { 0.54, -0.26 }, zoom = 3, font = 'default-game' }
-}
-
-local chunk_divide_vectors = {}
-for x = 0, 30, 2 do
-    for y = 0, 30, 2 do
-        table.insert(chunk_divide_vectors, { x, y })
-    end
-end
-local size_of_chunk_divide_vectors = #chunk_divide_vectors
-
-local cell_update_vectors = {}
-for x = -2, 2, 2 do
-    for y = -2, 2, 2 do
-        table.insert(cell_update_vectors, { x, y })
-    end
-end
-
-local cell_adjacent_vectors = {}
-for x = -2, 2, 2 do
-    for y = -2, 2, 2 do
-        if x ~= 0 or y ~= 0 then
-            table.insert(cell_adjacent_vectors, { x, y })
-        end
-    end
-end
-
-local solving_vector_tables = {}
-local i = 1
-for r = 3, 10, 1 do
-    solving_vector_tables[i] = {}
-    for x = r * -2, r * 2, 2 do
-        for y = r * -2, r * 2, 2 do
-            table.insert(solving_vector_tables[i], { x, y })
-        end
-    end
-    i = i + 1
-end
-local size_of_solving_vector_tables = #solving_vector_tables
-
 local function update_rendering(cell, position)
     local surface = game.surfaces[1]
     local tile = surface.get_tile(position.x, position.y)
-    local tile_values = rendering_tile_values[tile.name]
+    local tile_values = Constants.rendering_tile_values[tile.name]
     if not tile_values then
         tile_values = { offset = { 0.6, -0.2 }, zoom = 3, font = 'scenario-message-dialog' }
     end
@@ -110,8 +50,8 @@ local function update_rendering(cell, position)
     local cell_value = cell[1]
 
     local color
-    if number_colors[cell_value] then
-        color = number_colors[cell_value]
+    if Constants.number_colors[cell_value] then
+        color = Constants.number_colors[cell_value]
     else
         color = { 125, 125, 125 }
     end
@@ -159,7 +99,7 @@ end
 
 local function get_adjacent_mine_count(position)
     local count = 0
-    for _, vector in pairs(cell_adjacent_vectors) do
+    for _, vector in pairs(Constants.cell_adjacent_vectors) do
         local p = { x = position.x + vector[1], y = position.y + vector[2] }
         local key = Functions.position_to_string(p)
         local cell = minesweeper.cells[key]
@@ -188,7 +128,7 @@ end
 local function trigger_mine(cell, position)
     cell[1] = -1
     minesweeper.active_mines = minesweeper.active_mines - 1
-    for _, vector in pairs(cell_update_vectors) do
+    for _, vector in pairs(Constants.cell_update_vectors) do
         local p = { x = position.x + vector[1], y = position.y + vector[2] }
         local adjacent_cell = minesweeper.cells[Functions.position_to_string(p)]
         if adjacent_cell and adjacent_cell[1] < 10 then
@@ -238,7 +178,7 @@ local function visit_cell(position)
     cell[1] = get_adjacent_mine_count(position)
 
     if cell[1] == 0 then
-        for _, vector in pairs(cell_adjacent_vectors) do
+        for _, vector in pairs(Constants.cell_adjacent_vectors) do
             local adjacent_position = { x = position.x + vector[1], y = position.y + vector[2] }
             if Functions.is_minefield_tile(adjacent_position, true) then
                 local adjacent_key = Functions.position_to_string(adjacent_position)
@@ -281,10 +221,10 @@ end
 local function get_solving_vectors(position)
     local distance_to_center = math.sqrt(position.x ^ 2 + position.y ^ 2)
     local key = math.floor(distance_to_center * 0.005) + 1
-    if key > size_of_solving_vector_tables then
-        key = size_of_solving_vector_tables
+    if key > Constants.size_of_solving_vector_tables then
+        key = Constants.size_of_solving_vector_tables
     end
-    local solving_vectors = solving_vector_tables[key]
+    local solving_vectors = Constants.solving_vector_tables[key]
     return solving_vectors
 end
 
@@ -364,7 +304,7 @@ local function mark_mine(entity, player)
     end
 
     local triggered_positions = {}
-    for _, vector in pairs(cell_update_vectors) do
+    for _, vector in pairs(Constants.cell_update_vectors) do
         local p = { x = position.x + vector[1], y = position.y + vector[2] }
         local nearby_cell = minesweeper.cells[Functions.position_to_string(p)]
         if nearby_cell and nearby_cell[1] == 10 then
@@ -405,13 +345,13 @@ local function add_mines_to_chunk(left_top, distance_to_center, restore_existing
     end
 
     local shuffle_index = {}
-    for iv = 1, size_of_chunk_divide_vectors, 1 do
+    for iv = 1, Constants.size_of_chunk_divide_vectors, 1 do
         table.insert(shuffle_index, iv)
     end
     table.shuffle_table(shuffle_index)
 
     for iv = 1, mine_count do
-        local vector = chunk_divide_vectors[shuffle_index[iv]]
+        local vector = Constants.chunk_divide_vectors[shuffle_index[iv]]
         local position = { x = left_top.x + vector[1], y = left_top.y + vector[2] }
         if not Functions.is_spawn(position) and (not restore_existing or Functions.is_minefield_tile(position, true)) then
             local key = Functions.position_to_string(position)
