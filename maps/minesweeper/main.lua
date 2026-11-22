@@ -1,28 +1,28 @@
 --luacheck: ignore
 --[[
 It's a Minesweeper thingy - MewMew
-
+ 
 Cell Values:
-	-- 1 to 8 = adjacent mines
-	-- 9 = empty cell with grid
-	-- 10 = mine
-	-- 11 = marked mine
-
+    -- 1 to 8 = adjacent mines
+    -- 9 = empty cell with grid
+    -- 10 = mine
+    -- 11 = marked mine
+ 
 ]] --
-
+ 
 if script.active_mods['space-age'] then
     error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
 end
-
+ 
 local FlyingText = require 'utils.functions.flying_texts'
-
+ 
 require 'modules.satellite_score'
-
+ 
 local Functions = require 'maps.minesweeper.functions'
 local Map_score = require 'utils.gui.map_score'
 local Map = require 'modules.map_info'
 local Global = require 'utils.global'
-
+ 
 local minesweeper = {}
 Global.register(
     minesweeper,
@@ -30,7 +30,7 @@ Global.register(
         minesweeper = tbl
     end
 )
-
+ 
 local number_colors =
 {
     [1] = { 0, 0, 210 },
@@ -43,7 +43,7 @@ local number_colors =
     [8] = { 125, 125, 125 },
     [11] = { 185, 0, 255 }
 }
-
+ 
 local rendering_tile_values =
 {
     ['nuclear-ground'] = { offset = { 0.6, -0.2 }, zoom = 3, font = 'scenario-message-dialog' },
@@ -56,7 +56,7 @@ local rendering_tile_values =
     ['refined-hazard-concrete-left'] = { offset = { 0.54, -0.26 }, zoom = 3, font = 'default-game' },
     ['refined-hazard-concrete-right'] = { offset = { 0.54, -0.26 }, zoom = 3, font = 'default-game' }
 }
-
+ 
 local chunk_divide_vectors = {}
 for x = 0, 30, 2 do
     for y = 0, 30, 2 do
@@ -64,21 +64,21 @@ for x = 0, 30, 2 do
     end
 end
 local size_of_chunk_divide_vectors = #chunk_divide_vectors
-
+ 
 local chunk_vectors = {}
 for x = -32, 32, 32 do
     for y = -32, 32, 32 do
         table.insert(chunk_vectors, { x, y })
     end
 end
-
+ 
 local cell_update_vectors = {}
 for x = -2, 2, 2 do
     for y = -2, 2, 2 do
         table.insert(cell_update_vectors, { x, y })
     end
 end
-
+ 
 local cell_adjacent_vectors = {}
 for x = -2, 2, 2 do
     for y = -2, 2, 2 do
@@ -88,7 +88,7 @@ for x = -2, 2, 2 do
         end
     end
 end
-
+ 
 local solving_vector_tables = {}
 local i = 1
 for r = 3, 10, 1 do
@@ -101,7 +101,7 @@ for r = 3, 10, 1 do
     i = i + 1
 end
 local size_of_solving_vector_tables = #solving_vector_tables
-
+ 
 local function update_rendering(cell, position)
     local surface = game.surfaces[1]
     local tile = surface.get_tile(position.x, position.y)
@@ -109,23 +109,23 @@ local function update_rendering(cell, position)
     if not tile_values then
         tile_values = { offset = { 0.6, -0.2 }, zoom = 3, font = 'scenario-message-dialog' }
     end
-
+ 
     if cell[2] then
         cell[2].destroy()
     end
     if cell[3] then
         cell[3].destroy()
     end
-
+ 
     local cell_value = cell[1]
-
+ 
     local color
     if number_colors[cell_value] then
         color = number_colors[cell_value]
     else
         color = { 125, 125, 125 }
     end
-
+ 
     local p = { position.x + tile_values.offset[1], position.y + tile_values.offset[2] }
     local text = cell_value
     if cell_value == 10 or cell_value == 9 then
@@ -134,7 +134,7 @@ local function update_rendering(cell, position)
     if cell_value == 11 then
         text = 'X'
     end
-
+ 
     cell[2] =
         rendering.draw_text
         {
@@ -148,14 +148,14 @@ local function update_rendering(cell, position)
             scale_with_zoom = false,
             only_in_alt_mode = false
         }
-
+ 
     if not tile.hidden_tile then
         return
     end
     if tile.hidden_tile ~= 'nuclear-ground' then
         return
     end
-
+ 
     cell[3] =
         rendering.draw_rectangle
         {
@@ -169,7 +169,7 @@ local function update_rendering(cell, position)
             only_in_alt_mode = false
         }
 end
-
+ 
 local function get_adjacent_mine_count(position)
     local count = 0
     for _, vector in pairs(cell_adjacent_vectors) do
@@ -182,7 +182,7 @@ local function get_adjacent_mine_count(position)
     end
     return count
 end
-
+ 
 local function kill_cell(position)
     local key = Functions.position_to_string(position)
     local cell = minesweeper.cells[key]
@@ -197,18 +197,18 @@ local function kill_cell(position)
     end
     minesweeper.cells[key] = nil
 end
-
+ 
 local function visit_cell(position)
     local score_change = 0
-
+ 
     if not Functions.is_minefield_tile(position, true) then
         return score_change
     end
-
+ 
     local key = Functions.position_to_string(position)
     local cell = minesweeper.cells[key]
     local cell_value_before_visit = false
-
+ 
     if cell then
         if cell[1] == 10 then
             Functions.kaboom(position)
@@ -223,22 +223,22 @@ local function visit_cell(position)
             end
             return score_change
         end
-
+ 
         if cell[1] == 11 then
             update_rendering(cell, position)
             return score_change
         end
-
+ 
         cell_value_before_visit = cell[1]
     end
-
+ 
     if not cell then
         minesweeper.cells[key] = {}
     end
     cell = minesweeper.cells[key]
-
+ 
     cell[1] = get_adjacent_mine_count(position)
-
+ 
     if cell[1] == 0 then
         for _, vector in pairs(cell_adjacent_vectors) do
             local adjacent_position = { x = position.x + vector[1], y = position.y + vector[2] }
@@ -260,7 +260,7 @@ local function visit_cell(position)
         kill_cell(position)
         return score_change
     end
-
+ 
     if cell_value_before_visit and cell_value_before_visit ~= cell[1] then
         for _, vector in pairs(cell_adjacent_vectors) do
             local adjacent_position = { x = position.x + vector[1], y = position.y + vector[2] }
@@ -271,12 +271,12 @@ local function visit_cell(position)
             end
         end
     end
-
+ 
     update_rendering(cell, position)
-
+ 
     return score_change
 end
-
+ 
 local function get_solving_vectors(position)
     local distance_to_center = math.sqrt(position.x ^ 2 + position.y ^ 2)
     local key = math.floor(distance_to_center * 0.005) + 1
@@ -286,7 +286,7 @@ local function get_solving_vectors(position)
     local solving_vectors = solving_vector_tables[key]
     return solving_vectors
 end
-
+ 
 local function are_mines_marked_around_target(position)
     local marked_positions = {}
     for _, vector in pairs(get_solving_vectors(position)) do
@@ -304,7 +304,7 @@ local function are_mines_marked_around_target(position)
     end
     return marked_positions
 end
-
+ 
 local function solve_attempt(position)
     local solved = false
     for _, vector in pairs(get_solving_vectors(position)) do
@@ -325,41 +325,41 @@ local function solve_attempt(position)
     end
     return solved
 end
-
+ 
 local function mark_mine(entity, player)
     local position = Functions.position_to_cell_position(entity.position)
     local key = Functions.position_to_string(position)
     local cell = minesweeper.cells[key]
     local score_change = 0
-
+ 
     --Success
     if cell and cell[1] > 9 then
         local surface = game.surfaces.nauvis
-
+ 
         if cell[1] == 10 then
             score_change = 1
         end
-
+ 
         FlyingText.flying_text(nil, surface, entity.position, 'Mine marked.', { r = 0.98, g = 0.66, b = 0.22 })
-
+ 
         cell[1] = 11
         update_rendering(cell, position)
         entity.destroy()
-
-        local solved = solve_attempt(position)
-        if solved then
-            player.insert({ name = 'stone-furnace', count = 1 })
-            return score_change
+ 
+        solve_attempt(position)
+ 
+        -- Den Ofen direkt zurueck ins Inventar geben. Nur wenn kein Platz ist,
+        -- wird er wie bisher auf den Boden gelegt, damit er nicht verloren geht.
+        if player.insert({ name = 'stone-furnace', count = 1 }) < 1 then
+            local e = surface.create_entity({ name = 'item-on-ground', position = { position.x + 1, position.y + 1 }, stack = { name = 'stone-furnace', count = 1 } })
+            if e and e.valid then
+                e.to_be_looted = true
+            end
         end
-
-        local e = surface.create_entity({ name = 'item-on-ground', position = { position.x + 1, position.y + 1 }, stack = { name = 'stone-furnace', count = 1 } })
-        if e and e.valid then
-            e.to_be_looted = true
-        end
-
+ 
         return score_change
     end
-
+ 
     --Trigger all adjacent mines when missplacing a disarming furnace.
     for _, vector in pairs(cell_update_vectors) do
         local p = { x = position.x + vector[1], y = position.y + vector[2] }
@@ -375,6 +375,18 @@ local function mark_mine(entity, player)
     return score_change
 end
 
+-- check if cell position is at or near spawn by checking if it's neighborhood is a tile of spawn
+local function is_cell_near_spawn(position)
+    for dx = -1, 2, 1 do
+        for dy = -1, 2, 1 do
+            if Functions.is_spawn({ x = position.x + dx, y = position.y + dy }) then
+                return true
+            end
+        end
+    end
+    return false
+end
+ 
 local function add_mines_to_chunk(left_top, distance_to_center)
     local base_mine_count = 40
     local max_mine_count = 128
@@ -382,13 +394,13 @@ local function add_mines_to_chunk(left_top, distance_to_center)
     if mine_count > max_mine_count then
         mine_count = max_mine_count
     end
-
+ 
     local shuffle_index = {}
     for iv = 1, size_of_chunk_divide_vectors, 1 do
         table.insert(shuffle_index, iv)
     end
     table.shuffle_table(shuffle_index)
-
+ 
     -- place shuffled mines
     if distance_to_center < 128 then
         for iv = 1, mine_count, 1 do
@@ -409,11 +421,11 @@ local function add_mines_to_chunk(left_top, distance_to_center)
             minesweeper.active_mines = minesweeper.active_mines + 1
         end
     end
-
+ 
     -- remove mines that would form a 3x3 block
     for _, chunk_vector in pairs(chunk_vectors) do
         local left_top_2 = { x = left_top.x + chunk_vector[1], y = left_top.y + chunk_vector[2] }
-
+ 
         for _, vector in pairs(chunk_divide_vectors) do
             local position = { x = left_top_2.x + vector[1], y = left_top_2.y + vector[2] }
             local key = Functions.position_to_string(position)
@@ -426,26 +438,71 @@ local function add_mines_to_chunk(left_top, distance_to_center)
             end
         end
         --[[
-		for _, vector in pairs(chunk_divide_vectors) do
-			local position = {x = left_top_2.x + vector[1], y = left_top_2.y + vector[2]}
-			local key = Functions.position_to_string(position)
-			local cell = minesweeper.cells[key]
-			if cell then update_rendering(cell, position) end
-		end
-		]]
+        for _, vector in pairs(chunk_divide_vectors) do
+            local position = {x = left_top_2.x + vector[1], y = left_top_2.y + vector[2]}
+            local key = Functions.position_to_string(position)
+            local cell = minesweeper.cells[key]
+            if cell then update_rendering(cell, position) end
+        end
+        ]]
     end
 end
-
+ 
+-- balance and QoL change: start area is already revealed as if clicked and cleared a free area
+-- the previous implementation was not consistent with minesweeper rules
+local function reveal_spawn_area()
+    if minesweeper.spawn_revealed then
+        return
+    end
+    local spawn_chunk_keys = {
+        Functions.position_to_string({ x = -32, y = -32 }),
+        Functions.position_to_string({ x = 0, y = -32 }),
+        Functions.position_to_string({ x = -32, y = 0 }),
+        Functions.position_to_string({ x = 0, y = 0 })
+    }
+    for _, chunk_key in pairs(spawn_chunk_keys) do
+        if not minesweeper.chunks[chunk_key] then
+            return
+        end
+    end
+    minesweeper.spawn_revealed = true
+ 
+    -- remove mines near spawn area, distance can be adjusted by neighborhood range of is_cell_near_spawn check
+    for x = -20, 18, 2 do
+        for y = -20, 18, 2 do
+            local position = { x = x, y = y }
+            local cell = minesweeper.cells[Functions.position_to_string(position)]
+            if cell and cell[1] == 10 and is_cell_near_spawn(position) then
+                kill_cell(position)
+                minesweeper.active_mines = minesweeper.active_mines - 1
+            end
+        end
+    end
+ 
+    -- reveal all cells closest to spawn, triggering 0 zones, would not reveal mines if they were still present
+    -- situation is made consistent with minesweeper aestetic, no more hard edge into bomb from "revealed cell"
+    for x = -20, 18, 2 do
+        for y = -20, 18, 2 do
+            local position = { x = x, y = y }
+            local cell = minesweeper.cells[Functions.position_to_string(position)]
+            local is_mine = cell and cell[1] == 10
+            if not is_mine and is_cell_near_spawn(position) and Functions.is_minefield_tile(position, true) then
+                visit_cell(position)
+            end
+        end
+    end
+end
+ 
 local function on_chunk_generated(event)
     local left_top = event.area.left_top
     local surface = event.surface
     if surface.index ~= 1 then
         return
     end
-
+ 
     local distance_to_center = math.sqrt((left_top.x + 16) ^ 2 + (left_top.y + 16) ^ 2)
     local tiles = {}
-
+ 
     if distance_to_center < 128 then
         for x = 0, 31, 1 do
             for y = 0, 31, 1 do
@@ -467,46 +524,70 @@ local function on_chunk_generated(event)
         end
     end
     surface.set_tiles(tiles, true)
-
+ 
+ -- removes ressources that would've spawned from normal map generation, user in map generation does no longer need to set them to 0
+    for _, resource in pairs(surface.find_entities_filtered({ area = event.area, type = 'resource' })) do
+        resource.destroy()
+    end
+ 
     --surface.clear() will cause to trigger on_chunk_generated twice
     local key = Functions.position_to_string(left_top)
     if minesweeper.chunks[key] then
         return
     end
     minesweeper.chunks[key] = true
-
+ 
     add_mines_to_chunk(left_top, distance_to_center)
+    reveal_spawn_area()
 end
-
+ 
 local function on_player_changed_position(event)
     local player = game.players[event.player_index]
-    if not Functions.is_minefield_tile(player.position) then
+    -- change for 2.0 | 2.1
+    -- player.position also gives position in remote view which would trigger mines before
+    -- instead use character.position
+    local character = player.character
+    if not (character and character.valid) then
         return
     end
-    local cell_position = Functions.position_to_cell_position(player.position)
+    local player_position = character.position
+    if not Functions.is_minefield_tile(player_position) then
+        return
+    end
+    local cell_position = Functions.position_to_cell_position(player_position)
     local score_change = visit_cell(cell_position)
     if score_change < 0 then
         solve_attempt(cell_position)
     end
     Map_score.set_score(player, Map_score.get_score(player) + score_change)
 end
-
+ 
 local function deny_building(event)
     local entity = event.entity
     if not entity.valid then
         return
     end
-
+ 
     if not prototypes.item[entity.name] then
         return
     end
-    if not Functions.is_minefield_tile(entity.position, true) then
+    -- bugfix: check all tiles of cell instead of center position
+    -- before mines could spawn near spawn, if mine was marked by furnace, this check would find spawn surface, not a mine
+    -- the furnace would build, the player would mine the furnace and confusedly asume the tile safe
+    -- the player would walk on the tile and be exploded
+    -- even though spawn mines are removed now, this bugfix should still remain, just in case of future changes
+    local is_marker = entity.name == 'stone-furnace' and entity.position.x % 2 == 1 and entity.position.y % 2 == 1
+    if is_marker then
+        if not Functions.is_minefield_tile(Functions.position_to_cell_position(entity.position), true) then
+            return
+        end
+    elseif not Functions.is_minefield_tile(entity.position, true) then
         return
     end
-
+ 
     if event.player_index then
         local player = game.players[event.player_index]
-        if entity.position.x % 2 == 1 and entity.position.y % 2 == 1 and entity.name == 'stone-furnace' then
+        if is_marker then
             local score_change = mark_mine(entity, player)
             Map_score.set_score(player, Map_score.get_score(player) + score_change)
             return
@@ -518,15 +599,15 @@ local function deny_building(event)
     end
     entity.destroy()
 end
-
+ 
 local function on_built_entity(event)
     deny_building(event)
 end
-
+ 
 local function on_robot_built_entity(event)
     deny_building(event)
 end
-
+ 
 local function update_built_tiles(tiles)
     for _, placed_tile in pairs(tiles) do
         local cell_position = Functions.position_to_cell_position(placed_tile.position)
@@ -541,35 +622,35 @@ local function update_built_tiles(tiles)
         end
     end
 end
-
+ 
 local function on_player_built_tile(event)
     update_built_tiles(event.tiles)
 end
-
+ 
 local function on_robot_built_tile(event)
     update_built_tiles(event.tiles)
 end
-
+ 
 local function on_player_mined_tile(event)
     update_built_tiles(event.tiles)
 end
-
+ 
 local function on_robot_mined_tile(event)
     update_built_tiles(event.tiles)
 end
-
+ 
 local function on_player_created(event)
     local player = game.players[event.player_index]
     player.insert({ name = 'stone-furnace', count = 1 })
 end
-
+ 
 local function on_player_respawned(event)
     local player = game.players[event.player_index]
     player.insert({ name = 'stone-furnace', count = 1 })
-
+ 
     game.surfaces.nauvis.destroy_decoratives({ name = 'nuclear-ground-patch' })
 end
-
+ 
 local function on_entity_died(event)
     local entity = event.entity
     if not entity.valid then
@@ -589,7 +670,7 @@ local function on_entity_died(event)
     revived_entity.health = entity.max_health
     entity.destroy()
 end
-
+ 
 local function on_nth_tick()
     for k, position in pairs(minesweeper.visit_queue) do
         visit_cell(position)
@@ -597,43 +678,40 @@ local function on_nth_tick()
         break
     end
 end
-
+ 
 local function on_init()
     game.create_force('minesweeper')
-
-    storage.custom_highscore.description = 'Minesweep rank:'
-
-    local surface = game.surfaces[1]
-    local mgs = surface.map_gen_settings
-    mgs.water = 0
-    mgs.cliff_settings = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 }
-    mgs.autoplace_controls =
-    {
-        ['coal'] = { frequency = 0, size = 0, richness = 0 },
-        ['stone'] = { frequency = 0, size = 0, richness = 0 },
-        ['copper-ore'] = { frequency = 0, size = 0, richness = 0 },
-        ['iron-ore'] = { frequency = 0, size = 0, richness = 0 },
-        ['uranium-ore'] = { frequency = 0, size = 0, richness = 0 },
-        ['crude-oil'] = { frequency = 0, size = 0, richness = 0 },
-        ['trees'] = { frequency = 4, size = 0.5, richness = 0.1 }
-    }
-    surface.map_gen_settings = mgs
-    surface.clear(true)
-
+ 
     minesweeper.chunks = {}
+    minesweeper.spawn_revealed = false
     minesweeper.cells = {}
     minesweeper.visit_queue = {}
     minesweeper.player_data = {}
     minesweeper.active_mines = 0
     minesweeper.disarmed_mines = 0
     minesweeper.triggered_mines = 0
-
+ 
+    storage.custom_highscore.description = 'Minesweep rank:'
+ 
+    local surface = game.surfaces[1]
+    local mgs = surface.map_gen_settings
+    mgs.water = 0
+    mgs.cliff_settings = { cliff_elevation_interval = 0, cliff_elevation_0 = 0 }
+    -- bugfix for Factorio 2.0 | 2.1: frequency & size & richness = 0 makes spotNoise return NaN.
+    -- instead opt for ressorce removal in on_chunk_generated
+    mgs.autoplace_controls =
+    {
+        ['trees'] = { frequency = 4, size = 0.5, richness = 0.1 }
+    }
+    surface.map_gen_settings = mgs
+    surface.clear(true)
+ 
     local T = Map.get_map_information()
     T.localised_category = 'minesweeper'
     T.main_caption_color = { r = 255, g = 125, b = 55 }
     T.sub_caption_color = { r = 0, g = 250, b = 150 }
 end
-
+ 
 local Event = require 'utils.event'
 Event.on_init(on_init)
 Event.on_nth_tick(2, on_nth_tick)
@@ -648,3 +726,4 @@ Event.add(defines.events.on_robot_built_tile, on_robot_built_tile)
 Event.add(defines.events.on_player_built_tile, on_player_built_tile)
 Event.add(defines.events.on_robot_mined_tile, on_robot_mined_tile)
 Event.add(defines.events.on_player_mined_tile, on_player_mined_tile)
+ 
