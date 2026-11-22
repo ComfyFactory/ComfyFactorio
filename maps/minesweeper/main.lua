@@ -348,8 +348,8 @@ local function mark_mine(entity, player)
  
         solve_attempt(position)
  
-        -- Den Ofen direkt zurueck ins Inventar geben. Nur wenn kein Platz ist,
-        -- wird er wie bisher auf den Boden gelegt, damit er nicht verloren geht.
+        -- Put furnace back into inventory if and only if there is space,
+        -- If there isn't space put on floor like before.
         if player.insert({ name = 'stone-furnace', count = 1 }) < 1 then
             local e = surface.create_entity({ name = 'item-on-ground', position = { position.x + 1, position.y + 1 }, stack = { name = 'stone-furnace', count = 1 } })
             if e and e.valid then
