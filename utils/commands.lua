@@ -1,3 +1,4 @@
+local Color = require 'utils.color_presets'
 ---@diagnostic disable: deprecated
 --luacheck: ignore 561
 local Global = require 'utils.global'
@@ -434,7 +435,15 @@ local function execute(event)
     local validate_self = command_data.validate_self or false
     if validate_self and not command_data.validated_command and is_multiplayer then
         command_data.validated_command = true
-        if command_data.custom_message then
+        if type(command_data.custom_message) == 'table' then
+            if game.player then
+                game.player.play_sound { path = 'utility/scenario_message' }
+                game.player.print({ 'mtn_v3_commands.confirm_action', command_data.custom_message }, { color = Color.warning })
+                game.player.play_sound { path = 'utility/cannot_build' }
+            else
+                handle_error(output.command_needs_validation, 'utility/cannot_build')
+            end
+        elseif command_data.custom_message then
             handle_error(string.format(output.command_needs_custom_validation, command_data.custom_message),
                 'utility/cannot_build')
         else
@@ -519,7 +528,7 @@ end
 
 --- Creates a new command.
 ---@param name string
----@param help string
+---@param help LocalisedString
 ---@return MetaCommand
 function Public.new(name, help)
     if this.commands[name] then
@@ -555,7 +564,7 @@ function Public.new(name, help)
 end
 
 --- Requires the player to validate the command before running it.
----@param custom_message? string
+---@param custom_message? LocalisedString
 ---@return MetaCommand
 function Public:require_validation(custom_message)
     self.validate_self = true
@@ -741,7 +750,7 @@ function Public:callback(func)
     end
 
     -- Lastly, adds the command to the game
-    local help = description .. ' - ' .. self.help
+    local help = type(self.help) == 'table' and { '', description, ' - ', self.help } or description .. ' - ' .. self.help
     commands.add_command(self.name, help, command_callback)
 
     -- Adds any aliases if any

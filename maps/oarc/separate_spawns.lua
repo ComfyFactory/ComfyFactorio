@@ -4,6 +4,7 @@ local Silo = require 'maps.oarc.frontier_silo'
 local MT = require 'maps.oarc.table'
 local Surface = require 'utils.surface'
 local Gui = require 'utils.gui'
+local Style = require 'utils.gui_style'
 local Token = require 'utils.token'
 local Task = require 'utils.task'
 local CP = require 'utils.utils'
@@ -2164,17 +2165,8 @@ local function spawnControlFrame(data)
     local player = data.player
     local frame = data.frame
     frame.clear()
-    frame.style.padding = 10
-    frame.style.margin = 0
-
-    local line = frame.add { type = 'line' }
-    line.style.top_margin = 4
-    line.style.bottom_margin = 4
-
-    local scroll = frame.add { type = 'scroll-pane', name = 'scroll_pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto' }
-    scroll.style.minimal_width = 400
-    scroll.style.maximal_height = 200
-    scroll.style.minimal_height = 200
+    local width = Style.content_width(player, frame)
+    local scroll = Style.surface(frame, 'scroll_pane', width)
     local this = MT.get()
 
     if this.enable_shared_spawns then
@@ -2202,14 +2194,12 @@ local function spawnControlFrame(data)
                     state = IsSharedSpawnActiveAlways(player)
                 }
             end
-            Gui.ApplyStyle(scroll['accessToggle'], Gui.my_fixed_width_style)
         end
     end
 
     -- Sets the player's custom spawn point to their current location
     if ((game.tick - this.playerCooldowns[player.name].setRespawn) > (this.respawn_cooldown * this.ticks_per_minute)) then
-        scroll.add { type = 'button', name = 'setRespawnLocation', caption = { 'ms-set-respawn-loc' } }
-        scroll['setRespawnLocation'].style.font = 'default-small-semibold'
+        Style.button(scroll.add { type = 'button', name = 'setRespawnLocation', caption = { 'ms-set-respawn-loc' } })
     else
         Gui.AddLabel(
             scroll,
@@ -2234,27 +2224,21 @@ local function spawnControlFrame(data)
                 type = 'drop-down',
                 items = this.sharedSpawns[player.name].joinQueue
             }
-            scroll.add
+            Style.button(scroll.add
             {
                 name = 'accept_player_request',
                 type = 'button',
                 caption = { 'ms-accept' }
-            }
-            scroll.add
+            })
+            Style.button(scroll.add
             {
                 name = 'reject_player_request',
                 type = 'button',
                 caption = { 'ms-reject' }
-            }
+            })
         else
             Gui.AddLabel(scroll, 'empty_join_queue_note1', { 'ms-no-player-join-reqs' }, Gui.my_note_style)
         end
-        scroll.add
-        {
-            name = 'join_queue_spacer',
-            type = 'label',
-            caption = ' '
-        }
     end
 end
 

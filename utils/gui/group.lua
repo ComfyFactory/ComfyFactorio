@@ -1,6 +1,7 @@
 -- this script adds a group button to create groups for your players --
 
 local Gui = require 'utils.gui'
+local Style = require 'utils.gui_style'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local Event = require 'utils.event'
@@ -41,154 +42,81 @@ local Public = {}
 local function build_group_gui(data)
     local player = data.player
     local frame = data.frame
-    local group_name_width = 150
-    local description_width = 240
-    local members_width = 90
-    local member_columns = 2
-    local actions_width = 130
-    local members_column_width = members_width * member_columns
-    local content_width = group_name_width + description_width + members_column_width + actions_width
-    local total_height = (frame.style.minimal_height or 500) - 60
-
+    local content_width = math.max(420, Style.content_width(player, frame))
+    local inner_width = content_width - 2 * Style.spacing.md
+    local show_form = frame.tags.group_form_open == true
+    local name_text, description_text = 'Name', 'Description'
+    local previous = frame.frame2
+    if previous and previous.group_table then
+        name_text = previous.group_table.new_group_name.text
+        description_text = previous.group_table.new_group_description.text
+        if #name_text > 30 then name_text = '' end
+        if #description_text > 60 then description_text = '' end
+    end
     frame.clear()
 
-    local t = frame.add({ type = 'table', column_count = 4 })
-
-    local headings =
-    {
-        { { 'gui.title' }, group_name_width },
-        { { 'gui.description' }, description_width },
-        { { 'gui.members' }, members_column_width },
-        { '', actions_width }
-    }
-    for _, h in pairs(headings) do
-        local l = t.add({ type = 'label', caption = h[1] })
-        l.style.font_color = { r = 0.98, g = 0.66, b = 0.22 }
-        l.style.font = 'heading-2'
-        l.style.top_padding = 6
-        l.style.minimal_height = 40
-        l.style.minimal_width = h[2]
-        l.style.maximal_width = h[2]
-        l.style.horizontal_align = 'center'
+    local form = Style.surface(frame, 'frame2', content_width)
+    form.add({ type = 'checkbox', name = 'comfy_group_form', caption = { 'gui.create_group' }, state = show_form })
+    local fields = form.add({ type = 'flow', name = 'group_table', direction = 'horizontal' })
+    fields.visible = show_form
+    fields.style.horizontal_spacing = Style.spacing.sm
+    fields.style.vertical_align = 'center'
+    local name = fields.add({ type = 'textfield', name = 'new_group_name', text = name_text, tooltip = { 'gui.title' } })
+    name.style.width = 124
+    local description = fields.add({ type = 'textfield', name = 'new_group_description', text = description_text, tooltip = { 'gui.description' } })
+    local create_width = 76
+    description.style.width = inner_width - 124 - create_width - 2 * Style.spacing.sm
+    for _, field in ipairs({ name, description }) do
+        field.style.height = Style.dimensions.button_height
     end
+    local create = Style.button(fields.add({ type = 'button', name = 'create_new_group', caption = { 'gui.create' } }))
+    create.style.width = create_width
 
-    local header_line = frame.add({ type = 'line', direction = 'horizontal' })
-    header_line.style.minimal_width = content_width
-    header_line.style.horizontally_stretchable = true
-    header_line.style.top_margin = 2
-    header_line.style.bottom_margin = 2
-
-    local scroll_pane =
-        frame.add(
-            {
-                type = 'scroll-pane',
-                name = 'scroll_pane',
-                direction = 'vertical',
-                horizontal_scroll_policy = 'never',
-                vertical_scroll_policy = 'auto'
-            }
-        )
-    scroll_pane.style.maximal_height = total_height - 50
-    scroll_pane.style.minimal_height = total_height - 50
-
-    local list = scroll_pane.add({ type = 'flow', name = 'groups_table', direction = 'vertical' })
-    list.style.minimal_width = content_width
-    list.style.horizontally_stretchable = true
-
-    for _, group in pairs(this.tag_groups) do
-        if (group.name and group.founder and group.description) then
-            t = list.add({ type = 'table', column_count = 4 })
-            local l = t.add({ type = 'label', caption = group.name })
-            l.style.top_padding = 16
-            l.style.bottom_padding = 16
-            l.style.minimal_width = group_name_width
-            l.style.maximal_width = group_name_width
-            l.style.font = 'default-semibold'
-            l.style.horizontal_align = 'center'
-            local color
-            if game.players[group.founder] and game.players[group.founder].color then
-                color = game.players[group.founder].color
-            else
-                color = { r = 0.90, g = 0.90, b = 0.90 }
-            end
-            color = { r = color.r * 0.6 + 0.4, g = color.g * 0.6 + 0.4, b = color.b * 0.6 + 0.4, a = 1 }
-            l.style.font_color = color
-            l.style.single_line = false
-            l = t.add({ type = 'label', caption = group.description })
-            l.style.top_padding = 16
-            l.style.bottom_padding = 16
-            l.style.minimal_width = description_width
-            l.style.maximal_width = description_width
-            l.style.font_color = { r = 0.90, g = 0.90, b = 0.90 }
-            l.style.single_line = false
-            l.style.font = 'default-semibold'
-            l.style.horizontal_align = 'center'
-
-            local tt = t.add({ type = 'table', column_count = 2 })
-            local flow = tt.add({ type = 'flow' })
-            flow.style.left_padding = 65
-            local ttt = tt.add({ type = 'table', column_count = member_columns })
-            ttt.style.minimal_width = members_width * 2 - 25
-            for _, p in pairs(game.connected_players) do
-                if group.name == this.player_group[p.name] then
-                    l = ttt.add({ type = 'label', caption = p.name })
-                    color =
-                    {
-                        r = p.color.r * 0.6 + 0.4,
-                        g = p.color.g * 0.6 + 0.4,
-                        b = p.color.b * 0.6 + 0.4,
-                        a = 1
-                    }
-                    l.style.font_color = color
-                    l.style.maximal_width = members_width * 2 - 60
-                    l.style.single_line = false
-                    l.style.font = 'default-semibold'
-                    l.style.horizontal_align = 'center'
-                end
-            end
-
-            tt = t.add({ type = 'table', name = group.name, column_count = 1 })
-            if group.name ~= this.player_group[player.name] then
-                local b = tt.add({ type = 'button', caption = { 'gui.join' } })
-                b.style.font = 'default-bold'
-                b.style.minimal_width = actions_width
-                b.style.maximal_width = actions_width
-            else
-                local b = tt.add({ type = 'button', caption = { 'gui.leave' } })
-                b.style.font = 'default-bold'
-                b.style.minimal_width = actions_width
-                b.style.maximal_width = actions_width
-            end
-            if (player.admin == true or group.founder == player.name) and not group.static then
-                local b = tt.add({ type = 'button', caption = { 'gui.delete' } })
-                b.style.font = 'default-bold'
-                b.style.minimal_width = actions_width
-                b.style.maximal_width = actions_width
-            else
-                local b = tt.add({ type = 'button', caption = { 'gui.delete' } })
-                b.enabled = false
-                b.style.font = 'default-bold'
-                b.style.minimal_width = actions_width
-                b.style.maximal_width = actions_width
-            end
-
-            local line = list.add({ type = 'line', direction = 'horizontal' })
-            line.style.minimal_width = content_width
-            line.style.horizontally_stretchable = true
-            line.style.top_margin = 2
-            line.style.bottom_margin = 2
+    local list = Style.surface(frame, 'groups_table', content_width)
+    local groups = {}
+    for key, group in pairs(this.tag_groups) do
+        if group.name and group.founder and group.description then
+            groups[#groups + 1] = key
         end
     end
+    table.sort(groups)
 
-    local frame2 = frame.add({ type = 'frame', name = 'frame2' })
-    t = frame2.add({ type = 'table', name = 'group_table', column_count = 4 })
-    local textfield = t.add({ type = 'textfield', name = 'new_group_name', text = 'Name' })
-    textfield.style.minimal_width = 200
-    textfield = t.add({ type = 'textfield', name = 'new_group_description', text = 'Description' })
-    textfield.style.minimal_width = 400
-    local b = t.add({ type = 'button', name = 'create_new_group', caption = { 'gui.create' } })
-    b.style.minimal_width = 150
-    b.style.font = 'default-bold'
+    for _, key in ipairs(groups) do
+        local group = this.tag_groups[key]
+        local line = Style.toolbar(list)
+        line.style.minimal_height = Style.dimensions.row_height
+        local title = Style.heading(line, group.name)
+        title.style.width = 118
+        title.tooltip = group.name
+        local description_label = line.add({ type = 'label', caption = group.description, tooltip = group.description })
+        local count_width, join_width, delete_width = 74, 54, 60
+        description_label.style.width = inner_width - 118 - count_width - join_width - delete_width - 4 * Style.spacing.sm
+        description_label.style.single_line = true
+        description_label.style.font_color = Style.colors.muted
+
+        local members = {}
+        for _, member in pairs(game.connected_players) do
+            if this.player_group[member.name] == key then
+                members[#members + 1] = member.name
+            end
+        end
+        local count = line.add({ type = 'label', caption = { 'gui.group_members_online', #members }, tooltip = table.concat(members, '\n') })
+        count.style.font_color = Style.colors.muted
+        count.style.width = count_width
+
+        local actions = line.add({ type = 'flow', name = 'group_actions', direction = 'horizontal', tags = { group_name = key } })
+        actions.style.horizontal_spacing = Style.spacing.sm
+        local joined = this.player_group[player.name] == key
+        local can_delete = (player.admin or group.founder == player.name) and not group.static
+        local join = Style.button(actions.add({ type = 'button', caption = { joined and 'gui.leave' or 'gui.join' } }))
+        join.style.width = join_width
+        local delete = Style.button(actions.add({
+            type = 'button',
+            caption = { 'gui.delete' },
+            enabled = can_delete
+        }), can_delete and 'danger' or nil)
+        delete.style.width = delete_width
+    end
 end
 
 local build_group_gui_token = Token.register(build_group_gui)
@@ -198,26 +126,8 @@ local function refresh_gui()
     for i = 1, #players do
         local player = players[i]
         local frame = Gui.get_player_active_frame(player)
-        if frame then
-            if frame.frame2 and frame.frame2.valid then
-                local new_group_name = frame.frame2.group_table.new_group_name.text
-                local new_group_description = frame.frame2.group_table.new_group_description.text
-
-                if new_group_name:len() > 30 then
-                    new_group_name = ''
-                end
-
-                if new_group_description:len() > 60 then
-                    new_group_description = ''
-                end
-
-                local data = { player = player, frame = frame }
-                build_group_gui(data)
-
-                frame = Gui.get_player_active_frame(player)
-                frame.frame2.group_table.new_group_name.text = new_group_name
-                frame.frame2.group_table.new_group_description.text = new_group_description
-            end
+        if frame and frame.name == 'Groups' and frame.frame2 then
+            build_group_gui({ player = player, frame = frame })
         end
     end
 end
@@ -233,6 +143,17 @@ local function on_player_joined_game(event)
         this.join_spam_protection[player.name] = game.tick
     end
 end
+
+Gui.on_checked_state_changed('comfy_group_form', function (event)
+    local frame = Gui.get_player_active_frame(event.player)
+    if frame and frame.name == 'Groups' and event.element.parent == frame.frame2 then
+        local show_form = event.element.state
+        local tags = frame.tags
+        tags.group_form_open = show_form or nil
+        frame.tags = tags
+        frame.frame2.group_table.visible = show_form
+    end
+end)
 
 local function on_gui_text_changed(event)
     local element = event.element
@@ -344,15 +265,14 @@ local function on_gui_click(event)
 
     local actions = element.parent
     local row = actions and actions.parent
-    local list = row and row.parent
-    if list and list.name == 'groups_table' then
+    if actions and actions.name == 'group_actions' and row and row.parent == frame.groups_table then
         local is_spamming = SpamProtection.is_spamming(player, nil, 'Group Click')
 
         if is_spamming then
             return
         end
 
-        local group_name = actions.name
+        local group_name = actions.tags.group_name
         local caption = element.caption and element.caption[1]
 
         if element.type == 'button' and caption == 'gui.join' then

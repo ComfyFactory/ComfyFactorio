@@ -2,9 +2,8 @@ local ICW_Func = require 'maps.mountain_fortress_v3.icw.functions'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Discord = require 'utils.discord_handler'
 local Commands = require 'utils.commands'
-local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
-Commands.new('icw_reconnect_train', 'Usable only for admins - reconnects all trains!')
+Commands.new('icw_reconnect_train', { 'mtn_v3_commands.reconnect_trains_help' })
 	:require_admin()
 	:require_validation()
 	:callback(
@@ -26,9 +25,9 @@ Commands.new('icw_reconnect_train', 'Usable only for admins - reconnects all tra
 				}
 			)
 			if suc then
-				player.print(mapkeeper .. 'Train reconnection queued.')
+				player.print({ 'mtn_v3_commands.train_reconnection_queued' })
 			else
-				player.print(mapkeeper .. 'Failed to reconnect all trains!')
+				player.print({ 'mtn_v3_commands.failed_to_reconnect_all_trains' })
 			end
 			return true
 		end

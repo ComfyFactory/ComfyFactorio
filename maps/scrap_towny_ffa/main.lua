@@ -248,10 +248,7 @@ Event.add(defines.events.on_gui_click, function (event)
     end
     if element.name == Gui.top_main_gui_button then
         if not player.admin then
-            local main_frame_name = Gui.main_frame_name
-            if player.gui.left[main_frame_name] and player.gui.left[main_frame_name].valid then
-                player.gui.left[main_frame_name].destroy()
-            end
+            Gui.clear_main_frame(player)
             return player.print('Comfy panel is disabled in this scenario.', { color = Color.fail })
         end
     end

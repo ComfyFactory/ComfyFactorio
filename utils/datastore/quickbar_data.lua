@@ -7,6 +7,7 @@ local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Core = require 'utils.core'
 local Commands = require 'utils.commands'
+local PlayerSettings = require 'utils.gui.player_settings'
 
 local function quickbar_page_and_slot(player, index)
     local width = player.quick_bar_width
@@ -55,13 +56,11 @@ local function set_quick_bar_slot(player, index, filter)
     player.set_quick_bar_slot(page, slot, filter)
 end
 
-local quickbar_dataset = 'quickbar'
-local quickbar_dataset_modded = 'quickbar_modded'
-local logistics_dataset = 'logistics'
-local logistics_dataset_modded = 'logistics_modded'
+local is_game_modded = ServerCommands.is_game_modded()
+local quickbar_dataset = is_game_modded and 'quickbar_modded' or 'quickbar'
+local logistics_dataset = is_game_modded and 'logistics_modded' or 'logistics'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
-local is_game_modded = ServerCommands.is_game_modded()
 
 local this =
 {
@@ -93,20 +92,30 @@ local function check_if_item_exists(item)
     return true
 end
 
+local function is_legacy_logistics(saved_data)
+    for _, slot in pairs(saved_data) do
+        if type(slot) == 'string' or slot.name then
+            return true
+        end
+    end
+    return false
+end
+
 local function apply_logistic_network(player, saved_data)
     if not saved_data then
         return
     end
     if player.get_requester_point() then
-        if saved_data[1] and (saved_data[1].name or not saved_data[1].group) then
+        if is_legacy_logistics(saved_data) then
             local old_section = player.get_requester_point().get_section(1)
             local has_data = false
             if old_section then
                 for i, slot in pairs(saved_data) do
-                    if slot and (slot.name or slot) and check_if_item_exists(slot.name or slot) then
+                    local name = type(slot) == 'table' and slot.name or slot
+                    if type(name) == 'string' and check_if_item_exists(name) then
                         has_data = true
-                        local item = prototypes.item[slot.name or slot]
-                        local item_stack = { min = slot.min or 1, max = slot.max or 1, value = { comparator = "=", name = slot.name or slot, quality = slot.quality or "normal", type = slot.type or item.type or nil } }
+                        local request = type(slot) == 'table' and slot or {}
+                        local item_stack = { min = request.min or 1, max = request.max or 1, value = { comparator = request.comparator or '=', name = name, quality = request.quality or 'normal', type = request.type or prototypes.item[name].type } }
                         pcall(old_section.set_slot, i, item_stack)
                     end
                 end
@@ -119,22 +128,14 @@ local function apply_logistic_network(player, saved_data)
             return true
         else
             for index, section in pairs(saved_data) do
-                local new_section = player.get_requester_point().get_section(index) or player.get_requester_point().add_section()
-
-                if section and new_section then
-                    local slots = section.slots
-                    if not slots or not section.group then
-                        Server.output_script_data('[ERROR] Invalid data format for section ' .. index .. ' for player ' .. player.name)
-                        return false
-                    end
+                if section.slots and section.group then
+                    local new_section = player.get_requester_point().get_section(index) or player.get_requester_point().add_section()
                     new_section.group = section.group
                     new_section.active = section.active
-                    if slots and type(slots) == 'table' then
-                        for i, slot in pairs(slots) do
-                            if slot and slot.name and check_if_item_exists(slot.name) then
-                                local item_stack = { min = slot.min, max = slot.max, value = { comparator = "=", name = slot.name, quality = slot.quality or "normal", type = slot.type or nil } }
-                                pcall(new_section.set_slot, i, item_stack)
-                            end
+                    for i, slot in pairs(section.slots) do
+                        if slot and slot.name and check_if_item_exists(slot.name) then
+                            local item_stack = { min = slot.min, max = slot.max, value = { comparator = slot.comparator or '=', name = slot.name, quality = slot.quality or 'normal', type = slot.type } }
+                            pcall(new_section.set_slot, i, item_stack)
                         end
                     end
                 end
@@ -167,6 +168,14 @@ local post_apply_token =
         end
     )
 
+local function apply_quickbar(player, slots)
+    for i, slot in pairs(slots) do
+        if slot ~= '' then
+            set_quick_bar_slot(player, i, slot)
+        end
+    end
+end
+
 local fetch_quickbar =
     Task.register(
         function (data)
@@ -177,11 +186,7 @@ local fetch_quickbar =
                 return
             end
             if value then
-                for i, slot in pairs(value) do
-                    if slot and slot ~= '' then
-                        set_quick_bar_slot(player, i, slot)
-                    end
-                end
+                apply_quickbar(player, value)
             end
         end
     )
@@ -204,34 +209,18 @@ local fetch_logistics =
 --- Tries to get data from the webpanel and applies the value to the player.
 -- @param LuaPlayer
 function Public.fetch_quickbar(player)
-    local dataset = quickbar_dataset
-    if is_game_modded then
-        dataset = quickbar_dataset_modded
-    end
-
-    try_get_data(dataset, player.name, fetch_quickbar)
+    try_get_data(quickbar_dataset, player.name, fetch_quickbar)
 end
 
 --- Tries to get data from the webpanel and applies the value to the player.
 -- @param LuaPlayer
 function Public.fetch_logistics(player)
-    local dataset = logistics_dataset
-    if is_game_modded then
-        dataset = logistics_dataset_modded
-    end
-
-    try_get_data(dataset, player.name, fetch_logistics)
+    try_get_data(logistics_dataset, player.name, fetch_logistics)
 end
 
 --- Saves the players quickbar table to the webpanel.
 -- @param LuaPlayer
-function Public.save_quickbar(player)
-    local dataset = quickbar_dataset
-
-    if is_game_modded then
-        dataset = quickbar_dataset_modded
-    end
-
+local function save_quickbar_preset(player)
     local slots = {}
 
     for i = 1, 100 do
@@ -241,81 +230,126 @@ function Public.save_quickbar(player)
         end
     end
     if next(slots) then
-        set_data(dataset, player.name, slots)
+        set_data(quickbar_dataset, player.name, slots)
+        return slots
+    end
+end
+
+function Public.save_quickbar(player)
+    if save_quickbar_preset(player) then
         player.print('Your quickbar has been saved.', { color = Color.success })
     end
 end
 
 --- Saves the players personal logistics table to the webpanel.
 -- @param LuaPlayer
-function Public.save_logistics(player)
-    local dataset = logistics_dataset
-
-    if not player.get_requester_point() then
-        return false
-    end
-
-    if is_game_modded then
-        dataset = logistics_dataset_modded
+local function save_logistics_preset(player)
+    local requester = player.get_requester_point()
+    if not requester then
+        return
     end
 
     local sections = {}
-
+    local has_requests = false
     for sec = 1, 8 do
-        local section = player.get_requester_point().get_section(sec)
+        local section = requester.get_section(sec)
         if section then
-            if not sections[section.index] then
-                sections[section.index] = {}
-            end
             local slots = {}
             for i = 1, 100 do
                 local slot = section.get_slot(i)
-                if slot and next(slot) then
+                if slot and slot.value then
                     slots[i] = { name = slot.value.name, min = slot.min, max = slot.max, quality = slot.value.quality, type = slot.value.type, comparator = slot.value.comparator }
+                    has_requests = true
                 end
             end
-            if next(slots) then
-                sections[section.index].group = section.group
-                sections[section.index].active = section.active
-                sections[section.index].slots = slots
-            end
+            sections[section.index] = { group = section.group, active = section.active, slots = slots }
         end
     end
 
-    if next(sections) then
-        set_data(dataset, player.name, sections)
+    if has_requests then
+        set_data(logistics_dataset, player.name, sections)
+        return sections
+    end
+end
+
+function Public.save_logistics(player)
+    if save_logistics_preset(player) then
         player.print('Your personal logistics has been saved.', { color = Color.success })
         return true
-    else
-        return false
     end
+    return false
 end
 
 --- Removes the quickbar key from the webpanel.
 -- @param LuaPlayer
 function Public.remove_quickbar(player)
-    local dataset = quickbar_dataset
-
-    if is_game_modded then
-        dataset = quickbar_dataset_modded
-    end
-
-    set_data(dataset, player.name, nil)
+    set_data(quickbar_dataset, player.name, nil)
     player.print('Your quickbar has been removed.', { color = Color.success })
 end
 
 --- Removes the logistics key from the webpanel.
 -- @param LuaPlayer
+local function remove_logistics_preset(player)
+    set_data(logistics_dataset, player.name, nil)
+    this.logistics[player.name] = nil
+end
+
 function Public.remove_logistics(player)
-    local dataset = logistics_dataset
-
-    if is_game_modded then
-        dataset = logistics_dataset_modded
-    end
-
-    set_data(dataset, player.name, nil)
+    remove_logistics_preset(player)
     player.print('Your personal logistics has been removed.', { color = Color.success })
 end
+
+local function describe_slots(lines, slots, limit, logistics)
+    for i = 1, limit do
+        local slot = slots[i]
+        if type(slot) == 'string' and slot ~= '' then
+            lines[#lines + 1] = i .. '. ' .. slot
+        elseif type(slot) == 'table' and slot.name then
+            local text = i .. '. ' .. slot.name .. ' (' .. (slot.comparator or '=') .. ' ' .. (slot.quality or 'normal') .. ')'
+            if logistics then
+                text = text .. '  ' .. tostring(slot.min or 0) .. '–' .. tostring(slot.max or '∞')
+            end
+            lines[#lines + 1] = text
+        end
+    end
+end
+
+PlayerSettings.register('quickbar', quickbar_dataset, {
+    save = save_quickbar_preset,
+    apply = apply_quickbar,
+    describe = function (slots)
+        local lines = {}
+        describe_slots(lines, slots, 100)
+        return table.concat(lines, '\n')
+    end
+})
+
+PlayerSettings.register('logistics', logistics_dataset, {
+    save = save_logistics_preset,
+    remove = remove_logistics_preset,
+    apply = function (player, value)
+        if not player.get_requester_point() then
+            return false
+        end
+        return apply_logistic_network(player, value)
+    end,
+    describe = function (sections)
+        local lines = {}
+        if is_legacy_logistics(sections) then
+            describe_slots(lines, sections, 100, true)
+        else
+            for i = 1, 8 do
+                local section = sections[i]
+                if section and section.slots then
+                    local title = 'Section ' .. i .. (section.group ~= '' and ' · ' .. section.group or '')
+                    lines[#lines + 1] = title .. (section.active and '' or ' (inactive)')
+                    describe_slots(lines, section.slots, 100, true)
+                end
+            end
+        end
+        return table.concat(lines, '\n')
+    end
+})
 
 local fetch_quickbar_on_join = Public.fetch_quickbar
 local fetch_logistics_on_join = Public.fetch_logistics

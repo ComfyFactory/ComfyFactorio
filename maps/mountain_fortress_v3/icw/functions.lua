@@ -776,10 +776,22 @@ function Public.create_room_surface(icw, unit_number, position)
 end
 
 local function generate_room_chunks(surface, area)
-    local center = { x = (area.left_top.x + area.right_bottom.x) / 2, y = (area.left_top.y + area.right_bottom.y) / 2 }
-    local radius = Math.ceil(Math.max(area.right_bottom.x - area.left_top.x + 12, area.right_bottom.y - area.left_top.y) / 64)
-    surface.request_to_generate_chunks(center, radius)
-    surface.force_generate_chunk_requests()
+    local left = Math.floor((area.left_top.x - 6) / 32)
+    local right = Math.floor((area.right_bottom.x + 5) / 32)
+    local top = Math.floor(area.left_top.y / 32)
+    local bottom = Math.floor((area.right_bottom.y - 1) / 32)
+    local pending = false
+    for x = left, right do
+        for y = top, bottom do
+            if not surface.is_chunk_generated({ x = x, y = y }) then
+                surface.request_to_generate_chunks({ x * 32 + 16, y * 32 + 16 }, 0)
+                pending = true
+            end
+        end
+    end
+    if pending then
+        surface.force_generate_chunk_requests()
+    end
 end
 
 local function set_wagon_tiles(wagon)
@@ -1619,7 +1631,7 @@ function Public.draw_minimap(icw, player, surface, position)
     local player_data = get_player_data(icw, player)
     local frame = player.gui.left.icw_main_frame
     if not frame then
-        frame = player.gui.left.add({ type = 'frame', direction = 'vertical', name = 'icw_main_frame', caption = 'Minimap' })
+        frame = player.gui.left.add({ type = 'frame', direction = 'vertical', name = 'icw_main_frame', caption = { 'mtn_v3_minimap.minimap' } })
     end
     local element = frame['icw_sub_frame']
     -- if not frame.icw_auto_switch then
@@ -1634,7 +1646,7 @@ function Public.draw_minimap(icw, player, surface, position)
                     name = 'icw_sub_frame',
                     surface_index = surface.index,
                     zoom = player_data.zoom,
-                    tooltip = 'LMB: Increase zoom level.\nRMB: Decrease zoom level.\nMMB: Toggle camera size.'
+                    tooltip = { 'mtn_v3_minimap.controls' }
                 }
             )
         element.style.margin = 1

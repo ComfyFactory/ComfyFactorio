@@ -6,7 +6,6 @@ local Collapse = require 'modules.collapse'
 local WD = require 'modules.wave_defense.table'
 local Discord = require 'utils.discord_handler'
 local Commands = require 'utils.commands'
-local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 local CommandColor = { r = 0.98, g = 0.66, b = 0.22 }
 
 
@@ -26,7 +25,7 @@ local gather_time_token =
         end
     )
 
-Commands.new('scenario', 'Usable only for admins - controls the scenario!')
+Commands.new('scenario', { 'mtn_v3_commands.scenario_help' })
     :require_admin()
     :require_validation()
     :add_parameter('restart/shutdown/reset/restartnow', false, 'string')
@@ -37,7 +36,7 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
             if action == 'restart' or action == 'shutdown' or action == 'reset' or action == 'restartnow' then
                 goto continue
             else
-                player.print('Invalid action.')
+                player.print({ 'mtn_v3_commands.invalid_action' })
                 return false
             end
 
@@ -62,7 +61,7 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                                 }
                             }
                         })
-                    player.print('Soft-reset is enabled.')
+                    player.print({ 'mtn_v3_commands.soft_reset_is_enabled' })
                 else
                     this.reset_are_you_sure = nil
                     this.restart = true
@@ -84,7 +83,7 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                                 }
                             }
                         })
-                    player.print('Soft-reset is disabled! Server will restart from scenario to load new changes.')
+                    player.print({ 'mtn_v3_commands.soft_reset_disabled_restart' })
                 end
             elseif action == 'restartnow' then
                 this.reset_are_you_sure = nil
@@ -103,7 +102,7 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                             }
                         }
                     })
-                player.print('Restarted the scenario.')
+                player.print({ 'mtn_v3_commands.restarted_the_scenario' })
             elseif action == 'shutdown' then
                 if this.shutdown then
                     this.reset_are_you_sure = nil
@@ -124,7 +123,7 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                             }
                         })
 
-                    player.print('Soft-reset is enabled.')
+                    player.print({ 'mtn_v3_commands.soft_reset_is_enabled' })
                 else
                     this.reset_are_you_sure = nil
                     this.shutdown = true
@@ -147,12 +146,12 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                                 }
                             }
                         })
-                    player.print('Soft-reset is disabled! Server will shutdown.')
+                    player.print({ 'mtn_v3_commands.soft_reset_disabled_shutdown' })
                 end
             elseif action == 'reset' then
                 this.reset_are_you_sure = nil
                 if player and player.valid then
-                    game.print(mapkeeper .. ' ' .. player.name .. ', has reset the game!',
+                    game.print({ 'mtn_v3_commands.player_reset', player.name },
                         { color = CommandColor })
                     Discord.send_notification(
                         {
@@ -169,7 +168,7 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                             }
                         })
                 else
-                    game.print(mapkeeper .. ' server, has reset the game!', { color = CommandColor })
+                    game.print({ 'mtn_v3_commands.server_reset' }, { color = CommandColor })
                     Discord.send_notification(
                         {
                             title = "Game reset",
@@ -187,12 +186,12 @@ Commands.new('scenario', 'Usable only for admins - controls the scenario!')
                 end
                 local current_task = Public.get('current_task')
                 Public.set_task(current_task.default_task)
-                player.print('Game has been reset!')
+                player.print({ 'mtn_v3_commands.game_has_been_reset' })
             end
         end
     )
 
-Commands.new('mtn_set_queue_speed', 'Usable only for admins - sets the queue speed of this map!')
+Commands.new('mtn_set_queue_speed', { 'mtn_v3_commands.set_queue_speed_help' })
     :require_admin()
     :require_validation()
     :add_parameter('speed', true, 'number')
@@ -213,11 +212,11 @@ Commands.new('mtn_set_queue_speed', 'Usable only for admins - sets the queue spe
                         }
                     }
                 })
-            player.print('Queue speed set to: ' .. speed)
+            player.print({ 'mtn_v3_commands.queue_speed_set_to', speed })
         end
     )
 
-Commands.new('mtn_complete_quests', 'Usable only for admins - completes all the quests!')
+Commands.new('mtn_complete_quests', { 'mtn_v3_commands.complete_quests_help' })
     :require_admin()
     :require_validation()
     :add_parameter('no_grace', true, 'boolean')
@@ -242,17 +241,17 @@ Commands.new('mtn_complete_quests', 'Usable only for admins - completes all the 
             stateful.objectives_completed_count = stateful.tasks_required_to_win
             if no_grace and not instant_win then
                 Task.set_timeout_in_ticks(20, gather_time_token, {})
-                game.print(mapkeeper .. player.name .. ', has forced completed all quests with no grace period!', { color = CommandColor })
+                game.print({ 'mtn_v3_commands.quests_skipped_grace', player.name }, { color = CommandColor })
             elseif instant_win then
                 Task.set_timeout_in_ticks(100, gather_time_token, { instant_win = true })
                 Task.set_timeout_in_ticks(120, gather_time_token, { instant_win = true })
-                game.print(mapkeeper .. player.name .. ', has forced completed all quests with instant win!', { color = CommandColor })
+                game.print({ 'mtn_v3_commands.quests_instant_win', player.name }, { color = CommandColor })
             end
-            player.print('Quests completed.')
+            player.print({ 'mtn_v3_commands.quests_completed' })
         end
     )
 
-Commands.new('mtn_reverse_map', 'Usable only for admins - reverses the map!')
+Commands.new('mtn_reverse_map', { 'mtn_v3_commands.reverse_map_help' })
     :require_admin()
     :require_validation()
     :callback(
@@ -275,20 +274,20 @@ Commands.new('mtn_reverse_map', 'Usable only for admins - reverses the map!')
                 })
             local current_task = Public.get('current_task')
             Public.set_task(current_task.default_task)
-            game.print(mapkeeper .. player.name .. ', has reverse the map and reset the game!',
+            game.print({ 'mtn_v3_commands.reversed_map_and_reset', player.name },
                 { color = CommandColor })
-            player.print('Map reversed.')
+            player.print({ 'mtn_v3_commands.map_reversed' })
         end
     )
 
-Commands.new('mtn_set_direction', 'Usable only for admins - sets map direction (north/south/east/west)!')
+Commands.new('mtn_set_direction', { 'mtn_v3_commands.set_direction_help' })
     :require_admin()
     :require_validation()
     :add_parameter('north/south/east/west', false, 'string')
     :callback(
         function (player, direction)
             if not Orient.valid_directions[direction] then
-                player.print('Invalid direction. Use north, south, east or west.')
+                player.print({ 'mtn_v3_commands.invalid_direction' })
                 return
             end
             Public.set_stateful_settings('direction', direction)
@@ -308,13 +307,13 @@ Commands.new('mtn_set_direction', 'Usable only for admins - sets map direction (
                 })
             local current_task = Public.get('current_task')
             Public.set_task(current_task.default_task)
-            game.print(mapkeeper .. player.name .. ', has set the map direction to ' .. direction .. ' and reset the game!',
+            game.print({ 'mtn_v3_commands.set_direction_and_reset', player.name, { 'mtn_v3_map.' .. direction } },
                 { color = CommandColor })
-            player.print('Map direction set to ' .. direction .. '.')
+            player.print({ 'mtn_v3_commands.map_direction_set_to', { 'mtn_v3_map.' .. direction } })
         end
     )
 
-Commands.new('mtn_disable_biters', 'Usable only for admins - disables wave defense!')
+Commands.new('mtn_disable_biters', { 'mtn_v3_commands.toggle_wave_defense_help' })
     :require_admin()
     :require_validation()
     :callback(
@@ -336,7 +335,7 @@ Commands.new('mtn_disable_biters', 'Usable only for admins - disables wave defen
                             }
                         }
                     })
-                game.print(mapkeeper .. ' ' .. player.name .. ', has disabled the wave_defense module!',
+                game.print({ 'mtn_v3_commands.has_disabled_the_wave_defense_module', player.name },
                     { color = CommandColor })
                 tbl.game_lost = true
             else
@@ -354,14 +353,14 @@ Commands.new('mtn_disable_biters', 'Usable only for admins - disables wave defen
                             }
                         }
                     })
-                game.print(mapkeeper .. ' ' .. player.name .. ', has enabled the wave_defense module!',
+                game.print({ 'mtn_v3_commands.has_enabled_the_wave_defense_module', player.name },
                     { color = CommandColor })
                 tbl.game_lost = false
             end
         end
     )
 
-Commands.new('mtn_toggle_darkness', 'Usable only for admins - toggles the darkness!')
+Commands.new('mtn_toggle_darkness', { 'mtn_v3_commands.toggle_darkness_help' })
     :require_admin()
     :require_validation()
     :callback(
@@ -374,7 +373,7 @@ Commands.new('mtn_toggle_darkness', 'Usable only for admins - toggles the darkne
             end
             if darkness then
                 Public.set_stateful_settings('darkness', false)
-                game.print('Darkness is now disabled!')
+                game.print({ 'mtn_v3_commands.darkness_is_now_disabled' })
                 Discord.send_notification(
                     {
                         title = "Surface darkness disabled",
@@ -392,7 +391,7 @@ Commands.new('mtn_toggle_darkness', 'Usable only for admins - toggles the darkne
                 surface.brightness_visual_weights = { a = 1, b = 0, g = 0, r = 0 }
             else
                 Public.set_stateful_settings('darkness', true)
-                game.print('Darkness is now enabled!')
+                game.print({ 'mtn_v3_commands.darkness_is_now_enabled' })
                 Discord.send_notification(
                     {
                         title = "Surface darkness enabled",
@@ -412,9 +411,9 @@ Commands.new('mtn_toggle_darkness', 'Usable only for admins - toggles the darkne
         end
     )
 
-Commands.new('mtn_grant_permanent_buff', 'Usable only for admins - grants a permanent buff!')
+Commands.new('mtn_grant_permanent_buff', { 'mtn_v3_commands.grant_permanent_buff_help' })
     :require_admin()
-    :require_validation('Warning: This command gets logged to discord so please use it wisely!')
+    :require_validation({ 'mtn_v3_commands.permanent_buff_confirmation' })
     :callback(
         function (player)
             local buff = Public.grant_non_limit_reached_buff()
@@ -434,14 +433,14 @@ Commands.new('mtn_grant_permanent_buff', 'Usable only for admins - grants a perm
                         }
                     }
                 })
-            game.print(mapkeeper .. ' ' .. player.name .. ', has granted the permanent buff: ' .. buff.discord .. '!', { color = CommandColor })
+            game.print({ 'mtn_v3_commands.has_granted_the_permanent_buff', player.name, { '?', { 'mtn_v3_buffs.' .. buff.name .. '_description' }, buff.discord } }, { color = CommandColor })
             Public.apply_permanent_buffs()
         end
     )
 
 
 Commands.new('mtn_toggle_orbital_strikes',
-    'Usable only for admins - toggles orbital strikes!')
+    { 'mtn_v3_commands.toggle_orbital_strikes_help' })
     :require_admin()
     :require_validation()
     :callback(
@@ -463,7 +462,7 @@ Commands.new('mtn_toggle_orbital_strikes',
                             }
                         }
                     })
-                game.print(mapkeeper .. ' ' .. player.name .. ', has disabled the orbital_strikes module!',
+                game.print({ 'mtn_v3_commands.has_disabled_the_orbital_strikes_module', player.name },
                     { color = CommandColor })
                 this.orbital_strikes.enabled = false
             else
@@ -481,14 +480,14 @@ Commands.new('mtn_toggle_orbital_strikes',
                             }
                         }
                     })
-                game.print(mapkeeper .. ' ' .. player.name .. ', has enabled the orbital_strikes module!',
+                game.print({ 'mtn_v3_commands.has_enabled_the_orbital_strikes_module', player.name },
                     { color = CommandColor })
                 this.orbital_strikes.enabled = true
             end
         end
     )
 
-Commands.new('mtn_get_queue_speed', 'Usable only for admins - gets the queue speed of this map!')
+Commands.new('mtn_get_queue_speed', { 'mtn_v3_commands.get_queue_speed_help' })
     :require_admin()
     :require_validation()
     :callback(
@@ -497,7 +496,7 @@ Commands.new('mtn_get_queue_speed', 'Usable only for admins - gets the queue spe
         end
     )
 
-Commands.new('mtn_disable_collapse', 'Usable only for admins - toggles the collapse feature!')
+Commands.new('mtn_disable_collapse', { 'mtn_v3_commands.toggle_collapse_help' })
     :require_admin()
     :require_validation()
     :callback(
@@ -518,7 +517,7 @@ Commands.new('mtn_disable_collapse', 'Usable only for admins - toggles the colla
                             }
                         }
                     })
-                game.print(mapkeeper .. ' ' .. player.name .. ', has enabled collapse!', { color = CommandColor })
+                game.print({ 'mtn_v3_commands.has_enabled_collapse', player.name }, { color = CommandColor })
             else
                 Collapse.start_now(false, true)
                 Discord.send_notification(
@@ -535,13 +534,13 @@ Commands.new('mtn_disable_collapse', 'Usable only for admins - toggles the colla
                             }
                         }
                     })
-                game.print(mapkeeper .. ' ' .. player.name .. ', has disabled collapse!',
+                game.print({ 'mtn_v3_commands.has_disabled_collapse', player.name },
                     { color = CommandColor })
             end
         end
     )
 
-Commands.new('mtn_grant_fake_buff', 'Usable only for admins - used to debug buff selection')
+Commands.new('mtn_grant_fake_buff', { 'mtn_v3_commands.debug_buff_help' })
     :require_admin()
     :require_validation()
     :require_offline_mode()

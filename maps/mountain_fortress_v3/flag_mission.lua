@@ -255,8 +255,7 @@ local function spawn(loco)
                 this.missions[m.id] = m
                 this.next_spawn_tick = game.tick + spawn_delay_ticks
                 this.next_tick = this.next_spawn_tick
-                Alert.alert_force(loco.force, 15, '[color=yellow][CTF][/color] New mission detected!'
-                    .. ' Return the flag for ' .. Rewards.describe(m.reward) .. ' within ' .. ((m.deadline_tick - game.tick) / 3600) .. ' minutes!', 'minor')
+                Alert.alert_force(loco.force, 15, { 'mtn_v3_ctf.mission_started', Rewards.describe(m.reward), (m.deadline_tick - game.tick) / 3600 }, 'minor')
                 return m
             end
         end
@@ -267,31 +266,31 @@ local function spawn(loco)
     end
 end
 
-Commands.new('mtn_spawn_flag', 'Spawn a flag mission on generated terrain, bypassing the mission cooldown.')
+Commands.new('mtn_spawn_flag', { 'mtn_v3_ctf.spawn_flag_help' })
     :require_admin()
     :callback(
         function (player)
             migrate()
             if not is_enabled() then
-                Alert.alert_player(player, 10, 'Flag mission: missing required flag prototypes.', nil, nil, nil, 'personal')
+                Alert.alert_player(player, 10, { 'mtn_v3_ctf.missing_prototypes' }, nil, nil, nil, 'personal')
                 return
             end
             local loco = train_target()
             if not loco then
-                Alert.alert_player(player, 10, 'Flag mission: round not ready, locomotive unavailable, or game lost.', nil, nil, nil, 'personal')
+                Alert.alert_player(player, 10, { 'mtn_v3_ctf.mission_unavailable' }, nil, nil, nil, 'personal')
                 return
             end
             for _, m in pairs(this.missions) do
                 valid_mission(loco, m)
             end
             if mission_count() >= max_flags_to_spawn then
-                Alert.alert_player(player, 10, 'Flag mission: all ' .. max_flags_to_spawn .. ' mission slots are full.', nil, nil, nil, 'personal')
+                Alert.alert_player(player, 10, { 'mtn_v3_ctf.slots_full', max_flags_to_spawn }, nil, nil, nil, 'personal')
                 return
             end
             if spawn(loco) then
-                Alert.alert_player(player, 10, 'Flag mission: spawned successfully.', nil, nil, nil, 'personal')
+                Alert.alert_player(player, 10, { 'mtn_v3_ctf.mission_spawned' }, nil, nil, nil, 'personal')
             else
-                Alert.alert_player(player, 10, 'Flag mission: no valid placement on generated terrain.', nil, nil, nil, 'personal')
+                Alert.alert_player(player, 10, { 'mtn_v3_ctf.invalid_placement' }, nil, nil, nil, 'personal')
             end
         end
     )
@@ -312,12 +311,12 @@ local function gui(player, m, loco)
     end
     local frame = player.gui.screen[frame_name]
     if not frame then
-        frame = player.gui.screen.add { type = 'frame', name = frame_name, direction = 'vertical', caption = 'Capture the flag' }
+        frame = player.gui.screen.add { type = 'frame', name = frame_name, direction = 'vertical', caption = { 'mtn_v3_ctf.capture_the_flag' } }
         frame.force_auto_center()
         frame.add { type = 'label', name = 'status', caption = '' }
         frame.status.style.single_line = false
-        frame.add { type = 'button', name = pickup_name, caption = 'Pick up flag (within 3 tiles)' }
-        frame.add { type = 'button', name = deliver_name, caption = 'Deliver flag at locomotive' }
+        frame.add { type = 'button', name = pickup_name, caption = { 'mtn_v3_ctf.pick_up_flag_within_3_tiles' } }
+        frame.add { type = 'button', name = deliver_name, caption = { 'mtn_v3_ctf.deliver_flag_at_locomotive' } }
     end
     frame[pickup_name].visible = m.phase == 'available'
     frame[deliver_name].visible = m.phase == 'carried'
@@ -326,10 +325,12 @@ local function gui(player, m, loco)
         frame[pickup_name].tags = { mission_id = m.id }
         frame[deliver_name].tags = { mission_id = m.id }
     end
-    local caption = (m.phase == 'available' and 'Retrieve the flag' or 'Return the flag to the train') .. '\n' .. Math.ceil((m.deadline_tick - game.tick) / 3600)
-        .. ' min left\n' .. Rewards.describe(m.reward)
-    if frame.status.caption ~= caption then
-        frame.status.caption = caption
+    local minutes_left = Math.ceil((m.deadline_tick - game.tick) / 3600)
+    local status_tags = frame.status.tags or {}
+    if status_tags.mission_id ~= m.id or status_tags.phase ~= m.phase or status_tags.minutes_left ~= minutes_left then
+        local key = m.phase == 'available' and 'mtn_v3_ctf.retrieve_status' or 'mtn_v3_ctf.deliver_status'
+        frame.status.caption = { key, minutes_left, Rewards.describe(m.reward) }
+        frame.status.tags = { mission_id = m.id, phase = m.phase, minutes_left = minutes_left }
     end
     return true
 end
@@ -389,7 +390,7 @@ local function click(event)
         for _, other in pairs(game.connected_players) do
             remove_gui(other)
         end
-        Alert.alert_force(loco.force, 15, '[color=yellow][CTF][/color] ' .. player.name .. ' picked up flag #' .. m.id .. '. Return within 3 tiles of the locomotive and click Deliver flag.', 'minor')
+        Alert.alert_force(loco.force, 15, { 'mtn_v3_ctf.flag_picked_up', player.name, m.id }, 'minor')
         return
     end
     if m.phase == 'carried' and m.carrier == player.index and m.issued and not m.redeemed and is_near(player.character.position, loco.position) then
@@ -402,11 +403,10 @@ local function click(event)
         end
         close(m, ok and 'completed' or 'reward_failed')
         if ok then
-            Alert.alert_force(loco.force, 15, '[color=yellow][CTF][/color] Mission completed! ' .. Rewards.describe(m.reward)
-                .. '.', 'minor')
-            Alert.alert_force(loco.force, 15, 'Items delivered to train cargo or spilled at the locomotive; XP added to the shared pool.', 'minor')
+            Alert.alert_force(loco.force, 15, { 'mtn_v3_ctf.mission_completed', Rewards.describe(m.reward) }, 'minor')
+            Alert.alert_force(loco.force, 15, { 'mtn_v3_ctf.reward_delivered' }, 'minor')
         else
-            Alert.alert_force(loco.force, 15, '[color=yellow][CTF][/color] Flag mission reward failed; some rewards may have been delivered. No retry will be made.', 'minor')
+            Alert.alert_force(loco.force, 15, { 'mtn_v3_ctf.reward_failed' }, 'minor')
         end
     end
 end
@@ -426,7 +426,7 @@ local function player_dying(event)
     for i = 1, #failed do
         local m = failed[i]
         m.carrier = nil
-        Alert.alert_all_players(15, '[color=yellow][CTF][/color] ' .. player.name .. ' died carrying flag #' .. m.id .. '. The mission failed.', nil, nil, nil, 'minor')
+        Alert.alert_all_players(15, { 'mtn_v3_ctf.carrier_died', player.name, m.id }, nil, nil, nil, 'minor')
         close(m, 'failed')
     end
 end

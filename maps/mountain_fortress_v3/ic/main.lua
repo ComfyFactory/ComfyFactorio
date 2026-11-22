@@ -45,7 +45,10 @@ local function on_marked_for_deconstruction(event)
 
     local valid_types = IC.get_types()
     if (valid_types[entity.type] or valid_types[entity.name]) then
-        entity.cancel_deconstruction(game.players[event.player_index].force.name, event.player_index)
+        local player = event.player_index and game.get_player(event.player_index)
+        if player and player.valid then
+            entity.cancel_deconstruction(player.force, player)
+        end
     end
 end
 

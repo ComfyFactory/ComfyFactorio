@@ -98,7 +98,7 @@ local function create_button(player)
                     type = 'sprite-button',
                     name = main_button_name,
                     sprite = 'utility/expand',
-                    tooltip = 'Shows statistics!',
+                    tooltip = { 'gui.info_tooltip' },
                     style = Gui.button_style
                 }
             )
@@ -117,7 +117,7 @@ local function create_button(player)
                     type = 'sprite-button',
                     name = main_button_name,
                     sprite = 'utility/expand',
-                    tooltip = 'Shows statistics!',
+                    tooltip = { 'gui.info_tooltip' },
                     style = Gui.button_style
                 }
             )
@@ -136,7 +136,7 @@ local function spectate_button(player)
         return
     end
 
-    local tooltip = 'Spectate!\nThis will kill your character.'
+    local tooltip = { 'mtn_v3_gui.spectate_tooltip' }
     local sprite = 'utility/create_ghost_on_entity_death_modifier_icon'
 
     if Gui.get_mod_gui_top_frame() then
@@ -270,7 +270,7 @@ local function create_spectate_main_frame(player, redraw)
     add_line(frame)
     spacer(frame)
 
-    local close = frame.add({ type = 'button', name = spectate_close_button_name, caption = 'Close' })
+    local close = frame.add({ type = 'button', name = spectate_close_button_name, caption = { 'mtn_v3_gui.close' } })
     close.style.horizontally_stretchable = true
     Gui.set_data(frame, data)
 end
@@ -754,21 +754,13 @@ local function on_gui_click(event)
                 end
                 return
             elseif wd and not wd.visible then
-                for _, child in pairs(player.gui.left.children) do
-                    child.destroy()
-                end
-                if wd then
-                    wd.visible = true
-                    gui_data.wd = true
-                end
+                wd.visible = true
+                gui_data.wd = true
                 if diff then
                     diff.visible = true
                 end
                 return
             elseif info_detailed and not info_detailed.visible then
-                for _, child in pairs(player.gui.left.children) do
-                    child.destroy()
-                end
                 if wd then
                     wd.visible = true
                     gui_data.wd = true
@@ -784,9 +776,6 @@ local function on_gui_click(event)
                 return
             end
         else
-            for _, child in pairs(player.gui.left.children) do
-                child.destroy()
-            end
             create_main_frame(player)
         end
     end
@@ -894,10 +883,10 @@ function Public.update_gui(player)
     local upgrades = Public.get('upgrades')
 
     if rpg_extra.global_pool == 0 then
-        gui.global_pool.caption = 'XP: 0'
+        gui.global_pool.caption = { 'mtn_v3_gui.xp', 0 }
         gui.global_pool.tooltip = ({ 'gui.global_pool_tooltip' })
     elseif rpg_extra.global_pool >= 0 then
-        gui.global_pool.caption = 'XP: ' .. format_number(Math.floor(rpg_extra.global_pool), true)
+        gui.global_pool.caption = { 'mtn_v3_gui.xp', format_number(Math.floor(rpg_extra.global_pool), true) }
         gui.global_pool.tooltip = ({ 'gui.global_pool_amount', Math.floor(rpg_extra.global_pool) })
     end
 
@@ -905,14 +894,14 @@ function Public.update_gui(player)
     gui.scrap_mined.tooltip = ({ 'gui.amount_harvested' })
 
     local pickaxe_upgrades = Public.pickaxe_upgrades
-    local pick_tier = pickaxe_upgrades[upgrades.pickaxe_tier]
+    local pick_tier = Public.localised_pickaxe_name(pickaxe_upgrades[upgrades.pickaxe_tier])
     local speed = Math.round((player.force.manual_mining_speed_modifier + player.character_mining_speed_modifier + 1) * 100)
     local train_upgrade_contribution = upgrades.train_upgrade_contribution
     if upgrades.train_upgrade_contribution > 0 then
         train_upgrade_contribution = upgrades.train_upgrade_contribution / 1000
     end
 
-    gui.pickaxe_tier.caption = ' [img=utility.expand]: ' .. pick_tier .. ' (' .. upgrades.pickaxe_tier .. ')'
+    gui.pickaxe_tier.caption = { 'mtn_v3_gui.pickaxe_tier', pick_tier, upgrades.pickaxe_tier }
     gui.pickaxe_tier.tooltip = ({ 'gui.current_pickaxe_tier', pick_tier, speed })
 
     gui.biters_killed.caption = ' [img=entity.small-biter]: ' .. format_number(biters_killed, true)
@@ -930,10 +919,10 @@ function Public.update_gui(player)
     local robotics_deployed = Public.get('robotics_deployed')
 
     if robotics_deployed then
-        gui.defense_enabled.caption = ' [img=item.destroyer-capsule]: Deployed'
+        gui.defense_enabled.caption = { 'mtn_v3_gui.deployed' }
         gui.defense_enabled.tooltip = ({ 'gui.robotics_deployed' })
     else
-        gui.defense_enabled.caption = ' [img=item.destroyer-capsule]: Standby'
+        gui.defense_enabled.caption = { 'mtn_v3_gui.standby' }
         gui.defense_enabled.tooltip = ({ 'gui.robotics_standby' })
     end
 
@@ -954,17 +943,12 @@ function Public.update_gui(player)
         local remaining_items = 0
         for _, item in pairs(prices) do
             remaining_items = remaining_items + 1
-            items_tooltip = items_tooltip .. 'Item: [img=item.' .. item.value.name .. '] (' .. item.value.name .. ')\nNeeded: ' .. item.min .. '\n\n'
+            local item_tooltip = { 'mtn_v3_gui.mystical_item', item.value.name, prototypes.item[item.value.name].localised_name, item.min }
+            items_tooltip = remaining_items == 1 and item_tooltip or { '', items_tooltip, '\n\n', item_tooltip }
         end
 
         -- Calculate completed items: total needed - remaining needed
         local items_completed = items_needed - remaining_items
-
-        -- Clean up tooltip (remove extra newlines at the end)
-        if items_tooltip ~= '' then
-            items_tooltip = items_tooltip:sub(1, -2)
-            items_tooltip = items_tooltip:sub(1, -2)
-        end
 
         gui[mystical_chest_button_name].caption = ' [img=item.requester-chest]: ' .. items_completed .. '/' .. items_needed
         gui[mystical_chest_button_name].tooltip = items_tooltip
@@ -1000,7 +984,7 @@ Gui.on_click(
         end
 
         if Public.get('spectate_button_disable') then
-            player.print('Spectate button is disabled until a bug has been fixed in the base game.', { color = Color.yellow })
+            player.print({ 'mtn_v3_gui.spectate_disabled' }, { color = Color.yellow })
             return
         end
 
@@ -1043,7 +1027,7 @@ Gui.on_click(
                 end
             end
             if not can_complete then
-                player.print('[Mystical Chest] You need at least some of the required items to complete the mystical chest.', { color = Color.warning })
+                player.print({ 'mtn_v3_gui.mystical_items_missing' }, { color = Color.warning })
                 return
             end
 
@@ -1065,9 +1049,9 @@ Gui.on_click(
                     item.min = item.min - consume_amount
 
                     if item.min > 0 then
-                        player.print('[Mystical Chest] Consumed ' .. consume_amount .. ' ' .. item.value.name .. '. Still need ' .. item.min .. ' more.', { color = Color.info })
+                        player.print({ 'mtn_v3_gui.mystical_items_remaining', consume_amount, prototypes.item[item.value.name].localised_name, item.min }, { color = Color.info })
                     else
-                        player.print('[Mystical Chest] Consumed ' .. consume_amount .. ' ' .. item.value.name .. '. Requirement fulfilled!', { color = Color.success })
+                        player.print({ 'mtn_v3_gui.mystical_items_consumed', consume_amount, prototypes.item[item.value.name].localised_name }, { color = Color.success })
                         table.insert(keys_to_remove, key)
                     end
                 elseif item.min <= 0 then
@@ -1080,7 +1064,7 @@ Gui.on_click(
                 if prices[key] then
                     local item_name = prices[key].value.name
                     table.remove(prices, key)
-                    player.print('[Mystical Chest] ' .. item_name .. ' requirement fulfilled!', { color = Color.success })
+                    player.print({ 'mtn_v3_gui.mystical_requirement_fulfilled', prototypes.item[item_name].localised_name }, { color = Color.success })
                 end
             end
 
@@ -1121,7 +1105,7 @@ Gui.on_click(
         end
 
         if Public.get('spectate_button_disable') then
-            player.print('Spectate button is disabled until a bug has been fixed in the base game.', { color = Color.yellow })
+            player.print({ 'mtn_v3_gui.spectate_disabled' }, { color = Color.yellow })
             return
         end
 
@@ -1184,7 +1168,7 @@ Gui.on_click(
         end
 
         if Public.get('spectate_button_disable') then
-            player.print('Spectate button is disabled until a bug has been fixed in the base game.', { color = Color.yellow })
+            player.print({ 'mtn_v3_gui.spectate_disabled' }, { color = Color.yellow })
             return
         end
 

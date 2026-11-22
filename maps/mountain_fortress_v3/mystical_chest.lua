@@ -311,14 +311,14 @@ local restore_movement_speed_token =
 local mc_random_rewards =
 {
     {
-        name = 'XP',
+        name = { 'mtn_v3_rewards.xp_name' },
         str = 'xp',
         color = { r = 0.00, g = 0.45, b = 0.00 },
-        tooltip = 'Selecting this will insert random XP onto the global xp pool!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_insert_random_xp_onto_the' },
         func = (function (player, zone)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.xp then
-                return false, '[Rewards] XP bonus is already applied and is currently on cooldown. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.xp_bonus_is_already_applied_and_is_currently' }
             end
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.xp_bonus = mystical_rewards.xp_bonus and mystical_rewards.xp_bonus + 1 or 1
@@ -337,14 +337,14 @@ local mc_random_rewards =
         512
     },
     {
-        name = 'Science glory',
+        name = { 'mtn_v3_rewards.science_glory_name' },
         str = 'science',
         color = { r = 0.00, g = 0.80, b = 0.00 },
-        tooltip = 'Selecting this will grant all of the researched tech in the mystical chest!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_grant_all_of_the_researched' },
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.science then
-                return false, '[Rewards] Science bonus is already applied and is currently on cooldown. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.science_bonus_is_already_applied_and_is_currently' }
             end
             mc_rewards.temp_boosts.science = true
             Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'science' })
@@ -370,21 +370,21 @@ local mc_random_rewards =
                 end
             end
 
-            Alert.alert_all_players(15, 'Science for all! Check out the mystical chest!', nil, 'achievement/tech-maniac', nil, 'global')
+            Alert.alert_all_players(15, { 'mtn_v3_rewards.science_for_all_check_out_the_mystical_chest' }, nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted science bonus to the team!', ' ***' })
             return true
         end),
         1024
     },
     {
-        name = 'Ammo for all',
+        name = { 'mtn_v3_rewards.ammo_for_all_name' },
         str = 'ammo',
         color = { r = 0.00, g = 0.35, b = 0.20 },
-        tooltip = 'Selecting this will grant ammo to the team!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_grant_ammo_to_the_team' },
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.ammo then
-                return false, '[Rewards] Ammo bonus is already applied and is currently on cooldown. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.ammo_bonus_is_already_applied_and_is_currently' }
             end
             mc_rewards.temp_boosts.ammo = true
             Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'ammo' })
@@ -410,21 +410,21 @@ local mc_random_rewards =
                 end
             end
 
-            Alert.alert_all_players(15, 'Ammo for all! Check out the mystical chest!', nil, 'achievement/tech-maniac', nil, 'global')
+            Alert.alert_all_players(15, { 'mtn_v3_rewards.ammo_for_all_check_out_the_mystical_chest' }, nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted ammo bonus to the team!', ' ***' })
             return true
         end),
         512
     },
     {
-        name = 'Market reroll',
+        name = { 'mtn_v3_rewards.market_reroll_name' },
         str = 'market_reroll',
         color = { r = 0.20, g = 0.35, b = 0.35 },
-        tooltip = 'Selecting this will reroll all the market items in the map!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_reroll_all_the_market_items' },
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.market_reroll then
-                return false, '[Rewards] Market reroll bonus is already applied and is currently on cooldown. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.market_reroll_bonus_is_already_applied_and_is' }
             end
             mc_rewards.temp_boosts.market_reroll = true
             mc_rewards.active_boosts.market_reroll = true
@@ -456,21 +456,21 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.market_reroll_bonus = mystical_rewards.market_reroll_bonus and mystical_rewards.market_reroll_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Market reroll! All markets in the main surface have been rerolled!', nil, 'achievement/tech-maniac', nil, 'global')
+            Alert.alert_all_players(15, { 'mtn_v3_rewards.market_reroll_all_markets_in_the_main_surface' }, nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted market reroll bonus to the team!', ' ***' })
             return true
         end),
         512
     },
     {
-        name = 'Coin overclock',
+        name = { 'mtn_v3_rewards.coin_overclock_name' },
         str = 'coins',
         color = { r = 0.20, g = 0.35, b = 0.00 },
-        tooltip = 'Selecting this will grant a higher chance of finding extra coins when killing biters!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_grant_a_higher_chance_of' },
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.coins then
-                return false, '[Rewards] Coins bonus is already applied and is currently on cooldown. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.coins_bonus_is_already_applied_and_is_currently' }
             end
             mc_rewards.temp_boosts.coins = true
             mc_rewards.active_boosts.coins = true
@@ -487,21 +487,21 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.coins_bonus = mystical_rewards.coins_bonus and mystical_rewards.coins_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Coins overclock! Get extra coins when killing biters!', nil, 'achievement/tech-maniac', nil, 'minor', 'coins')
+            Alert.alert_all_players(15, { 'mtn_v3_rewards.coins_overclock_get_extra_coins_when_killing_biters' }, nil, 'achievement/tech-maniac', nil, 'minor', 'coins')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted coins overclock bonus to the team!', ' ***' })
             return true
         end),
         1024
     },
     {
-        name = 'Tactical bacon',
+        name = { 'mtn_v3_rewards.tactical_bacon_name' },
         str = 'tactical_bacon',
         color = { r = 0.00, g = 0.35, b = 0.20 },
-        tooltip = 'Selecting this will grant the team some defensive items!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_grant_the_team_some_defensive' },
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.tactical_bacon then
-                return false, '[Rewards] Tactical Bacon bonus is already applied and is currently on cooldown. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.tactical_bacon_bonus_is_already_applied_and_is' }
             end
             mc_rewards.temp_boosts.tactical_bacon = true
             mc_rewards.active_boosts.tactical_bacon = true
@@ -587,21 +587,21 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.tactical_bacon_bonus = mystical_rewards.tactical_bacon_bonus and mystical_rewards.tactical_bacon_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Tactical Bacon! Get extra defensive items - check out the mystical chest!', nil, 'achievement/tech-maniac', nil, 'global')
+            Alert.alert_all_players(15, { 'mtn_v3_rewards.tactical_bacon_get_extra_defensive_items_check_out' }, nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted tactical bacon bonus to the team!', ' ***' })
             return true
         end),
         512
     },
     {
-        name = 'Lab Overclock',
+        name = { 'mtn_v3_rewards.lab_overclock_name' },
         str = 'lab_overclock',
         color = { r = 0.20, g = 0.35, b = 0.20 },
-        tooltip = 'Selecting this will make labs research techs faster!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_make_labs_research_techs_faster' },
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.lab_overclock then
-                return false, '[Rewards] Lab Overclock bonus is already applied and is currently on cooldown. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.lab_overclock_bonus_is_already_applied_and_is' }
             end
             mc_rewards.temp_boosts.lab_overclock = true
             mc_rewards.active_boosts.lab_overclock = true
@@ -618,21 +618,21 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.lab_overclock_bonus = mystical_rewards.lab_overclock_bonus and mystical_rewards.lab_overclock_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Lab Overclock! Get extra lab research techs faster!', nil, 'achievement/tech-maniac', nil, 'global')
+            Alert.alert_all_players(15, { 'mtn_v3_rewards.lab_overclock_get_extra_lab_research_techs_faster' }, nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted lab overclock bonus to the team!', ' ***' })
             return true
         end),
         512
     },
     {
-        name = 'Prototype Data Disk',
+        name = { 'mtn_v3_rewards.prototype_data_disk_name' },
         str = 'prototype_data_disk',
         color = { r = 0.20, g = 0.35, b = 0.60 },
-        tooltip = 'Selecting this will make market items more cheaper!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_make_market_items_more_cheaper' },
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.prototype_data_disk then
-                return false, '[Rewards] Prototype Data Disk bonus is already applied and is currently on cooldown. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.prototype_data_disk_bonus_is_already_applied_and' }
             end
             mc_rewards.temp_boosts.prototype_data_disk = true
             mc_rewards.active_boosts.prototype_data_disk = true
@@ -649,7 +649,7 @@ local mc_random_rewards =
             local mystical_rewards = Public.get('mystical_rewards')
             mystical_rewards.prototype_data_disk_bonus = mystical_rewards.prototype_data_disk_bonus and mystical_rewards.prototype_data_disk_bonus + 1 or 1
 
-            Alert.alert_all_players(15, 'Prototype Data Disk! Get extra market items more cheaper!', nil, 'achievement/tech-maniac', nil, 'global')
+            Alert.alert_all_players(15, { 'mtn_v3_rewards.prototype_data_disk_get_extra_market_items_more' }, nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted prototype data disk bonus to the team!', ' ***' })
             return true
         end),
@@ -686,14 +686,14 @@ local mc_random_rewards =
     --     1024
     -- },
     {
-        name = 'Oil Barrels',
+        name = { 'mtn_v3_rewards.oil_barrels_name' },
         str = 'oil',
         color = { r = 0.20, g = 0.75, b = 0.40 },
-        tooltip = 'Selecting this will grant oil to the team!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_grant_oil_to_the_team' },
         func = (function (player, _)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.oil then
-                return false, '[Rewards] Oil bonus is already applied and is currently on cooldown. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.oil_bonus_is_already_applied_and_is_currently' }
             end
             mc_rewards.temp_boosts.oil = true
             Task.set_timeout_in_ticks(modifier_cooldown, restore_modifier_token, { modifier = 'oil' })
@@ -713,21 +713,21 @@ local mc_random_rewards =
                 mystical_chest.surface.spill_item_stack({ position = mystical_chest.position, stack = { name = 'crude-oil-barrel', count = Math.random(200, 480) }, enable_looted = true })
             end
 
-            Alert.alert_all_players(15, 'Oil for all! Check out the mystical chest!', nil, 'achievement/tech-maniac', nil, 'global')
+            Alert.alert_all_players(15, { 'mtn_v3_rewards.oil_for_all_check_out_the_mystical_chest' }, nil, 'achievement/tech-maniac', nil, 'global')
             Server.to_discord_bold(table.concat { '*** ', '[Mystical Chest] ' .. player.name .. ' has granted oil bonus to the team!', ' ***' })
             return true
         end),
         512
     },
     {
-        name = 'Coins',
+        name = { 'mtn_v3_rewards.coins_name' },
         str = 'coins',
         color = { r = 0.00, g = 0.35, b = 0.00 },
-        tooltip = 'Selecting this will grant each player some coins!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_grant_each_player_some_coins' },
         func = (function (p, zone)
             local mc_rewards = Public.get('mc_rewards')
             if mc_rewards.temp_boosts.coins then
-                return false, '[Rewards] Coin bonus is already applied and is currently on cooldown. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.coin_bonus_is_already_applied_and_is_currently' }
             end
 
             local mystical_rewards = Public.get('mystical_rewards')
@@ -756,15 +756,15 @@ local mc_random_rewards =
         512
     },
     {
-        name = 'Movement bonus',
+        name = { 'mtn_v3_rewards.movement_bonus_name' },
         str = 'movement',
         color = { r = 0.00, g = 0.25, b = 0.00 },
-        tooltip = 'Selecting this will grant the team a bonus movement speed for 30 minutes!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_grant_the_team_a_bonus' },
         func = (function (player, zone)
             local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
             if mc_rewards.temp_boosts.movement then
-                return false, '[Rewards] Movement bonus is already applied. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.movement_bonus_is_already_applied_please_choose_another' }
             end
 
             local mystical_rewards = Public.get('mystical_rewards')
@@ -787,15 +787,15 @@ local mc_random_rewards =
         512
     },
     {
-        name = 'Mining bonus',
+        name = { 'mtn_v3_rewards.mining_bonus_name' },
         str = 'mining',
         color = { r = 0.00, g = 0.00, b = 0.25 },
-        tooltip = 'Selecting this will grant the team a bonus mining speed for 30 minutes!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_grant_the_team_a_bonus_2' },
         func = (function (player)
             local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
             if mc_rewards.temp_boosts.mining then
-                return false, '[Rewards] Mining bonus is already applied. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.mining_bonus_is_already_applied_please_choose_another' }
             end
 
             local mystical_rewards = Public.get('mystical_rewards')
@@ -813,15 +813,15 @@ local mc_random_rewards =
         512
     },
     {
-        name = 'Crafting speed bonus',
+        name = { 'mtn_v3_rewards.crafting_speed_bonus_name' },
         str = 'crafting',
         color = { r = 0.00, g = 0.00, b = 0.25 },
-        tooltip = 'Selecting this will grant all players 100% crafting bonus for 30 minutes!',
+        tooltip = { 'mtn_v3_rewards.selecting_this_will_grant_all_players_100_crafting' },
         func = (function (player)
             local mc_rewards = Public.get('mc_rewards')
             local force = game.forces.player
             if mc_rewards.temp_boosts.crafting then
-                return false, '[Rewards] Crafting bonus is already applied. Please choose another reward.'
+                return false, { 'mtn_v3_rewards.crafting_bonus_is_already_applied_please_choose_another' }
             end
 
             local mystical_rewards = Public.get('mystical_rewards')
@@ -846,7 +846,7 @@ local function mystical_chest_reward(player)
         return
     end
 
-    local frame = player.gui.screen.add { type = 'frame', caption = 'Mystical Reward:', name = 'reward_system', direction = 'vertical' }
+    local frame = player.gui.screen.add { type = 'frame', caption = { 'mtn_v3_rewards.mystical_reward' }, name = 'reward_system', direction = 'vertical' }
     frame.auto_center = true
     frame = frame.add { type = 'frame', name = 'reward_system_1', direction = 'vertical', style = 'inside_shallow_frame' }
     frame.style.padding = 4
@@ -874,7 +874,7 @@ local function mystical_chest_reward(player)
         if player.gui.screen['reward_system'] then
             player.gui.screen['reward_system'].destroy()
         end
-        return player.print('[Rewards] No rewards are available.', { color = Color.fail })
+        return player.print({ 'mtn_v3_rewards.no_rewards_are_available' }, { color = Color.fail })
     end
 
     -- something fancy to reward players
@@ -1122,7 +1122,7 @@ Event.add(defines.events.on_gui_click, on_gui_click)
 
 
 if _DEBUG then
-    Commands.new('mtn_mystical_reward', 'Brings up the mystical chest reward system')
+    Commands.new('mtn_mystical_reward', { 'mtn_v3_rewards.brings_up_the_mystical_chest_reward_system' })
         :require_admin()
         :require_validation()
         :callback(

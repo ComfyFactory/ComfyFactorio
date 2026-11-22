@@ -172,131 +172,54 @@ local function on_entity_removed(data)
     end
 end
 
-local function check_health()
-    local locomotive_health = Public.get('locomotive_health')
-    local locomotive_max_health = Public.get('locomotive_max_health')
-    local carriages = Public.get('carriages')
-    if locomotive_health <= 0 then
-        Public.set('locomotive_health', 0)
+local function deploy_train_defenses(carriages, poison, robotics)
+    if not carriages then
+        return
     end
-
-    local m = locomotive_health / locomotive_max_health
-    if carriages then
-        for i = 1, #carriages do
-            local entity = carriages[i]
-            if not (entity and entity.valid) then
-                return
+    for _, carriage in pairs(carriages) do
+        if carriage.valid then
+            if poison then
+                Public.enable_poison_defense(carriage.position)
             end
-            if entity.type == 'locomotive' then
-                entity.health = entity.max_health * m
-            else
-                entity.health = entity.max_health * m
+            if robotics then
+                Public.enable_robotic_defense(carriage.position)
             end
         end
     end
 end
 
-local function check_health_final_damage(final_damage_amount)
-    local carriages = Public.get('carriages')
-    if carriages then
-        for i = 1, #carriages do
-            local entity = carriages[i]
-            if not (entity and entity.valid) then
-                return
-            end
-            entity.health = entity.health + final_damage_amount
-        end
-    end
-end
-
-local function set_train_final_health(final_damage_amount, repair)
-    if final_damage_amount == 0 then
+local function set_train_final_health(final_damage_amount)
+    local this = Public.get()
+    local locomotive = this.locomotive
+    if final_damage_amount == 0 or this.game_lost or not (locomotive and locomotive.valid) then
         return
     end
 
-    local locomotive = Public.get('locomotive')
-    if not (locomotive and locomotive.valid) then
-        return
-    end
-
-    local locomotive_health = Public.get('locomotive_health')
-    local locomotive_max_health = Public.get('locomotive_max_health')
-
-    if not repair then
-        local poison_deployed = Public.get('poison_deployed')
-        local robotics_deployed = Public.get('robotics_deployed')
-
-        local lower_high = locomotive_max_health * 0.4
-        local higher_high = locomotive_max_health * 0.5
-        local lower_low = locomotive_max_health * 0.2
-        local higher_low = locomotive_max_health * 0.3
-
-        if locomotive_health >= lower_high and locomotive_health <= higher_high then
-            if not poison_deployed then
-                local carriages = Public.get('carriages')
-
-                if WD.get('wave_number') <= 800 then
-                    if carriages then
-                        for i = 1, #carriages do
-                            local entity = carriages[i]
-                            Public.enable_poison_defense(entity.position)
-                        end
-                    end
-                end
-
-                local p =
-                {
-                    position = locomotive.position
-                }
-                local msg = ({ 'entity.train_taking_damage' })
-                Alert.alert_all_players_location(p, msg, nil, nil, 'global')
-                Public.set().poison_deployed = true
-            end
-        elseif locomotive_health >= lower_low and locomotive_health <= higher_low then
-            if not robotics_deployed then
-                local carriages = Public.get('carriages')
-
-                if carriages then
-                    for i = 1, #carriages do
-                        local entity = carriages[i]
-                        Public.enable_robotic_defense(entity.position)
-                    end
-                end
-                local p =
-                {
-                    position = locomotive.position
-                }
-                local msg = ({ 'entity.train_taking_damage' })
-                Alert.alert_all_players_location(p, msg, nil, nil, 'global')
-                Public.set().robotics_deployed = true
-            end
-        elseif locomotive_health >= locomotive_max_health then
-            Public.set().poison_deployed = false
-        end
-    end
-
-    if locomotive_health <= 0 then
-        Public.set('locomotive_position', locomotive.position)
+    local max_health = this.locomotive_max_health
+    local previous_health = Math.min(this.locomotive_health, max_health)
+    local health = previous_health > 0 and Math.floor(previous_health - final_damage_amount) or 0
+    health = Public.sync_train_health(health)
+    if health == 0 then
+        this.locomotive_position = locomotive.position
         Public.game_is_over()
-    end
-
-    if locomotive_health <= 0 then
-        check_health_final_damage(final_damage_amount)
         return
     end
 
-    Public.set('locomotive_health', Math.floor(locomotive_health - final_damage_amount))
-    if locomotive_health > locomotive_max_health then
-        Public.set('locomotive_health', locomotive_max_health)
+    if final_damage_amount < 0 then
+        return
     end
-    locomotive_health = Public.get('locomotive_health')
 
-    check_health()
-
-    local health_text = Public.get('health_text')
-
-    if health_text and health_text.valid then
-        health_text.text = 'HP: ' .. Math.round(locomotive_health) .. ' / ' .. Math.round(locomotive_max_health)
+    local poison = not this.poison_deployed and previous_health >= max_health * 0.4 and health <= max_health * 0.5
+    local robotics = not this.robotics_deployed and previous_health >= max_health * 0.2 and health <= max_health * 0.3
+    if poison then
+        this.poison_deployed = true
+    end
+    if robotics then
+        this.robotics_deployed = true
+    end
+    if poison or robotics then
+        deploy_train_defenses(this.carriages, poison and WD.get('wave_number') <= 800, robotics)
+        Alert.alert_all_players_location({ position = locomotive.position }, { 'entity.train_taking_damage' }, nil, nil, 'global')
     end
 end
 
@@ -345,7 +268,7 @@ local function protect_entities(data)
         if (cause and cause.valid) then
             if Public.valid_enemy_forces[cause.force.name] then
                 if carriages_numbers and carriages_numbers[entity.unit_number] then
-                    set_train_final_health(dmg, false)
+                    set_train_final_health(dmg)
                     return
                 else
                     entity.health = entity.health - dmg
@@ -355,7 +278,7 @@ local function protect_entities(data)
         elseif not (cause and cause.valid) then
             if force and Public.valid_enemy_forces[force.name] then
                 if carriages_numbers and carriages_numbers[entity.unit_number] then
-                    set_train_final_health(dmg, false)
+                    set_train_final_health(dmg)
                     return
                 else
                     entity.health = entity.health - dmg
@@ -1121,7 +1044,13 @@ local function kaboom(entity, target, damage)
     vector[1] = vector[1] * 512
     vector[2] = vector[2] * 256
 
-    local msg = { 'TASTY', 'MUNCH', 'SNACK_TIME', 'OVER 9000!' }
+    local msg =
+    {
+        { 'mtn_v3_entities.bite_1' },
+        { 'mtn_v3_entities.bite_2' },
+        { 'mtn_v3_entities.bite_3' },
+        { 'mtn_v3_entities.bite_4' }
+    }
 
     entity.surface.create_entity(
         {
@@ -1250,20 +1179,14 @@ local function on_entity_damaged(event)
 end
 
 local function on_player_repaired_entity(event)
-    if not event.entity then
-        return
-    end
-    if not event.entity.valid then
-        return
-    end
-    if not event.entity.health then
-        return
-    end
     local entity = event.entity
+    if not (entity and entity.valid and entity.health) then
+        return
+    end
     local carriages_numbers = Public.get('carriages_numbers')
     local tick = game.tick
 
-    if carriages_numbers[entity.unit_number] then
+    if carriages_numbers and carriages_numbers[entity.unit_number] then
         local player = game.get_player(event.player_index)
         local rpg_t = RPG.get_value_from_player(player.index)
         local repair_speed
@@ -1282,13 +1205,13 @@ local function on_player_repaired_entity(event)
             if rpg_t.mtn_repair < tick then
                 rpg_t.mtn_repair = tick + 10
             end
-            set_train_final_health(-1, true)
+            set_train_final_health(-1)
             return
         else
             if rpg_t.mtn_repair < tick then
                 rpg_t.mtn_repair = tick + 10
             end
-            set_train_final_health(-repair_speed, true)
+            set_train_final_health(-repair_speed)
             return
         end
     end
@@ -1477,42 +1400,42 @@ local function show_mvps_ingame(player, mvp)
         return
     end
     local frame = player.gui.left.add({ type = 'frame', name = 'mvps', direction = 'vertical' })
-    local l = frame.add({ type = 'label', caption = 'MVPs:' })
+    local l = frame.add({ type = 'label', caption = { 'mtn_v3_entities.mvps' } })
     l.style.font = 'default-listbox'
     l.style.font_color = { r = 0.55, g = 0.55, b = 0.99 }
 
     local t = frame.add({ type = 'table', column_count = 2 })
     if mvp then
-        local wave_defense = t.add({ type = 'label', caption = 'Highest Wave >> ' })
+        local wave_defense = t.add({ type = 'label', caption = { 'mtn_v3_entities.highest_wave' } })
         wave_defense.style.font = 'default-listbox'
         wave_defense.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-        local wave_defense_text = t.add({ type = 'label', caption = 'This rounds highest wave was: ' .. wave_defense_table.wave_number })
+        local wave_defense_text = t.add({ type = 'label', caption = { 'mtn_v3_entities.this_rounds_highest_wave_was', wave_defense_table.wave_number } })
         wave_defense_text.style.font = 'default-bold'
         wave_defense_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
 
         if mvp.killscore then
-            local fighter_label = t.add({ type = 'label', caption = 'Fighter >> ' })
+            local fighter_label = t.add({ type = 'label', caption = { 'mtn_v3_entities.fighter' } })
             fighter_label.style.font = 'default-listbox'
             fighter_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-            local fighter_label_text = t.add({ type = 'label', caption = mvp.killscore.name .. ' with a killing score of ' .. mvp.killscore.score .. ' kills!' })
+            local fighter_label_text = t.add({ type = 'label', caption = { 'mtn_v3_entities.mvp_kills', mvp.killscore.name, mvp.killscore.score } })
             fighter_label_text.style.font = 'default-bold'
             fighter_label_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
         end
 
         if mvp.built_entities then
-            local builder_label = t.add({ type = 'label', caption = 'Builder >> ' })
+            local builder_label = t.add({ type = 'label', caption = { 'mtn_v3_entities.builder' } })
             builder_label.style.font = 'default-listbox'
             builder_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-            local builder_label_text = t.add({ type = 'label', caption = mvp.built_entities.name .. ' built ' .. mvp.built_entities.score .. ' things!' })
+            local builder_label_text = t.add({ type = 'label', caption = { 'mtn_v3_entities.mvp_built', mvp.built_entities.name, mvp.built_entities.score } })
             builder_label_text.style.font = 'default-bold'
             builder_label_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
         end
 
         if mvp.mined_entities then
-            local miners_label = t.add({ type = 'label', caption = 'Miners >> ' })
+            local miners_label = t.add({ type = 'label', caption = { 'mtn_v3_entities.miners' } })
             miners_label.style.font = 'default-listbox'
             miners_label.style.font_color = { r = 0.22, g = 0.77, b = 0.44 }
-            local miners_label_text = t.add({ type = 'label', caption = mvp.mined_entities.name .. ' mined a total of  ' .. mvp.mined_entities.score .. ' entities!' })
+            local miners_label_text = t.add({ type = 'label', caption = { 'mtn_v3_entities.mvp_mined', mvp.mined_entities.name, mvp.mined_entities.score } })
             miners_label_text.style.font = 'default-bold'
             miners_label_text.style.font_color = { r = 0.33, g = 0.66, b = 0.9 }
         end
@@ -1694,14 +1617,15 @@ function Public.loco_died()
 
     Collapse.start_now(false, true)
 
-    Public.set_stateful('current_streak', 0)
+    Public.reset_win_streak()
 
     local this = Public.get()
 
-    this.locomotive_health = 0
+    if this.locomotive_health ~= 0 then
+        Public.sync_train_health(0)
+    end
     if this.health_text and this.health_text.valid and this.locomotive and this.locomotive.valid then
         this.locomotive.color = { 0.49, 0, 255, 1 }
-        this.health_text.text = 'HP: ' .. Math.round(this.locomotive_health) .. ' / ' .. Math.round(this.locomotive_max_health)
     end
     WD.set('game_lost', true)
     WD.set('target', nil)
@@ -1741,8 +1665,6 @@ function Public.loco_died()
 
     save_game_before_end()
     check_rpg_progression()
-
-    Public.set_stateful('current_streak', 0)
 
     if not Public.get('game_won') then
         notify_game_lost_to_discord(mvp)
@@ -1859,7 +1781,7 @@ local function on_built_entity(event)
             player.create_local_flying_text(
                 {
                     position = entity.position,
-                    text = upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
+                    text = { 'mtn_v3_entities.placement_limit', upgrades[name].built, limit[entity.name], entity.localised_name },
                     color = { r = 0.82, g = 0.11, b = 0.11 },
                 }
             )
@@ -1958,7 +1880,7 @@ local function on_robot_built_entity(event)
                 {
                     name = 'compi-speech-bubble',
                     position = entity.position,
-                    text = upgrades[name].built .. ' / ' .. limit[entity.name] .. ' ' .. entity.name,
+                    text = { 'mtn_v3_entities.placement_limit', upgrades[name].built, limit[entity.name], entity.localised_name },
                     source = entity,
                     lifetime = 30
                 }

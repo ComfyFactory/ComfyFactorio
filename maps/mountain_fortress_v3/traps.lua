@@ -2,7 +2,16 @@ local Event = require 'utils.event'
 local Public = require 'maps.mountain_fortress_v3.table'
 local Math = require 'utils.math.math'
 
-local tick_tacks = { '*tick*', '*tick*', '*tack*', '*tak*', '*tik*', '*tok*', '*run*' }
+local tick_tacks =
+{
+    { 'mtn_v3_traps.tick' },
+    { 'mtn_v3_traps.tick' },
+    { 'mtn_v3_traps.tack' },
+    { 'mtn_v3_traps.tak' },
+    { 'mtn_v3_traps.tik' },
+    { 'mtn_v3_traps.tok' },
+    { 'mtn_v3_traps.run' }
+}
 
 local kaboom_weights =
 {
@@ -64,7 +73,7 @@ local function create_kaboom(entity, name)
             {
                 name = 'compi-speech-bubble',
                 position = entity.position,
-                text = '(((Sentries Engaging Target)))',
+                text = { 'mtn_v3_traps.sentries_engaging_target' },
                 source = entity,
                 lifetime = 30
             }

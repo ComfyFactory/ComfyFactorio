@@ -46,6 +46,72 @@ local function on_entity_died(event)
     end
 end
 
+local final_battle_enemy_forces = { 'enemy', 'aggressors', 'aggressors_frenzy' }
+local final_battle_enemy_types = { 'unit', 'turret', 'unit-spawner', 'spider-unit', 'segmented-unit' }
+local final_battle_cleanup_batch_size = 128
+
+local function start_final_battle_cleanup()
+    local this = Public.get()
+    local surface_index = this.active_surface_index
+    if not surface_index or this.cleared_biters or this.final_battle_cleanup then
+        return
+    end
+
+    WD.disable_spawning_biters(true)
+    local surface = game.get_surface(surface_index)
+    if not surface or not surface.valid then
+        this.cleared_biters = true
+        return
+    end
+
+    local forces = {}
+    for _, name in ipairs(final_battle_enemy_forces) do
+        local force = game.forces[name]
+        if force then
+            forces[#forces + 1] = force
+        end
+    end
+
+    this.final_battle_cleanup =
+    {
+        surface_index = surface_index,
+        entities = surface.find_entities_filtered({ force = forces, type = final_battle_enemy_types })
+    }
+end
+
+local function continue_final_battle_cleanup()
+    local this = Public.get()
+    local cleanup = this.final_battle_cleanup
+    if not cleanup then
+        return
+    end
+
+    if cleanup.surface_index ~= this.active_surface_index or not this.game_lost or not Public.get_stateful('final_battle') then
+        this.final_battle_cleanup = nil
+        return
+    end
+
+    local entities = cleanup.entities
+    local last = Math.max(1, #entities - final_battle_cleanup_batch_size + 1)
+    for i = #entities, last, -1 do
+        local entity = entities[i]
+        if entity.valid then
+            local unit = entity.type == 'segmented-unit' and entity.segmented_unit
+            if unit and unit.valid then
+                unit.destroy()
+            else
+                entity.destroy()
+            end
+        end
+        entities[i] = nil
+    end
+
+    if #entities == 0 then
+        this.final_battle_cleanup = nil
+        this.cleared_biters = true
+    end
+end
+
 Event.add(
     defines.events.on_research_finished,
     function (event)
@@ -79,31 +145,7 @@ Event.on_nth_tick(
 
         local game_lost = Public.get('game_lost')
         if game_lost then
-            local active_surface_index = Public.get('active_surface_index')
-            if not active_surface_index then
-                return
-            end
-
-            local this = Public.get()
-            if not this.cleared_biters then
-                WD.disable_spawning_biters(true)
-                local surface = game.surfaces[active_surface_index]
-                if surface and surface.valid then
-                    for c in surface.get_chunks() do
-                        for _, entity in pairs(surface.find_entities_filtered({ force = { 'enemy', 'aggressors', 'aggressors_frenzy' }, area = { { c.x * 32, c.y * 32 }, { c.x * 32 + 32, c.y * 32 + 32 } }, type = { "unit", "turret", "unit-spawner", "spider-unit", "segmented-unit" } })) do
-                            if entity and entity.valid then
-                                local unit = entity.segmented_unit
-                                if unit and unit.valid then
-                                    unit.destroy()
-                                else
-                                    entity.destroy()
-                                end
-                            end
-                        end
-                    end
-                end
-                this.cleared_biters = true
-            end
+            start_final_battle_cleanup()
             return
         end
 
@@ -385,5 +427,6 @@ Event.add(defines.events.on_pre_player_died, Public.on_pre_player_died)
 Event.add(Public.events.on_market_item_purchased, Public.on_market_item_purchased)
 Event.add(ServerCommands.events.custom_on_entity_died, on_entity_died)
 Event.add(defines.events.on_entity_died, on_entity_died)
+Event.on_nth_tick(5, continue_final_battle_cleanup)
 
 return Public

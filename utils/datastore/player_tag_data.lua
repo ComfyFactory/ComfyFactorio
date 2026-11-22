@@ -4,6 +4,7 @@ local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Commands = require 'utils.commands'
 local Supporters = require 'utils.datastore.supporters'
+local PlayerSettings = require 'utils.gui.player_settings'
 
 local tag_dataset = 'tags'
 local set_data = Server.set_data
@@ -31,9 +32,30 @@ local fetch =
         end
     )
 
-local alphanumeric = function (str)
-    return (string.match(str, '[^%w]') ~= nil)
+local function can_edit(player)
+    return player.admin or Supporters.is_supporter(player.name)
 end
+
+local function save_tag(player, tag)
+    if tag == '' or tag == 'Name' or #tag > 32 or tag:find('[^%w]') then
+        return nil, { 'gui.player_settings_invalid_tag' }
+    end
+    set_data(tag_dataset, player.name, tag)
+    player.tag = '[' .. tag .. ']'
+    return tag
+end
+
+local function remove_tag(player)
+    set_data(tag_dataset, player.name, nil)
+    player.tag = ''
+end
+
+PlayerSettings.register('tag', tag_dataset, {
+    can_edit = can_edit,
+    input = function (value) return value or '' end,
+    save = save_tag,
+    remove = remove_tag
+})
 
 --- Tries to get data from the webpanel and applies the value to the player.
 -- @param data_set player token
@@ -51,29 +73,18 @@ Commands.new('set-player-tag', 'Sets your custom tag that is persistent.')
     :require_backend()
     :callback(
         function (player, tag)
-            if not Supporters.is_supporter(player.name) and not player.admin then
+            if not can_edit(player) then
                 player.print('To get access to this command, please become a supporter.')
                 player.print('You can become a supporter by donating either via ko-fi or patreon.')
                 return false
             end
 
-            if alphanumeric(tag) then
-                player.print('Tag is not valid.')
+            local value, err = save_tag(player, tag)
+            if not value then
+                player.print(err)
                 return false
             end
 
-            if tag == '' or tag == 'Name' then
-                player.print('You did not specify a tag.')
-                return false
-            end
-
-            if string.len(tag) > 32 then
-                player.print('Tag is too long. 64 characters maximum.')
-                return false
-            end
-
-            set_data(tag_dataset, player.name, tag)
-            player.tag = '[' .. tag .. ']'
             player.print('Your tag has been saved.')
         end
     )
@@ -82,14 +93,13 @@ Commands.new('remove-player-tag', 'Removes your custom tag.')
     :require_backend()
     :callback(
         function (player)
-            if not Supporters.is_supporter(player.name) and not player.admin then
+            if not can_edit(player) then
                 player.print('To get access to this command, please become a supporter.')
                 player.print('You can become a supporter by donating either via ko-fi or patreon.')
                 return false
             end
 
-            set_data(tag_dataset, player.name, nil)
-            player.tag = ''
+            remove_tag(player)
             player.print('Your tag has been removed.')
         end
     )

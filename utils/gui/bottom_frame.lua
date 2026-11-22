@@ -1,6 +1,7 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
+local Style = require 'utils.gui_style'
 local Task = require 'utils.task_token'
 local Config = require 'utils.gui.config'
 
@@ -8,6 +9,7 @@ local this =
 {
     players = {},
     storage = {},
+    placements = {},
     activate_custom_buttons = false,
     bottom_quickbar_button = {}
 }
@@ -31,6 +33,80 @@ local remove_player
 local get_player_data
 
 local main_frame_name = Gui.uid_name()
+local shortcut_columns_name = 'comfy_bottom_shortcut_columns'
+local slot_size = 40
+local panel_padding = 3
+local panel_height = 96
+local default_quickbar_slots = 10
+-- Offset from the screen center to the right edge when only Alt is visible.
+local quickbar_half_width = 270
+local default_shortcut_columns = 10
+local shortcut_column_options = {}
+for columns = 1, 20 do
+    shortcut_column_options[columns] = tostring(columns)
+end
+local quickbar_height = 96
+local dock_gap = 5
+local snap_distance = 28
+
+local function get_placement(player_index)
+    this.placements = this.placements or {}
+    local placement = this.placements[player_index] or {}
+    this.placements[player_index] = placement
+    return placement
+end
+
+local function shortcut_columns(player_index)
+    return get_placement(player_index).shortcut_columns or default_shortcut_columns
+end
+
+local function panel_width(data)
+    return data.row_index * slot_size + 2 * panel_padding
+end
+
+local function clamp_location(player, data, location)
+    local resolution = player.display_resolution
+    local scale = player.display_scale
+    local max_x = math.max(0, resolution.width - math.ceil(panel_width(data) * scale))
+    local max_y = math.max(0, resolution.height - math.ceil(panel_height * scale))
+    return
+    {
+        x = math.max(0, math.min(max_x, math.floor(location.x + 0.5))),
+        y = math.max(0, math.min(max_y, math.floor(location.y + 0.5)))
+    }
+end
+
+local function dock_location(player, data)
+    local resolution = player.display_resolution
+    local scale = player.display_scale
+    local slots = player.quick_bar_width or default_quickbar_slots
+    local half_width = (quickbar_half_width + (slots - default_quickbar_slots) * slot_size / 2) * scale
+    local left = resolution.width / 2 - half_width
+    local shortcut_width = (shortcut_columns(player.index) - 1) * slot_size * scale
+    local right = resolution.width / 2 + half_width + shortcut_width
+    local width = panel_width(data) * scale
+    local on_left = data.state == 'bottom_left'
+    local x = on_left and (left - dock_gap * scale - width) or (right + dock_gap * scale)
+    local y = resolution.height - panel_height * scale
+
+    if data.above or x < 0 or x + width > resolution.width then
+        x = on_left and left or (right - width)
+        y = y - (quickbar_height + dock_gap) * scale
+    end
+    return clamp_location(player, data, { x = x, y = y })
+end
+
+local function place_frame(player, data, frame)
+    local placement = get_placement(player.index)
+    local resolution = player.display_resolution
+    local location = placement.location
+    if location and (location.display_width ~= resolution.width or location.display_height ~= resolution.height
+            or location.display_scale ~= player.display_scale) then
+        placement.location = nil
+        location = nil
+    end
+    frame.location = location and clamp_location(player, data, location) or dock_location(player, data)
+end
 
 local sections =
 {
@@ -54,42 +130,37 @@ Config.register_scenario_module(
         admin_only = false,
         gui_rows = Config.register_token(
             function (player, frame)
-                local switch_state
-
-                local autostash = ServerCommands.is_loaded('modules.autostash')
-                if autostash then
-                    switch_state = 'right'
-                    local bottom_frame = Public.get_player_data(player)
-                    if bottom_frame and bottom_frame.top then
-                        switch_state = 'left'
-                    end
-                    Config.add_switch(frame, switch_state, 'top_location', 'Position - top', 'Toggle to select if you want the bottom buttons at the top or the bottom.')
-                    frame.add({ type = 'line' })
-                end
-
-                switch_state = 'right'
                 local bottom_frame = Public.get_player_data(player)
-                if bottom_frame and bottom_frame.bottom_state == 'bottom_left' then
-                    switch_state = 'left'
+                if ServerCommands.is_loaded('modules.autostash') then
+                    Config.add_switch(frame, bottom_frame.top and 'left' or 'right',
+                        'top_location', { 'gui.player_settings_buttons_top' }, { 'gui-description.player_settings_buttons_top' })
                 end
-                Config.add_switch(frame, switch_state, 'bottom_location', 'Position - bottom', 'Toggle to select if you want the bottom button on the left side or the right side.')
+                Config.add_switch(frame, bottom_frame.bottom_state == 'bottom_left' and 'left' or 'right',
+                    'bottom_location', { 'gui.player_settings_buttons_left' }, { 'gui-description.player_settings_buttons_left' })
+                Config.add_switch(frame, bottom_frame.above and 'left' or 'right',
+                    'middle_location', { 'gui.player_settings_buttons_above' }, { 'gui-description.player_settings_buttons_above' })
+                Config.add_switch(frame, bottom_frame.portable ~= false and 'left' or 'right',
+                    'portable_button', { 'gui.player_settings_buttons_movable' }, { 'gui-description.player_settings_buttons_movable' })
 
-                frame.add({ type = 'line' })
-
-                switch_state = 'right'
-                if bottom_frame and bottom_frame.above then
-                    switch_state = 'left'
+                if not bottom_frame.top and bottom_frame.bottom_state ~= 'bottom_left' then
+                    local row = Style.toolbar(frame)
+                    row.style.horizontally_stretchable = true
+                    row.style.minimal_height = Style.dimensions.row_height
+                    local tooltip = { 'gui-description.player_settings_shortcut_columns' }
+                    local label = Style.text(row, { 'gui.player_settings_shortcut_columns' }, frame.tags.row_width - 78)
+                    label.style.horizontally_stretchable = true
+                    label.style.font = 'default-semibold'
+                    label.tooltip = tooltip
+                    local selector = row.add
+                    {
+                        type = 'drop-down',
+                        name = shortcut_columns_name,
+                        items = shortcut_column_options,
+                        selected_index = shortcut_columns(player.index),
+                        tooltip = tooltip
+                    }
+                    selector.style.width = 72
                 end
-                Config.add_switch(frame, switch_state, 'middle_location', 'Position - middle', 'Toggle to select if you want the bottom button above the quickbar or the side of the quickbar.')
-
-                frame.add({ type = 'line' })
-
-                switch_state = 'right'
-                if bottom_frame and bottom_frame.portable then
-                    switch_state = 'left'
-                end
-                Config.add_switch(frame, switch_state, 'portable_button', 'Position - portable', 'Toggle to select if you want the bottom button to be portable or not.')
-                frame.add({ type = 'line' })
             end),
         handlers =
         {
@@ -113,35 +184,14 @@ Config.register_scenario_module(
             ['middle_location'] = Config.register_token(
                 function (player, event)
                     local data = Public.get_player_data(player)
-                    if event.element.switch_state == 'left' then
-                        data.above = true
-                        data.portable = false
-                    else
-                        data.above = false
-                        data.portable = false
-                    end
-                    if not data.bottom_state then
-                        data.bottom_state = 'bottom_right'
-                    end
-
-                    Public.set_location(player, data.bottom_state)
+                    data.above = event.element.switch_state == 'left'
+                    Public.set_location(player, data.state)
                 end),
             ['portable_button'] = Config.register_token(
                 function (player, event)
                     local data = Public.get_player_data(player)
-                    if event.element.switch_state == 'left' then
-                        data.above = false
-                        data.portable = true
-                    else
-                        data.portable = false
-                        data.above = false
-                    end
-
-                    if not data.bottom_state then
-                        data.bottom_state = 'bottom_right'
-                    end
-
-                    Public.set_location(player, data.bottom_state)
+                    data.portable = event.element.switch_state == 'left'
+                    set_location(player)
                 end),
         }
     })
@@ -177,9 +227,15 @@ get_player_data = function (player, remove_user_data)
         return
     end
     if not this.players[player.index] then
+        local placement = get_placement(player.index)
+        local state = placement.state or 'bottom_right'
         this.players[player.index] =
         {
-            state = 'bottom_right',
+            state = state,
+            bottom_state = state,
+            above = placement.above,
+            portable = placement.portable ~= false,
+            top = placement.top,
             section = {},
             direction = 'vertical',
             row_index = 1,
@@ -202,41 +258,33 @@ local function refresh_inner_frames(player)
     end
 
     local main_frame = player_data.frame
+    main_frame.clear()
+    player_data.section = {}
 
     local horizontal_flow = main_frame.add { type = 'flow', direction = 'horizontal' }
     horizontal_flow.style.horizontal_spacing = 0
 
-    for row_index, row_index_data in pairs(storage_data) do
-        if row_index_data and type(row_index_data) == 'table' then
-            local section_row_index = player_data.section[row_index]
-            local vertical_flow = horizontal_flow.add { type = 'flow', direction = 'vertical' }
-            vertical_flow.style.vertical_spacing = 0
+    for row_index, row_index_data in ipairs(storage_data) do
+        local vertical_flow = horizontal_flow.add { type = 'flow', direction = 'vertical' }
+        vertical_flow.style.vertical_spacing = 0
+        local section = { inner_frame = vertical_flow }
+        player_data.section[row_index] = section
 
-            if not section_row_index then
-                player_data.section[row_index] = {}
-                section_row_index = player_data.section[row_index]
-            end
-
-            if not section_row_index.inside_frame or not section_row_index.inside_frame.valid then
-                section_row_index.inner_frame = vertical_flow
-            end
-
-            for row_selection, row_selection_data in pairs(row_index_data) do
-                if section_row_index[row_selection] and section_row_index[row_selection].valid then
-                    section_row_index[row_selection].destroy()
-                end
-
-                section_row_index[row_selection] =
-                    section_row_index.inner_frame.add
-                    {
-                        type = 'sprite-button',
-                        sprite = row_selection_data.sprite,
-                        name = row_selection_data.name,
-                        tooltip = row_selection_data.tooltip or '',
-                        style = 'quick_bar_page_button'
-                    }
-            end
+        for row_selection, row_selection_data in ipairs(row_index_data) do
+            section[row_selection] =
+                vertical_flow.add
+                {
+                    type = 'sprite-button',
+                    sprite = row_selection_data.sprite,
+                    name = row_selection_data.name,
+                    tooltip = row_selection_data.tooltip or '',
+                    style = 'quick_bar_page_button'
+                }
         end
+    end
+
+    if player_data.parent and player_data.parent.valid then
+        place_frame(player, player_data, player_data.parent)
     end
 end
 
@@ -347,58 +395,39 @@ end
 --- Creates a new frame
 ---@param player LuaPlayer
 ---@param alignment string
----@param location table
 ---@param data any
 ---@return unknown
-local function create_frame(player, alignment, location, data)
+local function create_frame(player, alignment, data)
     local gui = player.gui
     local frame = gui.screen[main_frame_name]
     if frame and frame.valid then
         destroy_frame(player)
     end
 
-    alignment = alignment or 'vertical'
-
     frame =
         player.gui.screen.add
         {
             type = 'frame',
             name = main_frame_name,
-            direction = alignment
+            direction = 'vertical'
         }
 
-    if data.visible ~= nil then
-        if data.visible then
-            frame.visible = true
-        else
-            frame.visible = false
-        end
+    frame.style.padding = panel_padding
+    frame.style.minimal_height = panel_height
+    local movable = data.portable ~= false
+    frame.style.top_padding = movable and 0 or 4
+
+    local content = frame.add { type = 'flow', direction = 'vertical' }
+    content.style.vertical_spacing = 0
+    if movable then
+        local grip = content.add { type = 'empty-widget', style = 'draggable_space', tooltip = { 'gui.bottom_frame_drag' } }
+        grip.style.height = 6
+        grip.style.horizontally_stretchable = true
+        grip.drag_target = frame
     end
 
-    frame.style.padding = 3
-    frame.style.top_padding = 4
-    if alignment == 'vertical' then
-        frame.style.minimal_height = 96
-    end
-
-    local inner_frame =
-        frame.add
-        {
-            type = 'frame',
-            direction = alignment
-        }
-    inner_frame.style = 'quick_bar_inner_panel'
-
-    frame.location = location
-    if data.portable then
-        frame.caption = '•'
-    end
-
-    if data.top then
-        frame.visible = false
-    else
-        frame.visible = true
-    end
+    local inner_frame = content.add { type = 'frame', direction = alignment, style = 'quick_bar_inner_panel' }
+    frame.visible = not data.top and data.visible ~= false
 
     data.frame = inner_frame
     data.parent = frame
@@ -413,62 +442,74 @@ end
 
 set_location = function (player, state)
     local data = get_player_data(player)
-    local alignment = 'vertical'
-
-    local location
-    local resolution = player.display_resolution
-    local scale = player.display_scale
-
-    state = state or data.state
-
-    if state == 'bottom_left' then
-        if data.above then
-            location =
-            {
-                x = (resolution.width / 2) - ((259) * scale),
-                y = (resolution.height - (-12 + (40 * 5) * scale))
-            }
-            alignment = 'horizontal'
-        else
-            location =
-            {
-                -- x = (resolution.width / 2) - ((54 + 528 - 44) * scale),
-                x = (resolution.width / 2) - ((455 + (data.row_index * 40)) * scale),
-                y = (resolution.height - (96 * scale))
-            }
-        end
-        data.bottom_state = 'bottom_left'
-    elseif state == 'bottom_right' then
-        if data.above then
-            location =
-            {
-                -- x = (resolution.width / 2) - ((-262 - (40 * t[data.row_index])) * scale),
-                x = (resolution.width / 2) - ((-460 + (data.row_index * 40)) * scale),
-                y = (resolution.height - (-12 + (40 * 5) * scale))
-            }
-            alignment = 'horizontal'
-        else
-            location =
-            {
-                x = (resolution.width / 2) - ((54 + -689) * scale),
-                y = (resolution.height - (96 * scale))
-            }
-        end
-        data.bottom_state = 'bottom_right'
-    else
-        location =
-        {
-            x = (resolution.width / 2) - ((54 + -528) * scale),
-            y = (resolution.height - (96 * scale))
-        }
-    end
+    data.state = state or data.state
+    data.bottom_state = data.state
+    local placement = get_placement(player.index)
+    placement.state = data.state
+    placement.above = data.above
+    placement.portable = data.portable
+    placement.top = data.top
 
     Event.raise(ServerCommands.events.bottom_quickbar_location_changed, { player_index = player.index, data = data })
 
-    data.state = state
-    create_frame(player, alignment, location, data)
+    create_frame(player, data.above and 'horizontal' or 'vertical', data)
     refresh_inner_frames(player)
 end
+
+function Public.set_location(player, state)
+    get_placement(player.index).location = nil
+    set_location(player, state)
+end
+
+Gui.on_selection_state_changed(shortcut_columns_name, function (event)
+    local columns = event.element.selected_index
+    if shortcut_column_options[columns] then
+        local player = event.player
+        get_placement(player.index).shortcut_columns = columns
+        Public.set_location(player)
+    end
+end)
+
+Event.add(defines.events.on_gui_location_changed, function (event)
+    local frame = event.element
+    if not frame or not frame.valid or frame.name ~= main_frame_name then
+        return
+    end
+
+    local player = game.get_player(event.player_index)
+    local data = this.players[event.player_index]
+    if not player or not player.valid or not data or data.portable == false or data.parent ~= frame then
+        return
+    end
+
+    local location = frame.location
+    if not location then
+        return
+    end
+
+    local placement = get_placement(player.index)
+    local dock = dock_location(player, data)
+    local threshold = snap_distance * player.display_scale
+    local target
+    if math.abs(location.x - dock.x) <= threshold and math.abs(location.y - dock.y) <= threshold then
+        placement.location = nil
+        target = dock
+    else
+        target = clamp_location(player, data, location)
+        local resolution = player.display_resolution
+        placement.location =
+        {
+            x = target.x,
+            y = target.y,
+            display_width = resolution.width,
+            display_height = resolution.height,
+            display_scale = player.display_scale
+        }
+    end
+    if target.x ~= location.x or target.y ~= location.y then
+        frame.location = target
+    end
+end)
 
 --- Sets then frame location of the given player
 ---@param player LuaPlayer?
@@ -476,7 +517,7 @@ end
 local function set_top(player, value)
     local data = get_player_data(player)
     data.top = value or false
-    Public.set_location(player, 'bottom_right')
+    set_location(player)
 end
 
 --- Returns the current frame location of the given player
@@ -591,27 +632,19 @@ Event.add(
     end
 )
 
-Event.add(
-    defines.events.on_player_display_resolution_changed,
-    function (event)
-        if this.activate_custom_buttons then
-            local player = game.get_player(event.player_index)
-            local data = get_player_data(player)
-            set_location(player, data.state)
-        end
+local function redock_on_display_change(event)
+    if not this.activate_custom_buttons then
+        return
     end
-)
+    local player = game.get_player(event.player_index)
+    if player and player.valid then
+        -- The engine can move a screen frame to keep it visible during a resize.
+        Public.set_location(player)
+    end
+end
 
-Event.add(
-    defines.events.on_player_display_scale_changed,
-    function (event)
-        local player = game.get_player(event.player_index)
-        if this.activate_custom_buttons then
-            local data = get_player_data(player)
-            set_location(player, data.state)
-        end
-    end
-)
+Event.add(defines.events.on_player_display_resolution_changed, redock_on_display_change)
+Event.add(defines.events.on_player_display_scale_changed, redock_on_display_change)
 
 Event.add(
     defines.events.on_pre_player_left_game,
@@ -660,6 +693,9 @@ Event.add(
     defines.events.on_player_removed,
     function (event)
         remove_player(event.player_index)
+        if this.placements then
+            this.placements[event.player_index] = nil
+        end
     end
 )
 
@@ -703,7 +739,6 @@ Public.main_frame_name = main_frame_name
 Public.refresh_inner_frames = refresh_inner_frames
 Public.get_player_data = get_player_data
 Public.remove_player = remove_player
-Public.set_location = set_location
 Public.get_location = get_location
 Public.set_top = set_top
 Public.add_inner_frame = add_inner_frame

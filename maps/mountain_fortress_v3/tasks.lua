@@ -37,7 +37,6 @@ local Math = require 'utils.math.math'
 
 local send_ping_to_channel = Discord.channel_names.mtn_channel
 local role_to_mention = Discord.role_mentions.mtn_fortress
-local mapkeeper = '[color=blue]Mapkeeper:[/color]'
 
 local reset_messages =
 {
@@ -87,6 +86,10 @@ local init_bonus_drill_force = function ()
 end
 
 function Public.clear_old_surface(current_task)
+    if not Public.stateful.season_settings_ready() then
+        return
+    end
+    Public.stateful.apply_startup_settings()
     local old_surface = game.surfaces[current_task.starting_planet]
     if old_surface then
         local removed = 0
@@ -102,13 +105,16 @@ function Public.clear_old_surface(current_task)
             end
         end
         if removed > 0 then
-            current_task.message = 'Cleared demolishers from old fortress!'
+            current_task.message = { 'mtn_v3_reset.cleared_demolishers_from_old_fortress' }
             current_task.delay = game.tick + 60
             current_task.state = 'clear_old_surface'
             Server.output_script_data('Removed segmented units before surface reset: ' .. removed)
             return
         end
-        game.delete_surface(old_surface.name)
+        local old_surface_index = old_surface.index
+        if game.delete_surface(old_surface) then
+            current_task.deleting_surface_index = old_surface_index
+        end
         Public.set('active_surface_index', nil)
     end
     local next_planet = Public.get_stateful_settings('next_planet')
@@ -116,13 +122,19 @@ function Public.clear_old_surface(current_task)
         Public.set_stateful_settings('current_planet', next_planet)
         Server.output_script_data('Setting current planet to next planet: ' .. next_planet)
     end
-    current_task.message = 'Cleared old fortress!'
-    current_task.delay = game.tick + 5
+    current_task.message = { 'mtn_v3_reset.cleared_old_fortress' }
     current_task.state = 'create_default_surface'
     Server.output_script_data('Cleared old fortress!')
 end
 
 function Public.create_default_surface(current_task)
+    local deleting_surface_index = current_task.deleting_surface_index
+    if deleting_surface_index and game.get_surface(deleting_surface_index) then
+        current_task.state = 'create_default_surface'
+        return
+    end
+    current_task.deleting_surface_index = nil
+
     Public.set('active_surface_index', Public.create_surface(true))
     local active_surface_index = Public.get('active_surface_index')
     WD.set('surface_index', active_surface_index)
@@ -134,8 +146,7 @@ function Public.create_default_surface(current_task)
 
     local starting_planet = Public.get_planet()
 
-    current_task.message = 'Created custom fortress surface!'
-    current_task.delay = game.tick + 1
+    current_task.message = { 'mtn_v3_reset.created_custom_fortress_surface' }
     current_task.starting_planet = starting_planet
     current_task.surface_index = active_surface_index
     current_task.state = 'move_players'
@@ -180,17 +191,10 @@ function Public.move_players(current_task)
             )
         end
 
-        local pos = surface.find_non_colliding_position("character", { x = 0, y = 0 }, 5, 4)
-        if pos then
-            Public.teleport_player(player, pos, surface)
-        else
-            Public.teleport_player(player, { x = 0, y = 0 }, surface)
-        end
-        player.clear_items_inside()
     end)
-    current_task.message = 'Moved players to initial surface!'
+    current_task.message = { 'mtn_v3_reset.prepared_players_for_map_reset' }
     current_task.state = 'pre_init_task'
-    Server.output_script_data('Moved players to initial surface!')
+    Server.output_script_data('Prepared players for map reset!')
 end
 
 function Public.pre_init_task(current_task)
@@ -296,17 +300,20 @@ function Public.pre_init_task(current_task)
 
     RPG.set_surface_validation_token(Public.surface_validation_token)
 
-    current_task.message = 'Pre init done!'
+    current_task.message = { 'mtn_v3_reset.pre_init_done' }
     current_task.state = 'init_stateful'
     Server.output_script_data('Pre init done!')
 end
 
 function Public.init_stateful(current_task)
+    if not Public.stateful.season_settings_ready() then
+        return
+    end
+    Public.stateful.apply_startup_settings()
     ICW.reset()
     Public.reset_main_table()
     Public.stateful.enable(true)
     Public.stateful.reset_stateful(false, true)
-    Public.stateful.apply_startup_settings()
 
     -- if Public.is_modded then
     --     for _, player in pairs(game.connected_players) do
@@ -314,7 +321,7 @@ function Public.init_stateful(current_task)
     --     end
     -- end
 
-    current_task.message = 'Initialized stateful!'
+    current_task.message = { 'mtn_v3_reset.initialized_stateful' }
     current_task.state = 'reset_map'
     Server.output_script_data('Initialized stateful!')
 end
@@ -405,11 +412,6 @@ function Public.reset_map(current_task)
     Commands.restore_states()
 
     if this.adjusted_zones.reversed then
-        local chunk_pos = Orient.world(-20, -22)
-        if not surface.is_chunk_generated(chunk_pos) then
-            surface.request_to_generate_chunks(chunk_pos, 1)
-            surface.force_generate_chunk_requests()
-        end
         game.forces.player.set_spawn_position(Orient.world(-27, -25), surface)
         WD.set_spawn_position(Orient.world(-16, Orient.spawn_len(-80)))
         if not Orient.is_horizontal() then
@@ -418,11 +420,6 @@ function Public.reset_map(current_task)
             WD.enable_inverted(false)
         end
     else
-        local chunk_pos = Orient.world(-20, 22)
-        if not surface.is_chunk_generated(chunk_pos) then
-            surface.request_to_generate_chunks(chunk_pos, 1)
-            surface.force_generate_chunk_requests()
-        end
         game.forces.player.set_spawn_position(Orient.world(-27, 25), surface)
         WD.set_spawn_position(Orient.world(-16, Orient.spawn_len(80)))
         WD.enable_inverted(false)
@@ -437,12 +434,11 @@ function Public.reset_map(current_task)
         surface.destroy_decoratives({ name = "small-sand-rock", invert = true })
     end
 
-    Task.set_queue_speed(16)
+    Task.set_queue_speed(8)
 
     Public.get_scores()
 
-    this.chunk_load_tick = game.tick + 400
-    this.force_chunk = true
+    this.chunk_load_tick = nil
     this.market_announce = game.tick + 1200
     this.game_lost = false
 
@@ -473,16 +469,23 @@ function Public.reset_map(current_task)
     game.forces.player.set_friend('aggressors', false)
     game.forces.player.set_friend('aggressors_frenzy', false)
 
-    current_task.message = 'Reset map done!'
-    current_task.delay = game.tick + 50
+    local chunk_position = Orient.world(-20, this.adjusted_zones.reversed and -22 or 22)
+    current_task.starting_chunks = Public.prepare_starting_chunks(surface, chunk_position)
+    current_task.message = { 'mtn_v3_reset.reset_map_done' }
     current_task.state = 'post_init_task'
     Server.output_script_data('Reset map done!')
 end
 
 function Public.post_init_task(current_task)
+    if not Public.advance_starting_chunks(current_task.starting_chunks) then
+        current_task.state = 'post_init_task'
+        return
+    end
+    current_task.starting_chunks = nil
+
     Public.stateful.increase_enemy_damage_and_health()
 
-    current_task.message = 'Post init done!'
+    current_task.message = { 'mtn_v3_reset.post_init_done' }
     current_task.state = 'create_locomotive'
     Server.output_script_data('Post init done!')
 end
@@ -510,26 +513,28 @@ function Public.create_locomotive(current_task)
         Public.locomotive_spawn(surface, Orient.world(-18, 25), adjusted_zones.reversed)
     end
 
-    Public.render_train_hp()
-    Public.render_direction(surface, adjusted_zones.reversed)
-
     local locomotive = Public.get('locomotive')
     if not locomotive or not locomotive.valid then
         Server.output_script_data('Create locomotive: Locomotive not valid, retrying initialization.')
         return
     end
+    Public.render_train_hp()
+    Public.render_direction(surface, adjusted_zones.reversed)
     WD.set_main_target(locomotive)
     Core.iter_connected_players(function (player)
         Public.teleport_player(player, locomotive.position, surface)
     end)
 
-    current_task.message = 'Created locomotive!'
-    current_task.delay = game.tick + 50
+    current_task.message = { 'mtn_v3_reset.created_locomotive' }
     current_task.state = 'announce_new_map'
     Server.output_script_data('Created locomotive!')
 end
 
 function Public.announce_new_map(current_task)
+    if ICW.get('reconstruction_pending') or ICW.get('reconstruction') then
+        current_task.state = 'announce_new_map'
+        return
+    end
     if not Public.get('disable_startup_notification') then
         local server_name = Server.check_server_name(Public.discord_name)
         if server_name then
@@ -537,10 +542,9 @@ function Public.announce_new_map(current_task)
         end
     end
     local starting_planet = Public.get_planet()
-    current_task.message = 'Announced new map!'
+    current_task.message = { 'mtn_v3_reset.announced_new_map' }
     current_task.state = 'to_fortress'
     current_task.surface_name = starting_planet
-    current_task.delay = game.tick + 100
     Server.output_script_data('Announced new map!')
 end
 
@@ -596,9 +600,15 @@ function Public.to_fortress(current_task)
 
         RPG_Settings.fetch_rpg_settings(player)
 
-        if player.controller_type == defines.controllers.god or player.controller_type == defines.controllers.spectator then
-            player.set_controller { type = defines.controllers.god }
-            player.create_character()
+        local restore_quickbar = player.controller_type == defines.controllers.god or player.controller_type == defines.controllers.spectator
+        for _, ele in pairs(player.gui.top.children) do
+            if ele and ele.valid and ele.name ~= Gui.main_toggle_button_name then
+                ele.visible = true
+            end
+        end
+        Public.equip_players(player, starting_items, false)
+
+        if restore_quickbar then
             Event.raise(
                 ServerCommands.events.bottom_quickbar_respawn_raise,
                 {
@@ -606,13 +616,6 @@ function Public.to_fortress(current_task)
                 }
             )
         end
-
-        for _, ele in pairs(player.gui.top.children) do
-            if ele and ele.valid and ele.name ~= Gui.main_toggle_button_name then
-                ele.visible = true
-            end
-        end
-        Public.equip_players(player, starting_items, false)
     end)
 
     Public.stateful.activate_delayed_techs(game.forces.player)
@@ -628,28 +631,28 @@ function Public.to_fortress(current_task)
     WD.get_es('target_settings').main_target = locomotive
     WD.set('game_lost', false)
 
-    current_task.message = 'Moved players back to fortress!'
+    current_task.message = { 'mtn_v3_reset.moved_players_back_to_fortress' }
     current_task.done = true
     Server.output_script_data('Moved players back to fortress!')
 end
 
 local scenario_manager = function ()
     local current_task = Public.get('current_task')
-    if not current_task then return end
+    if not current_task or current_task.done then return end
 
     if #game.connected_players == 0 then
         return
     end
 
-    if current_task.delay then
-        if game.tick < current_task.delay then
-            return
-        end
+    if current_task.delay and game.tick < current_task.delay then
+        return
     end
+    current_task.delay = nil
 
     if Public[current_task.state] then
         local old_task = current_task.state
         current_task.state = 'idle'
+        current_task.message = nil
         Public[old_task](current_task)
         if current_task.state == 'idle' and not current_task.done then
             current_task.state = old_task
@@ -657,7 +660,7 @@ local scenario_manager = function ()
             return
         end
         if current_task.message and current_task.show_messages then
-            game.print(mapkeeper .. ' ' .. current_task.message)
+            game.print({ 'mtn_v3_reset.task_message', current_task.message })
         end
     end
 end
