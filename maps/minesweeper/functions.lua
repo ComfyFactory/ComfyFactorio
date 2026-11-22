@@ -1,5 +1,3 @@
---luacheck: ignore
-
 local FlyingText = require 'utils.functions.flying_texts'
 
 local Public = {}
@@ -25,10 +23,9 @@ local function unstuck_players_around_position(surface, position)
         if character.player then
             local player = character.player
             local p = surface.find_non_colliding_position('character', player.position, 32, 0.5)
-            if not p then
-                return
+            if p then
+                player.teleport(p, surface)
             end
-            player.teleport(p, surface)
         end
     end
 end
@@ -37,26 +34,57 @@ function Public.kaboom(position)
     local surface = game.surfaces[1]
     local count = surface.count_entities_filtered({ name = { "atomic-bomb-ground-zero-projectile", "atomic-bomb-wave", "atomic-bomb-wave-spawns-cluster-nuke-explosion", "atomic-bomb-wave-spawns-fire-smoke-explosion", "atomic-bomb-wave-spawns-nuclear-smoke", "atomic-bomb-wave-spawns-nuke-shockwave-explosion", "atomic-rocket" }, area = { { position.x - 4, position.y - 4 }, { position.x + 4, position.y + 4 } }, limit = 1 })
     if count > 0 then return end
-    surface.create_entity({ name = "atomic-rocket", position = { position.x + 1, position.y + 1 }, target = { position.x + 1, position.y + 1 }, speed = 1, force = "minesweeper" })
+
+    local center = { x = position.x + 1, y = position.y + 1 }
+    local area = { { center.x - 13, center.y - 13 }, { center.x + 13, center.y + 13 } }
+    local terrain = {}
+    for _, tile in pairs(surface.find_tiles_filtered({ area = area })) do
+        if tile.name ~= 'nuclear-ground' and tile.name ~= 'out-of-map' then
+            terrain[#terrain + 1] = { name = tile.name, position = tile.position, hidden = tile.hidden_tile, double_hidden = tile.double_hidden_tile }
+        end
+    end
+    local projectile = surface.create_entity({ name = 'atomic-rocket', position = center, target = center, speed = 1, force = 'minesweeper' })
+    if projectile then
+        return { projectile = projectile, terrain = terrain }
+    end
+end
+
+function Public.restore_blast_terrain(terrain)
+    local surface = game.surfaces[1]
+    local tiles = {}
+    for _, tile in ipairs(terrain) do
+        if surface.get_tile(tile.position).name == 'nuclear-ground' then
+            tiles[#tiles + 1] = tile
+        end
+    end
+    if #tiles > 0 then
+        surface.set_tiles(tiles, true, false, false)
+        for _, tile in ipairs(tiles) do
+            surface.set_hidden_tile(tile.position, tile.hidden)
+            surface.set_double_hidden_tile(tile.position, tile.double_hidden)
+        end
+    end
+end
+
+local function has_minefield_tile(position, extent, paved_only)
+    local surface = game.surfaces[1]
+    for x = 0, extent do
+        for y = 0, extent do
+            local tile = surface.get_tile(position.x + x, position.y + y)
+            if tile.hidden_tile == 'nuclear-ground' or (not paved_only and tile.name == 'nuclear-ground') then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 function Public.is_minefield_tile(position, search_cell)
-    local surface = game.surfaces.nauvis
-    if search_cell then
-        for x = 0, 1, 1 do
-            for y = 0, 1, 1 do
-                local p = { x = position.x + x, y = position.y + y }
-                local tile = surface.get_tile(p)
-                if tile.name == "nuclear-ground" then return true end
-                if tile.hidden_tile == "nuclear-ground" then return true end
-            end
-        end
-        return
-    end
+    return has_minefield_tile(position, search_cell and 1 or 0, false)
+end
 
-    local tile = surface.get_tile(position)
-    if tile.name == "nuclear-ground" then return true end
-    if tile.hidden_tile == "nuclear-ground" then return true end
+function Public.has_paved_minefield_tile(position)
+    return has_minefield_tile(position, 1, true)
 end
 
 function Public.is_spawn(position)
@@ -112,19 +140,24 @@ function Public.disarm_reward(position)
     if math.random(1, 3) ~= 1 or tile_name == "water-shallow" then return end
 
     if math.random(1, 8) == 1 then
-        local blacklist = LootRaffle.get_tech_blacklist(0.05 + distance_to_center * 0.00025) --max loot tier at ~4000 tiles
+        local blacklist = LootRaffle.get_tech_blacklist(0.05 + distance_to_center * 0.00025)
         local item_stacks = LootRaffle.roll(math.random(16, 48) + math.floor(distance_to_center * 0.2), 16, blacklist)
         local p = { x = position.x + math.random(0, 1), y = position.y + math.random(0, 1) }
         local container = surface.create_entity({ name = "crash-site-chest-" .. math.random(1, 2), position = p, force = "neutral" })
-        for _, item_stack in pairs(item_stacks) do container.insert(item_stack) end
-        container.minable_flag = false
-        unstuck_players_around_position(surface, p)
-        return
+        if container then
+            for _, item_stack in pairs(item_stacks or {}) do
+                if prototypes.item[item_stack.name] then
+                    container.insert(item_stack)
+                end
+            end
+            container.minable_flag = false
+            unstuck_players_around_position(surface, p)
+            return
+        end
     end
 
-    local a, b = string.find(tile_name, "grass", 1, true)
     local ore
-    if a then
+    if string.find(tile_name, "grass", 1, true) then
         ore = ores[1][math.random(1, #ores[1])]
     else
         ore = ores[2][math.random(1, #ores[2])]
@@ -138,8 +171,7 @@ function Public.disarm_reward(position)
     for x = 0, 1, 1 do
         for y = 0, 1, 1 do
             local p = { x = position.x + x, y = position.y + y }
-            local tile_name = Public.get_terrain_tile(surface, p)
-            if tile_name ~= "water-shallow" then
+            if Public.get_terrain_tile(surface, p) ~= "water-shallow" then
                 surface.create_entity({ name = ore, position = p, amount = 1000 + distance_to_center * 3 })
             end
         end
@@ -148,22 +180,30 @@ end
 
 function Public.uncover_terrain(position)
     local surface = game.surfaces[1]
+    local uncovered_water = false
     for x = 0, 1, 1 do
         for y = 0, 1, 1 do
             local p = { x = position.x + x, y = position.y + y }
-            local tile_name = Public.get_terrain_tile(surface, p)
             local tile = surface.get_tile(p)
-            local mineable_tile_name = false
-            if tile.prototype.mineable_properties.minable then mineable_tile_name = tile.name end
-
-            surface.set_hidden_tile(p, nil)
-            surface.set_tiles({ { name = tile_name, position = p } }, true)
-            if math.random(1, 16) == 1 and tile_name == "water-shallow" then
-                surface.create_entity({ name = "fish", position = p })
+            if tile.name == 'nuclear-ground' or tile.hidden_tile == 'nuclear-ground' then
+                local tile_name = Public.get_terrain_tile(surface, p)
+                if tile.hidden_tile == 'nuclear-ground' and tile_name ~= 'water-shallow' then
+                    surface.set_hidden_tile(p, tile_name)
+                else
+                    surface.set_hidden_tile(p, nil)
+                    surface.set_tiles({ { name = tile_name, position = p } }, true)
+                end
+                if tile_name == 'water-shallow' then
+                    uncovered_water = true
+                    if math.random(1, 16) == 1 then
+                        surface.create_entity({ name = 'fish', position = p })
+                    end
+                end
             end
-
-            if mineable_tile_name and tile_name ~= "water-shallow" then surface.set_tiles({ { name = mineable_tile_name, position = p } }, true) end
         end
+    end
+    if uncovered_water then
+        unstuck_players_around_position(surface, { x = position.x + 1, y = position.y + 1 })
     end
 end
 
