@@ -5,6 +5,7 @@ local Event = require 'utils.event'
 local Where = require 'utils.commands.where'
 local Session = require 'utils.datastore.session_data'
 local Gui = require 'utils.gui'
+local Style = require 'utils.gui_style'
 local Global = require 'utils.global'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'
@@ -60,22 +61,11 @@ Config.register_scenario_module(
         admin_only = true,
         gui_rows = Config.register_token(
             function (player, frame)
-                local label = frame.add({ type = 'label', caption = 'Player List Settings' })
-                label.style.font = 'default-bold'
-                label.style.padding = 0
-                label.style.left_padding = 10
-                label.style.top_padding = 10
-                label.style.horizontal_align = 'left'
-                label.style.vertical_align = 'bottom'
-                label.style.font_color = Color.green
-
                 local switch_state = 'right'
                 if this.player_settings[player.index] and this.player_settings[player.index].show_all_players then
                     switch_state = 'left'
                 end
                 Config.add_switch(frame, switch_state, 'show_all_players', 'Show All Players', 'On = Shows all players.\nOff = Shows only connected players.')
-
-                frame.add({ type = 'line' })
             end),
         handlers =
         {
@@ -245,7 +235,9 @@ local function get_sorted_list(sort_by, show_all_players)
             { name = 'Admin Faker', color = { r = 0.85, g = 0.15, b = 0.15 }, rank = 'item/power-armor', admin = true, coins = 900, total = 5184000 * 2 + 216000 * 3, online = 216000 * 2, rpg = 42, pokes = 11 },
             { name = 'Trainman', color = { r = 0.3, g = 0.55, b = 0.95 }, rank = 'item/locomotive', admin = false, coins = 17, total = 3600 * 4, online = 3600 * 4, rpg = 4, pokes = 0 },
             { name = 'Oil King', color = { r = 0.15, g = 0.15, b = 0.15 }, rank = 'item/pumpjack', admin = false, coins = 320, total = 216000 * 12, online = 3600 * 95, rpg = 21, pokes = 6 },
-            { name = 'Very Long Faker Like So Long', color = { r = 0.7, g = 0.4, b = 0.9 }, rank = 'item/repair-pack', admin = false, coins = 2, total = 3600 * 90, online = 3600 * 15, rpg = 2, pokes = 8 }
+            { name = 'Very Long Faker Like So Long', color = { r = 0.7, g = 0.4, b = 0.9 }, rank = 'item/repair-pack', admin = false, coins = 2, total = 3600 * 90, online = 3600 * 15, rpg = 2, pokes = 8 },
+            { name = 'NotGerkiz', color = { r = 0.7, g = 0.4, b = 0.9 }, rank = 'item/night-vision-equipment', admin = false, coins = 2, total = 3600 * 90, online = 3600 * 15, rpg = 2, pokes = 8 },
+            { name = 'HeWhoRuns', color = { r = 0.7, g = 0.4, b = 0.9 }, rank = 'item/solar-panel-equipment', admin = false, coins = 2, total = 3600 * 90, online = 3600 * 15, rpg = 2, pokes = 8 }
         }
         for i = 1, #fake_players do
             local fake = fake_players[i]
@@ -278,8 +270,8 @@ local function player_list_show(data)
     local sort_by = data.sort_by
     -- Frame management
     frame.clear()
-    frame.style.padding = 8
 
+    local available_width = Style.content_width(data.player, frame)
     local gui_data =
         Vars.gui_data(
             {
@@ -287,7 +279,9 @@ local function player_list_show(data)
                 show_roles_in_list = this.show_roles_in_list,
                 locate_player_frame_name = locate_player_frame_name,
                 rpg_enabled = this.rpg_enabled,
-                poke_player_frame_name = poke_player_frame_name
+                poke_player_frame_name = poke_player_frame_name,
+                content_width = available_width,
+                wide = available_width >= 730
             }
         )
 
@@ -309,36 +303,24 @@ local function player_list_show(data)
 
     header_modifier[sort_by](gui_data)
 
-    local content_width = 0
-    for _, setting in pairs(gui_data) do
+    local content_width = (#gui_data - 1) * Style.spacing.xs
+    for _, setting in ipairs(gui_data) do
         content_width = content_width + setting.header_width
     end
 
     local player_tbl = frame.add { type = 'table', column_count = #gui_data }
+    player_tbl.style.horizontal_spacing = Style.spacing.xs
 
-    for _, setting in pairs(gui_data) do
+    for _, setting in ipairs(gui_data) do
         setting.sorter(setting, player_tbl)
     end
 
     local header_line = frame.add({ type = 'line', direction = 'horizontal' })
     header_line.style.minimal_width = content_width
     header_line.style.horizontally_stretchable = true
-    header_line.style.top_margin = 2
-    header_line.style.bottom_margin = 2
 
-    -- List management
-    local scroll_pane =
-        frame.add
-        {
-            type = 'scroll-pane',
-            name = 'scroll_pane',
-            direction = 'vertical',
-            horizontal_scroll_policy = 'never',
-            vertical_scroll_policy = 'auto'
-        }
-    scroll_pane.style.maximal_height = 360
-
-    local player_list_panel_table = scroll_pane.add { type = 'flow', name = 'player_list_panel_table', direction = 'vertical' }
+    local player_list_panel_table = frame.add { type = 'flow', name = 'player_list_panel_table', direction = 'vertical' }
+    player_list_panel_table.style.vertical_spacing = Style.spacing.xs
     player_list_panel_table.style.minimal_width = content_width
     player_list_panel_table.style.horizontally_stretchable = true
 
@@ -348,14 +330,13 @@ local function player_list_show(data)
     for i = 1, #player_list, 1 do
         local player = player_list[i]
         local row = player_list_panel_table.add { type = 'table', column_count = #gui_data }
-        for _, setting in pairs(gui_data) do
+        row.style.horizontal_spacing = Style.spacing.xs
+        for _, setting in ipairs(gui_data) do
             setting.func(row, player, i)
         end
         local line = player_list_panel_table.add({ type = 'line', direction = 'horizontal' })
         line.style.minimal_width = content_width
         line.style.horizontally_stretchable = true
-        line.style.top_margin = 2
-        line.style.bottom_margin = 2
     end
 end
 
@@ -379,8 +360,13 @@ Gui.on_click(
                 return
             end
 
-            local target = game.get_player(data)
+            local ok, target = pcall(game.get_player, data)
+            if not ok then
+                player.print('[Locate Player] Invalid player index: ' .. data, { color = Color.warning })
+                return
+            end
             if not target or not target.valid then
+                player.print('[Locate Player] Invalid player target: ' .. target, { color = Color.warning })
                 return
             end
             if Public.settings.disable_camera_for_non_admins and not player.admin then
@@ -393,11 +379,16 @@ Gui.on_click(
             if is_spamming then
                 return
             end
-
-            local target = game.get_player(data)
-            if not target or not target.valid then
+            local ok, target = pcall(game.get_player, data)
+            if not ok then
+                player.print('[Inventory] Invalid player index: ' .. data, { color = Color.warning })
                 return
             end
+            if not target or not target.valid then
+                player.print('[Inventory] Invalid player target: ' .. target, { color = Color.warning })
+                return
+            end
+
             if target.controller_type == defines.controllers.remote then
                 player.print('[Inventory] This player is currently in remote-view and has no character association. Please try again later.', { color = Color.warning })
                 return
@@ -417,8 +408,13 @@ Gui.on_click(
         if not data then
             return
         end
-        local target = game.get_player(data)
+        local ok, target = pcall(game.get_player, data)
+        if not ok then
+            player.print('[Poke Player] Invalid player index: ' .. data, { color = Color.warning })
+            return
+        end
         if not target or not target.valid then
+            player.print('[Poke Player] Invalid player target: ' .. target, { color = Color.warning })
             return
         end
 

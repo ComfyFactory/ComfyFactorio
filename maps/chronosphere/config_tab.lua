@@ -5,6 +5,8 @@ local Chrono = require 'maps.chronosphere.chrono'
 local Token = require 'utils.token'
 local Event = require 'utils.event'
 local Gui = require 'utils.gui'
+local Config = require 'utils.gui.config'
+local Style = require 'utils.gui_style'
 
 local module_name = Gui.uid_name()
 
@@ -121,44 +123,15 @@ local functions = {
 }
 
 local function add_switch(element, switch_state, name, description_main, description)
-    local t = element.add({type = 'table', column_count = 5, name = name .. '_table'})
-    local label
-    label = t.add({type = 'label', caption = 'ON'})
-    label.style.padding = 0
-    label.style.left_padding = 10
-    label.style.font_color = {0.77, 0.77, 0.77}
-    local switch = t.add({type = 'switch', name = name})
-    switch.switch_state = switch_state
-    switch.style.padding = 0
-    switch.style.margin = 0
-    label = t.add({type = 'label', caption = 'OFF'})
-    label.style.padding = 0
-    label.style.font_color = {0.70, 0.70, 0.70}
-
-    label = t.add({type = 'label', caption = description_main})
-    label.style.padding = 2
-    label.style.left_padding = 10
-    label.style.minimal_width = 130
-    label.style.font = 'heading-2'
-    label.style.font_color = {0.88, 0.88, 0.99}
-
-    label = t.add({type = 'label', caption = description})
-    label.style.padding = 2
-    label.style.left_padding = 10
-    label.style.single_line = false
-    label.style.font = 'default-semibold'
-    label.style.font_color = {0.85, 0.85, 0.85}
+    local switch = Config.add_switch(element, switch_state, name, description_main, description)
+    switch.parent.name = name .. '_table'
 end
 
 local function build_config_gui(data)
-    local frame = data.frame
+    data.frame.clear()
+    local frame = Style.surface(data.frame, nil, Style.content_width(data.player, data.frame))
     local objective = Chrono_table.get_table()
     local switch_state
-    frame.clear()
-
-    local line_elements = {}
-
-    line_elements[#line_elements + 1] = frame.add({type = 'line'})
 
     switch_state = 'right'
     if objective.config.offline_loot then
@@ -166,15 +139,11 @@ local function build_config_gui(data)
     end
     add_switch(frame, switch_state, 'comfy_panel_offline_accidents', {'chronosphere.config_tab_offline'}, {'chronosphere.config_tab_offline_text'})
 
-    line_elements[#line_elements + 1] = frame.add({type = 'line'})
-
     switch_state = 'right'
     if objective.config.jumpfailure then
         switch_state = 'left'
     end
     add_switch(frame, switch_state, 'comfy_panel_danger_events', {'chronosphere.config_tab_dangers'}, {'chronosphere.config_tab_dangers_text'})
-
-    line_elements[#line_elements + 1] = frame.add({type = 'line'})
 
     switch_state = 'right'
     if objective.config.lock_difficulties then
@@ -182,23 +151,17 @@ local function build_config_gui(data)
     end
     add_switch(frame, switch_state, 'comfy_panel_lock_difficulties', {'chronosphere.config_tab_difficulties_easy'}, {'chronosphere.config_tab_difficulties_easy_text'})
 
-    line_elements[#line_elements + 1] = frame.add({type = 'line'})
-
     switch_state = 'right'
     if objective.config.lock_hard_difficulties then
         switch_state = 'left'
     end
     add_switch(frame, switch_state, 'comfy_panel_lock_hard_difficulties', {'chronosphere.config_tab_difficulties_hard'}, {'chronosphere.config_tab_difficulties_hard_text'})
 
-    line_elements[#line_elements + 1] = frame.add({type = 'line'})
-
     switch_state = 'right'
     if objective.config.overstay_penalty then
         switch_state = 'left'
     end
     add_switch(frame, switch_state, 'comfy_panel_overstay_penalty', {'chronosphere.config_tab_overstay'}, {'chronosphere.config_tab_overstay_text'})
-
-    line_elements[#line_elements + 1] = frame.add({type = 'line'})
 
     switch_state = 'right'
     if objective.game_lost then
@@ -212,8 +175,6 @@ local function build_config_gui(data)
     end
     add_switch(frame, switch_state, 'comfy_panel_game_lost_confirm', {'chronosphere.config_tab_reset_confirm'}, {'chronosphere.config_tab_reset_confirm_text'})
     frame['comfy_panel_game_lost_confirm_table'].visible = false
-
-    line_elements[#line_elements + 1] = frame.add({type = 'line'})
 end
 
 local build_config_gui_token = Token.register(build_config_gui)

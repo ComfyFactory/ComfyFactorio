@@ -93,24 +93,29 @@ local chests =
 local create_ghost_token =
     Token.register(
         function (event)
-            local player_index = event.player_index
-            local player = game.get_player(player_index)
-            if not player or not player.valid then
-                return
-            end
-
             local ghost = event.ghost
-            local position = event.position
             if not ghost or not ghost.valid then
                 return
             end
-            ghost.clone({ position = position, force = player.force, surface = player.surface, create_build_effect_smoke = false })
-            ghost.destroy()
 
-            -- local force = event.force
-            -- local inner_name = event.inner_name
-            -- local last_user = event.last_user
-            -- player.surface.create_entity({ name = 'entity-ghost', position = position, force = force, inner_name = inner_name, last_user = last_user })
+            local surface = event.surface
+            if not surface and event.player_index then
+                local player = game.get_player(event.player_index)
+                if player and player.valid then
+                    surface = player.surface
+                end
+            end
+            if surface and surface.valid then
+                ghost.clone({
+                    position = event.position,
+                    force = ghost.force,
+                    surface = surface,
+                    create_build_effect_smoke = false
+                })
+            end
+            if ghost.valid then
+                ghost.destroy()
+            end
         end,
         true
     )
@@ -202,21 +207,11 @@ Config.register_scenario_module(
         admin_only = true,
         gui_rows = Config.register_token(
             function (_, frame)
-                local label = frame.add({ type = 'label', caption = 'Antigrief Settings' })
-                label.style.font = 'default-bold'
-                label.style.padding = 0
-                label.style.left_padding = 10
-                label.style.top_padding = 10
-                label.style.horizontal_align = 'left'
-                label.style.vertical_align = 'bottom'
-                label.style.font_color = Color.green
-
                 local switch_state = 'right'
                 if this.enabled then
                     switch_state = 'left'
                 end
                 Config.add_switch(frame, switch_state, 'disable_antigrief', 'Antigrief', 'Toggle antigrief function.')
-                frame.add({ type = 'line' })
             end),
         handlers =
         {
@@ -328,45 +323,56 @@ local function do_action(player, prefix, msg, ban_msg, kill)
     end
 end
 
-local function on_marked_for_deconstruction(event)
-    if not this.enabled or not event.player_index then return end
-
-    local player = game.get_player(event.player_index)
-    if not player or not player.valid then return end
-    if this.do_not_check_trusted then return end
-
-    local playtime = player.online_time
-    local is_trusted = Session.get_trusted_player(player)
-    if Session.get_session_player(player) then
-        playtime = player.online_time + Session.get_session_player(player)
-    end
-    if playtime < this.required_playtime and not is_trusted then
-        event.entity.cancel_deconstruction(player.force.name, player.index)
-        player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
+local function get_restricted_player(player_index, exempt_admin)
+    if not this.enabled or this.do_not_check_trusted or not player_index then
         return
+    end
+
+    local player = game.get_player(player_index)
+    if not player or not player.valid or (exempt_admin and player.admin) or Session.get_trusted_player(player) then
+        return
+    end
+
+    local session_time = tonumber(Session.get_session_player(player)) or 0
+    if player.online_time + session_time < this.required_playtime then
+        return player
+    end
+end
+
+local function on_marked_for_deconstruction(event)
+    local entity = event.entity
+    if not (entity and entity.valid) then
+        return
+    end
+
+    local player = get_restricted_player(event.player_index)
+    if player then
+        entity.cancel_deconstruction(player.force, player)
+        player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
     end
 end
 
 local function on_pre_ghost_deconstructed(event)
-    if not this.enabled or not event.player_index then return end
-
-    local player = game.get_player(event.player_index)
-    if not player or not player.valid then return end
-    if this.do_not_check_trusted then return end
-
     local ghost = event.ghost
-
-    local playtime = player.online_time
-    local is_trusted = Session.get_trusted_player(player)
-    if Session.get_session_player(player) then
-        playtime = player.online_time + Session.get_session_player(player)
-    end
-    if playtime < this.required_playtime and not is_trusted then
-        -- Task.set_timeout_in_ticks(5, create_ghost_token, { player_index = player.index, position = ghost.position, force = player.force, inner_name = ghost.ghost_name, last_user = ghost.last_user and ghost.last_user.valid and ghost.last_user.name or player.name })
-        local new_ghost = ghost.clone({ position = { x = 0, y = 0 }, force = player.force, surface = game.surfaces.gulag, create_build_effect_smoke = false })
-        Task.set_timeout_in_ticks(5, create_ghost_token, { player_index = player.index, ghost = new_ghost, position = ghost.position })
-        player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
+    if not (ghost and ghost.valid) then
         return
+    end
+
+    local player = get_restricted_player(event.player_index)
+    if not player then
+        return
+    end
+
+    local staging_surface = game.surfaces.gulag
+    if not (staging_surface and staging_surface.valid) then
+        return
+    end
+
+    local surface, position = ghost.surface, ghost.position
+    local backup = ghost.clone({ position = { x = 0, y = 0 }, surface = staging_surface, create_build_effect_smoke = false })
+    if backup and backup.valid then
+        Task.set_timeout_in_ticks(5, create_ghost_token, { ghost = backup, surface = surface, position = position })
+        player.print('You are not accustomed to deconstructing yet.', { r = 0.22, g = 0.99, b = 0.99 })
     end
 end
 
@@ -442,11 +448,18 @@ local function on_player_built_tile(event)
     if not this.enabled then
         return
     end
-    local placed_tiles = event.tiles
-    if placed_tiles[1].old_tile.name ~= 'deepwater' and placed_tiles[1].old_tile.name ~= 'water' and placed_tiles[1].old_tile.name ~= 'water-green' then
+    local tile = event.tiles and event.tiles[1]
+    if not tile then
+        return
+    end
+    local old_name = tile.old_tile.name
+    if old_name ~= 'deepwater' and old_name ~= 'water' and old_name ~= 'water-green' then
         return
     end
     local player = game.get_player(event.player_index)
+    if not (player and player.valid) then
+        return
+    end
 
     local surface = event.surface_index
 
@@ -463,9 +476,9 @@ local function on_player_built_tile(event)
     local formatted = FancyTime.short_fancy_time(t)
     local str = '[' .. formatted .. '] '
     str = str .. player.name .. ' at X:'
-    str = str .. placed_tiles[1].position.x
+    str = str .. tile.position.x
     str = str .. ' Y:'
-    str = str .. placed_tiles[1].position.y
+    str = str .. tile.position.y
     str = str .. ' '
     str = str .. 'surface:' .. surface
     increment(this.landfill_history, str)
@@ -473,38 +486,21 @@ local function on_player_built_tile(event)
 end
 
 local function on_built_entity(event)
-    if not this.enabled then
+    local entity = event.entity
+    if not (entity and entity.valid and entity.type == 'entity-ghost') then
         return
     end
 
-    local created_entity = event.entity
-    if not created_entity.valid then
+    local player = get_restricted_player(event.player_index, true)
+    if not player then
         return
     end
 
-    if created_entity.type == 'entity-ghost' then
-        local player = game.get_player(event.player_index)
-        if not player or not player.valid then
-            return
-        end
-
-        if player.admin then
-            return
-        end
-
-        if Session.get_trusted_player(player) or this.do_not_check_trusted then
-            return
-        end
-
-        local playtime = player.online_time
-        if Session.get_session_player(player) then
-            playtime = player.online_time + Session.get_session_player(player)
-        end
-
-        if playtime < this.required_playtime then
-            created_entity.destroy()
-            player.print('You are not accustomed to building blueprints yet.', { color = { r = 0.22, g = 0.99, b = 0.99 } })
-        end
+    entity.destroy()
+    this.blueprint_warning_ticks = this.blueprint_warning_ticks or {}
+    if this.blueprint_warning_ticks[player.index] ~= event.tick then
+        this.blueprint_warning_ticks[player.index] = event.tick
+        player.print('You are not accustomed to building blueprints yet.', { color = { r = 0.22, g = 0.99, b = 0.99 } })
     end
 end
 
@@ -1195,11 +1191,10 @@ end
 
 local function on_marked_for_upgrade(event)
     local entity = event.entity
-    local player_index = event.player_index
-    local player = game.players[player_index]
     if not (entity and entity.valid) then
         return
     end
+    local player = event.player_index and game.get_player(event.player_index)
     if not (player and player.valid) then
         return
     end
@@ -1212,8 +1207,7 @@ local function on_marked_for_upgrade(event)
 end
 
 local function on_cancelled_deconstruction(event)
-    local player_index = event.player_index
-    if player_index then
+    if not this.enabled or event.player_index then
         return
     end
 
@@ -1223,11 +1217,16 @@ local function on_cancelled_deconstruction(event)
         return
     end
 
+    this.on_cancelled_deconstruction = this.on_cancelled_deconstruction or { tick = tick, count = 0 }
     local handler = this.on_cancelled_deconstruction
 
     if tick ~= handler.tick then
         handler.tick = tick
         handler.count = 0
+        handler.reordering = nil
+    end
+    if handler.reordering then
+        return
     end
 
     handler.count = handler.count + 1
@@ -1244,11 +1243,14 @@ local function on_cancelled_deconstruction(event)
         return
     end
 
-    if tick == handler.tick and handler.count >= this.max_count_decon then
+    if handler.count >= this.max_count_decon then
         return
     end
 
+    -- recursion prevention
+    handler.reordering = true
     entity.order_deconstruction(entity.force)
+    handler.reordering = nil
 end
 
 local function on_permission_group_edited(event)

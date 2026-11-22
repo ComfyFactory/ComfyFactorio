@@ -312,7 +312,7 @@ local function do_place_buildings(data)
                 e.quality = quality
                 e.create_build_effect_smoke = false
                 entity = surface.create_entity(e)
-                entity.custom_status = { diode = defines.entity_status_diode.green, label = 'Custom building that generates free resources.' }
+                entity.custom_status = { diode = defines.entity_status_diode.green, label = { 'mtn_v3_map.free_resource_building' } }
                 if entity and entity.valid then
                     -- force.add_chart_tag(
                     --     surface,
@@ -500,6 +500,13 @@ local function run_chart_update(data)
     end
 end
 
+local function chart_border(data)
+    if data.border_chart_area then
+        game.forces.player.chart(data.surface, data.border_chart_area)
+        data.border_chart_area = nil
+    end
+end
+
 local function map_gen_action(data)
     if data.relay_generation and data.relay_generation ~= RelayStation.surface_generation(data.surface) then return false end
     local state = data.y
@@ -545,6 +552,7 @@ local function map_gen_action(data)
         data.y = y - data.top_y
         return true
     elseif state == 32 then
+        chart_border(data)
         convert_generation_positions(data)
         do_place_tiles(data)
         data.y = 33
@@ -587,7 +595,40 @@ local function map_gen_action(data)
     end
 end
 
-local map_gen_action_token = Task.register(map_gen_action)
+local map_gen_action_token = Task.register(function (data)
+    if not data.starting_chunk then
+        return map_gen_action(data)
+    end
+end)
+
+function Public.prepare_starting_chunks(surface, position)
+    local radius = 1
+    surface.request_to_generate_chunks(position, radius)
+    surface.force_generate_chunk_requests()
+
+    local center_x = Math.floor(position.x / 32)
+    local center_y = Math.floor(position.y / 32)
+    local generation = RelayStation.surface_generation(surface)
+    local chunks = {}
+    for _, data in ipairs(Task.get_queue_tasks(map_gen_action_token)) do
+        if data.surface == surface and Math.abs(data.top_x / 32 - center_x) <= radius and Math.abs(data.top_y / 32 - center_y) <= radius then
+            data.starting_chunk = true
+            data.relay_generation = generation
+            chunks[#chunks + 1] = data
+        end
+    end
+    return chunks
+end
+
+function Public.advance_starting_chunks(chunks)
+    if not chunks or #chunks == 0 then
+        return true
+    end
+
+    local chunk = table.remove(chunks, 1)
+    while map_gen_action(chunk) do end
+    return #chunks == 0
+end
 
 --- Adds generation of a Chunk of the map to the queue
 -- @param event <table> the event table from on_chunk_generated
@@ -682,6 +723,7 @@ local function force_do_chunk(event)
         do_row(row, data, shape)
     end
 
+    chart_border(data)
     convert_generation_positions(data)
     do_place_tiles(data)
     do_place_hidden_tiles(data)

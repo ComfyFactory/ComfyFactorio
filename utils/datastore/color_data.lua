@@ -4,12 +4,55 @@ local Color = require 'utils.color_presets'
 local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Commands = require 'utils.commands'
+local PlayerSettings = require 'utils.gui.player_settings'
+local ColorPicker = require 'utils.gui.color_picker'
 
 local color_data_set = 'colors'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 
 local Public = {}
+
+local function apply_color(player, value)
+    if value then
+        player.color = value.color[1]
+        player.chat_color = value.chat[1]
+    end
+end
+
+local function save_color(player)
+    local value = { color = { player.color }, chat = { player.chat_color } }
+    set_data(color_data_set, player.name, value)
+    return value
+end
+
+local function color_text(color)
+    return string.format('%.3g, %.3g, %.3g, %.3g', color.r, color.g, color.b, color.a or 1)
+end
+
+PlayerSettings.register('colors', color_data_set, {
+    input_hint = 'colors_edit',
+    update_tooltip = 'colors_update_tooltip',
+    apply_tooltip = 'colors_apply_tooltip',
+    add_input_controls = function (controls, value, player, width, editable)
+        local color = value and value.color[1] or player.color
+        local chat = value and value.chat[1] or player.chat_color
+        ColorPicker.add(controls, width, editable, color, chat)
+    end,
+    read_input = ColorPicker.get_colors,
+    save = function (player, colors)
+        if not colors then
+            return
+        end
+        player.color = colors[1]
+        player.chat_color = colors[2]
+        return save_color(player)
+    end,
+    apply = apply_color,
+    describe = function (value)
+        return 'Player (RGBA)  ' .. color_text(value.color[1]) .. '\nChat (RGBA)  ' .. color_text(value.chat[1])
+    end
+})
 
 local fetch =
     Token.register(
@@ -20,10 +63,7 @@ local fetch =
             if not player then
                 return
             end
-            if value then
-                player.color = value.color[1]
-                player.chat_color = value.chat[1]
-            end
+            apply_color(player, value)
         end
     )
 
@@ -56,10 +96,7 @@ Commands.new('save-color', "Save your personal color preset so it's always the s
     :require_backend()
     :callback(
         function (player)
-            local color = player.color
-            local chat = player.chat_color
-
-            set_data(color_data_set, player.name, { color = { color }, chat = { chat } })
+            save_color(player)
             player.print('Your personal color has been saved to the datastore.', { color = Color.success })
         end
     )

@@ -12,7 +12,6 @@ local Math = require 'utils.math.math'
 
 local Public = {}
 local main_tile_name = 'black-refined-concrete'
-local module_tag = '[color=blue]Comfylatron:[/color] '
 
 local is_modded = script.active_mods['MtnFortressAddons'] or false
 
@@ -31,6 +30,18 @@ local messages =
     ' vehicle was a tasty biter treat.',
     ' vehicle lost their flux capacitator.',
     ' vehicle met a squishy end.'
+}
+
+local messages_locale =
+{
+    'mtn_v3_vehicle.vehicle_destroyed_1',
+    'mtn_v3_vehicle.vehicle_destroyed_2',
+    'mtn_v3_vehicle.vehicle_destroyed_3',
+    'mtn_v3_vehicle.vehicle_destroyed_4',
+    'mtn_v3_vehicle.vehicle_destroyed_5',
+    'mtn_v3_vehicle.vehicle_destroyed_6',
+    'mtn_v3_vehicle.vehicle_destroyed_7',
+    'mtn_v3_vehicle.vehicle_destroyed_8'
 }
 
 local valid_combinations =
@@ -94,7 +105,7 @@ local enable_car_to_be_mined =
             local owner_name = event.owner_name
             if entity and entity.valid then
                 entity.minable_flag = true
-                local msg = owner_name .. "'s vehicle is now minable!"
+                local msg = { 'mtn_v3_vehicle.vehicle_minable', owner_name }
                 local p =
                 {
                     position = entity.position
@@ -131,10 +142,6 @@ local function does_player_table_exist(player)
     end
 end
 
-local function upperCase(str)
-    return (str:gsub('^%l', string.upper))
-end
-
 local function render_owner_text(renders, player, entity, new_owner)
     local color =
     {
@@ -157,7 +164,7 @@ local function render_owner_text(renders, player, entity, new_owner)
         renders[new_owner.name] =
             rendering.draw_text
             {
-                text = '## - ' .. new_owner.name .. "'s " .. ce_name .. ' - ##',
+                text = { 'mtn_v3_vehicle.vehicle_owner', new_owner.name, ce_name },
                 surface = entity.surface,
                 target = { entity = entity, offset = { 0, -2.6 } },
                 color = color,
@@ -170,7 +177,7 @@ local function render_owner_text(renders, player, entity, new_owner)
         renders[player.name] =
             rendering.draw_text
             {
-                text = '## - ' .. player.name .. "'s " .. ce_name .. ' - ##',
+                text = { 'mtn_v3_vehicle.vehicle_owner', player.name, ce_name },
                 surface = entity.surface,
                 target = { entity = entity, offset = { 0, -2.6 } },
                 color = color,
@@ -321,9 +328,11 @@ end
 
 local function get_saved_entity(entity, index)
     if index and (index.name ~= entity.name or index.quality ~= entity.quality.name) then
-        local msg = string.format('The built entity is not the same as the saved one. Saved entity is: %s (%s). Built entity is: %s (%s)'
-        , upperCase(index.name), upperCase(index.quality), upperCase(entity.name), upperCase(entity.quality.name))
-        return false, msg
+        return false, {
+            'mtn_v3_vehicle.saved_vehicle_mismatch',
+            { 'entity-name.' .. index.name }, { 'quality-name.' .. index.quality },
+            entity.localised_name, entity.quality.localised_name
+        }
     end
     return true
 end
@@ -528,7 +537,7 @@ local function kick_non_trusted_players_from_surface(car)
                     else
                         WPT.teleport_player(player, game.forces.player.get_spawn_position(main_surface), main_surface)
                     end
-                    player.print('[IC] You were kicked out of ' .. owner .. "'s " .. car.entity.name .. ' because you were not in the trusted list.', { color = Color.warning })
+                    player.print({ 'mtn_v3_vehicle.you_were_kicked_out_of_s_because_you', owner, car.entity.name }, { color = Color.warning })
                 end
             end
         end
@@ -560,7 +569,7 @@ local function kick_player_from_surface(player, target)
                 else
                     WPT.teleport_player(target, main_surface.find_non_colliding_position('character', game.forces.player.get_spawn_position(main_surface), 3, 0), main_surface)
                 end
-                target.print('You were kicked out of ' .. player.name .. ' vehicle.', { color = Color.warning })
+                target.print({ 'mtn_v3_vehicle.you_were_kicked_out_of_vehicle', player.name }, { color = Color.warning })
             end
         end
     end
@@ -581,7 +590,7 @@ local function restore_surface(player, entity)
     if saved_surfaces[player.name] then
         local success, msg = get_saved_entity(ce, index)
         if not success then
-            player.print(module_tag .. msg, { color = Color.warning })
+            player.print(msg, { color = Color.warning })
             return true
         end
         replace_entity(cars, ce, index)
@@ -877,7 +886,7 @@ function Public.save_car(event)
     if car.owner == player.name then
         save_surface(entity, player)
         if not players[player.name].notified then
-            player.print(module_tag .. player.name .. ', the ' .. car.name .. ' surface has been saved.', { color = Color.success })
+            player.print({ 'mtn_v3_vehicle.the_surface_has_been_saved', player.name, car.name }, { color = Color.success })
             players[player.name].notified = true
         end
     else
@@ -900,8 +909,8 @@ function Public.save_car(event)
 
         log_err('Owner of this vehicle is: ' .. p.name)
         save_surface(entity, p)
-        game.print(module_tag .. player.name .. ' has looted ' .. p.name .. '´s car.')
-        player.print(module_tag .. 'This car was not yours to keep.', { color = Color.warning })
+        game.print({ 'mtn_v3_vehicle.has_looted_s_car', player.name, p.name })
+        player.print({ 'mtn_v3_vehicle.this_car_was_not_yours_to_keep' }, { color = Color.warning })
         local params =
         {
             player = player,
@@ -920,7 +929,7 @@ function Public.save_car(event)
             restore_surface(p, e)
         elseif p.can_insert({ name = car.name, count = 1, quality = car.quality }) then
             p.insert({ name = car.name, count = 1, health = health, quality = car.quality })
-            p.print(module_tag .. 'Your car was stolen from you - the gods foresaw this and granted you a new one.', { color = Color.info })
+            p.print({ 'mtn_v3_vehicle.your_car_was_stolen_from_you_the_gods' }, { color = Color.info })
         end
     end
 end
@@ -1038,7 +1047,7 @@ function Public.kill_car(entity)
 
     local gps_tag = string.format('[gps=%.1f,%.1f,%s]', entity_position.x, entity_position.y, entity_surface.name)
 
-    game.print(module_tag .. owner.name .. messages[Math.random(1, #messages)] .. ' ' .. gps_tag)
+    game.print({ messages_locale[Math.random(1, #messages_locale)], owner.name, gps_tag })
 
     Server.to_discord_bold(table.concat { '*** ', '[Personal Vehicle] ***', owner.name .. messages[Math.random(1, #messages)] .. ' ', gps_tag })
 
@@ -1194,7 +1203,7 @@ function Public.validate_owner(player, entity)
                     player.driving = false
                     if not player.admin then
                         if list.notify_on_driver_change == 'left' then
-                            p.print(player.name .. ' tried to drive your car.', { color = Color.warning })
+                            p.print({ 'mtn_v3_vehicle.tried_to_drive_your_car', player.name }, { color = Color.warning })
                         end
                         return
                     end
@@ -1365,22 +1374,22 @@ function Public.create_car(event)
 
     if car then
         if entity_type[car.name] and not mined then
-            return player.print(module_tag .. 'Multiple vehicles are not supported at the moment.', { color = Color.warning })
+            return player.print({ 'mtn_v3_vehicle.multiple_vehicles_are_not_supported_at_the_moment' }, { color = Color.warning })
         end
     end
 
     if string.sub(ce.surface.name, 0, #map_name) ~= map_name or (default_surface and Orient.is_interior(ce.position, 800)) then
-        return player.print(module_tag .. 'Multi-surface is not supported at the moment.', { color = Color.warning })
+        return player.print({ 'mtn_v3_vehicle.multi_surface_is_not_supported_at_the_moment' }, { color = Color.warning })
     end
 
-    local storage = get_trusted_system(player)
+    local data_set = get_trusted_system(player)
     local owner_car = get_owner_car_name(player)
 
     if owner_car and (valid_combinations[owner_car] and valid_combinations[owner_car][ce.name] or valid_quality_combinations[car.quality] and valid_quality_combinations[car.quality][ce.quality.name]) then
-        if storage.auto_upgrade and storage.auto_upgrade == 'left' then
+        if data_set.auto_upgrade and data_set.auto_upgrade == 'left' then
             upgrade_surface(player, ce)
             render_owner_text(renders, player, ce)
-            player.print(module_tag .. 'Your car-surface has been upgraded!', { color = Color.success })
+            player.print({ 'mtn_v3_vehicle.your_car_surface_has_been_upgraded' }, { color = Color.success })
             return
         end
     end
@@ -1528,7 +1537,7 @@ function Public.use_door_with_entity(player, door)
                     return
                 else
                     player.driving = false
-                    return player.print(module_tag .. 'You have not been approved by ' .. owner.name .. ' to enter their vehicle.', { color = Color.warning })
+                    return player.print({ 'mtn_v3_vehicle.you_have_not_been_approved_by_to_enter', owner.name }, { color = Color.warning })
                 end
             end
         else
@@ -1537,7 +1546,7 @@ function Public.use_door_with_entity(player, door)
                     return
                 else
                     player.driving = false
-                    return player.print(module_tag .. 'You have not been approved by ' .. owner.name .. ' to enter their vehicle.', { color = Color.warning })
+                    return player.print({ 'mtn_v3_vehicle.you_have_not_been_approved_by_to_enter', owner.name }, { color = Color.warning })
                 end
             end
         end
@@ -1681,7 +1690,7 @@ function Public.purchase_ignore_surface_conditions(player)
     end
 
     if player.get_item_count('coin') < price then
-        player.print('[IC] Not enough coins!', { color = Color.warning })
+        player.print({ 'mtn_v3_vehicle.not_enough_coins' }, { color = Color.warning })
         return false
     end
 
@@ -1693,7 +1702,7 @@ function Public.purchase_ignore_surface_conditions(player)
         surface.ignore_surface_conditions = true
     end
 
-    player.print('[IC] Surface conditions are now ignored for this vehicle.', { color = Color.success })
+    player.print({ 'mtn_v3_vehicle.surface_conditions_are_now_ignored_for_this_vehicle' }, { color = Color.success })
     return true
 end
 

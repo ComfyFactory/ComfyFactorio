@@ -187,9 +187,9 @@ local function notify_won_to_discord(buff)
 
     Public.save_round_mvps()
 
-    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord, nil, nil, nil, 'global')
-    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord, nil, nil, nil, 'global')
-    Alert.alert_all_players(100, 'Buff granted: ' .. buff.discord, nil, nil, nil, 'global')
+    Alert.alert_all_players(100, { 'mtn_v3_round.buff_granted', { '?', { 'mtn_v3_buffs.' .. buff.name .. '_description' }, buff.discord } }, nil, nil, nil, 'global')
+    Alert.alert_all_players(100, { 'mtn_v3_round.buff_granted', { '?', { 'mtn_v3_buffs.' .. buff.name .. '_description' }, buff.discord } }, nil, nil, nil, 'global')
+    Alert.alert_all_players(100, { 'mtn_v3_round.buff_granted', { '?', { 'mtn_v3_buffs.' .. buff.name .. '_description' }, buff.discord } }, nil, nil, nil, 'global')
 end
 
 local function clear_all_frames()
@@ -250,7 +250,7 @@ local function create_button(player)
                     type = 'sprite-button',
                     name = main_button_name,
                     sprite = 'utility/custom_tag_icon',
-                    tooltip = 'Has information about all objectives that needs to be completed',
+                    tooltip = { 'mtn_v3_round.objectives_tooltip' },
                     style = Gui.button_style
                 }
             )
@@ -269,7 +269,7 @@ local function create_button(player)
                     type = 'sprite-button',
                     name = main_button_name,
                     sprite = 'utility/custom_tag_icon',
-                    tooltip = 'Has information about all objectives that needs to be completed',
+                    tooltip = { 'mtn_v3_round.objectives_tooltip' },
                     style = Gui.button_style
                 }
             )
@@ -446,7 +446,7 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
     end
 
     local function format_force_buff_text(name, count)
-        local display_name = Stateful.buff_to_string[name] or name
+        local display_name = { '?', { 'mtn_v3_buffs.' .. name .. '_stat' }, Stateful.buff_to_string[name] or name }
         local flat_value_buffs =
                 {
                     xp_level = true,
@@ -457,33 +457,33 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
                 }
 
         if flat_value_buffs[name] then
-            return '[font=default-bold]' .. display_name .. ': ' .. count .. '[/font]\n'
+            return { 'mtn_v3_buffs.stat_value', display_name, count }
         else
-            return '[font=default-bold]' .. display_name .. ': ' .. (count * 100) .. '%[/font]\n'
+            return { 'mtn_v3_buffs.stat_percent', display_name, count * 100 }
         end
     end
 
     local function format_starting_item_text(item_name, count, quality)
         if quality then
-            return '[font=default-large] [item=' .. item_name .. ',quality=' .. quality .. '][/font]: [font=default-bold]' .. quality .. '[/font]\n'
+            return { '', '[font=default-large] [item=' .. item_name .. ',quality=' .. quality .. '][/font]: [font=default-bold]', { 'quality-name.' .. quality }, '[/font]\n' }
         end
         return '[font=default-large] [item=' .. item_name .. '][/font]: [font=default-bold]' .. count .. '[/font]\n'
     end
 
     local function format_custom_buff_text(name, count)
-        local text_to_place = count or 'Unlocked'
-        return '[font=default-bold]' .. name .. ': ' .. text_to_place .. '[/font]\n'
+        local text_to_place = count or { 'mtn_v3_buffs.unlocked' }
+        return { 'mtn_v3_buffs.stat_value', name, text_to_place }
     end
 
-    create_section_header(parent_pane, 'Starting items')
+    create_section_header(parent_pane, { 'mtn_v3_round.starting_items' })
     local starting_grid = parent_pane.add({ type = 'table', column_count = 8 })
     parent_pane.add({ type = 'line' })
 
-    create_section_header(parent_pane, 'Force Buffs')
+    create_section_header(parent_pane, { 'mtn_v3_round.force_buffs' })
     local force_grid = parent_pane.add({ type = 'table', column_count = 2 })
     parent_pane.add({ type = 'line' })
 
-    create_section_header(parent_pane, 'Custom Buffs')
+    create_section_header(parent_pane, { 'mtn_v3_round.custom_buffs' })
     local custom_grid = parent_pane.add({ type = 'table', column_count = 2 })
 
     if not (buffs_source and next(buffs_source) and buffs_collected_source and next(buffs_collected_source)) then
@@ -493,7 +493,7 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
     if buffs_collected_source.starting_items then
         for item_name, item_data in pairs(buffs_collected_source.starting_items) do
             local text = format_starting_item_text(item_name, item_data.count, item_data.quality)
-            create_input_element(starting_grid, 'label', text, nil, nil, item_data.discord, 30)
+            create_input_element(starting_grid, 'label', text, nil, nil, { '?', { 'mtn_v3_buffs.' .. (item_data.buff_type or '') .. '_description' }, item_data.discord or '' }, 30)
         end
     end
 
@@ -504,15 +504,15 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
 
         if type(buff_data.amount) ~= 'table' and buff_data.force then
             local text = format_force_buff_text(name, buff_data.count)
-            create_input_element(force_grid, 'label', text, nil, nil, buff_data.discord)
+            create_input_element(force_grid, 'label', text, nil, nil, { '?', { 'mtn_v3_buffs.' .. name .. '_description' }, buff_data.discord or '' })
         elseif not buff_data.force then
             if buff_data.name then
-                local text = format_custom_buff_text(buff_data.name, buff_data.count)
-                create_input_element(custom_grid, 'label', text, nil, nil, buff_data.discord)
+                local text = format_custom_buff_text({ '?', { 'mtn_v3_buffs.' .. name }, buff_data.name }, buff_data.count)
+                create_input_element(custom_grid, 'label', text, nil, nil, { '?', { 'mtn_v3_buffs.' .. name .. '_description' }, buff_data.discord or '' })
             else
                 for _, buff in pairs(buff_data) do
-                    local text = format_custom_buff_text(pretty_format(buff.name), buff.count)
-                    create_input_element(custom_grid, 'label', text, nil, nil, buff.discord)
+                    local text = format_custom_buff_text(Stateful.localised_buff_name(buff, pretty_format(buff.name)), buff.count)
+                    create_input_element(custom_grid, 'label', text, nil, nil, { '?', { 'mtn_v3_buffs.' .. buff.name .. '_description' }, buff.discord or '' })
                 end
             end
         end
@@ -522,7 +522,7 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
 end
 
 local function buff_window(player)
-    local buff_frame_name, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', buffs_window_name, nil, close_buffs_window_name, 'Buffs gathered')
+    local buff_frame_name, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', buffs_window_name, nil, close_buffs_window_name, { 'mtn_v3_round.buffs_gathered' })
     if not buff_frame_name then
         return
     end
@@ -535,7 +535,7 @@ local function buff_window(player)
     local inside_table_style = inside_table.style
     inside_table_style.width = 530
 
-    local info_text = inside_table.add({ type = 'label', caption = 'All the buffs that have been gathered throughout the runs!' })
+    local info_text = inside_table.add({ type = 'label', caption = { 'mtn_v3_round.round_buffs_description' } })
     local info_text_style = info_text.style
     info_text_style.font = 'heading-2'
     info_text_style.padding = 0
@@ -558,7 +558,7 @@ local function buff_window(player)
 end
 
 local function permanent_buff_window(player)
-    local main_player_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', permanent_buff_window_name, nil, close_permanent_buffs_window_name, 'Permanent Buffs')
+    local main_player_frame, inside_table = Gui.add_main_frame_with_toolbar(player, 'center', permanent_buff_window_name, nil, close_permanent_buffs_window_name, { 'mtn_v3_round.permanent_buffs' })
     if not main_player_frame then
         return
     end
@@ -571,7 +571,7 @@ local function permanent_buff_window(player)
     local inside_table_style = inside_table.style
     inside_table_style.width = 530
 
-    local info_text = inside_table.add({ type = 'label', caption = 'All the buffs that have been gathered throughout the seasons!' })
+    local info_text = inside_table.add({ type = 'label', caption = { 'mtn_v3_round.season_buffs_description' } })
     local info_text_style = info_text.style
     info_text_style.font = 'heading-2'
     info_text_style.padding = 0
@@ -580,7 +580,7 @@ local function permanent_buff_window(player)
     info_text_style.vertical_align = 'bottom'
     info_text_style.font_color = { 0.55, 0.55, 0.99 }
 
-    local info_extra_text = inside_table.add({ type = 'label', caption = 'These buffs are permanent and will remain throughout the seasons.' })
+    local info_extra_text = inside_table.add({ type = 'label', caption = { 'mtn_v3_round.permanent_buffs_description' } })
     local info_extra_text_style = info_extra_text.style
     info_extra_text_style.font = 'heading-2'
     info_extra_text_style.padding = 0
@@ -727,7 +727,7 @@ local function boss_frame(player, alert)
         game_won_left_flow.add({ type = 'label', caption = { 'stateful.game_won' } })
     end
 
-    local close = frame.add({ type = 'button', name = close_button, caption = 'Close' })
+    local close = frame.add({ type = 'button', name = close_button, caption = { 'mtn_v3_round.close' } })
     close.style.horizontally_stretchable = true
     Gui.set_data(frame, data)
 end
@@ -890,10 +890,10 @@ main_frame = function (player)
         warn_timer_flow_right.style.horizontal_align = 'right'
         warn_timer_flow_right.style.horizontally_stretchable = true
 
-        local time_left = Math.floor(stateful.collection.gather_time / 60 / 60) .. 'm'
+        local time_left = { 'mtn_v3_round.minutes', Math.floor(stateful.collection.gather_time / 60 / 60) }
 
         if stateful.collection.gather_time / 60 / 60 <= 1 then
-            time_left = Math.floor(stateful.collection.gather_time / 60) .. 's'
+            time_left = { 'mtn_v3_round.seconds', Math.floor(stateful.collection.gather_time / 60) }
         end
 
         data.gather_time_label = warn_timer_flow_right.add({ type = 'label', caption = time_left })
@@ -932,7 +932,7 @@ main_frame = function (player)
     frame.add({ type = 'line' })
     spacer(frame)
 
-    local close = frame.add({ type = 'button', name = close_button, caption = 'Close' })
+    local close = frame.add({ type = 'button', name = close_button, caption = { 'mtn_v3_round.close' } })
     close.style.horizontally_stretchable = true
     Gui.set_data(outer_frame, data)
 end
@@ -998,7 +998,7 @@ local function update_data()
                                     frame.sprite = 'utility/check_mark_green'
                                 else
                                     frame.number = supplies_data.count
-                                    frame.tooltip = 'Item: ' .. supplies_data.name .. ' (' .. supplies_data.quality .. ')' .. '\nCrafted: ' .. count .. '\nNeeded: ' .. (supplies_data.total or 0)
+                                    frame.tooltip = { 'mtn_v3_round.crafting_progress', { 'item-name.' .. supplies_data.name }, { 'quality-name.' .. supplies_data.quality }, count, supplies_data.total or 0 }
                                 end
                                 if items_done == 3 then
                                     if data.supply_completed and data.supply_completed.valid then
@@ -1007,7 +1007,7 @@ local function update_data()
                                 end
                             else
                                 frame.number = supplies_data.count
-                                frame.tooltip = 'Item: ' .. supplies_data.name .. ' (' .. supplies_data.quality .. ')' .. '\nCrafted: 0\nNeeded: ' .. (supplies_data.total or 0)
+                                frame.tooltip = { 'mtn_v3_round.crafting_progress', { 'item-name.' .. supplies_data.name }, { 'quality-name.' .. supplies_data.quality }, 0, supplies_data.total or 0 }
                             end
                         end
                     end
@@ -1034,20 +1034,20 @@ local function update_data()
                         else
                             frame.number = single_item.count
                             frame.tooltip = count .. ' / ' .. single_item.total
-                            frame.tooltip = 'Item: ' .. single_item.name .. ' (' .. single_item.quality .. ')' .. '\nCrafted: ' .. count .. '\nNeeded: ' .. (single_item.total or 0)
+                            frame.tooltip = { 'mtn_v3_round.crafting_progress', { 'item-name.' .. single_item.name }, { 'quality-name.' .. single_item.quality }, count, single_item.total or 0 }
                         end
                     else
                         frame.number = single_item.count
-                        frame.tooltip = 'Item: ' .. single_item.name .. ' (' .. single_item.quality .. ')' .. '\nCrafted: 0\nNeeded: ' .. (single_item.total or 0)
+                        frame.tooltip = { 'mtn_v3_round.crafting_progress', { 'item-name.' .. single_item.name }, { 'quality-name.' .. single_item.quality }, 0, single_item.total or 0 }
                     end
                 end
             end
 
             if stateful.collection.gather_time and data.gather_time_label and data.gather_time_label.valid then
-                local time_left = Math.floor(stateful.collection.gather_time / 60 / 60) .. 'm'
+                local time_left = { 'mtn_v3_round.minutes', Math.floor(stateful.collection.gather_time / 60 / 60) }
 
                 if stateful.collection.gather_time / 60 / 60 <= 1 then
-                    time_left = Math.floor(stateful.collection.gather_time / 60) .. 's'
+                    time_left = { 'mtn_v3_round.seconds', Math.floor(stateful.collection.gather_time / 60) }
                 end
                 data.gather_time_label.caption = time_left
             end
@@ -1146,7 +1146,7 @@ local function update_raw()
                 stateful.objectives_time_spent.randomized_zone = tick
                 play_achievement_unlocked()
                 local reward = Public.reward_goal_completion()
-                Alert.alert_all_players(100, 'Objective: [color=blue]Breach zone[/color] has been completed! ' .. reward .. '!', nil, nil, nil, 'global')
+                Alert.alert_all_players(100, { 'mtn_v3_round.objective_breach_zone_has_been_completed', reward }, nil, nil, nil, 'global')
                 Server.to_discord_embed('Objective: **Breach zone** has been completed! ' .. reward .. '!')
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
             end
@@ -1172,7 +1172,7 @@ local function update_raw()
                         stateful.objectives_completed.supplies = true
                         stateful.objectives_time_spent.supplies = tick
                         local reward = Public.reward_goal_completion()
-                        Alert.alert_all_players(100, 'Objective: [color=blue]Produce items[/color] has been completed! ' .. reward .. '!', nil, nil, nil, 'global')
+                        Alert.alert_all_players(100, { 'mtn_v3_round.objective_produce_items_has_been_completed', reward }, nil, nil, nil, 'global')
                         Server.to_discord_embed('Objective: **Produce items** has been completed! ' .. reward .. '!')
                         play_achievement_unlocked()
                         stateful.objectives_completed_count = stateful.objectives_completed_count + 1
@@ -1201,7 +1201,7 @@ local function update_raw()
                     stateful.objectives_time_spent.single_item = tick
                     play_achievement_unlocked()
                     local reward = Public.reward_goal_completion()
-                    Alert.alert_all_players(100, 'Objective: [color=blue]Produce item[/color] has been completed! ' .. reward .. '!', nil, nil, nil, 'global')
+                    Alert.alert_all_players(100, { 'mtn_v3_round.objective_produce_item_has_been_completed', reward }, nil, nil, nil, 'global')
                     Server.to_discord_embed('Objective: **Produce item** has been completed! ' .. reward .. '!')
                     stateful.objectives_completed_count = stateful.objectives_completed_count + 1
                 end
@@ -1255,7 +1255,7 @@ local function update_raw()
         if collection.survive_for and collection.survive_for < 0 then
             collection.survive_for = 0
             if collection.game_won and not collection.game_won_notified then
-                game.print('[color=yellow][Mtn v3][/color] Game won!')
+                game.print({ 'mtn_v3_round.game_won' })
                 collection.game_won = true
                 stateful.collection.gather_time = 0
                 stateful.collection.gather_time_timer = 0
@@ -1283,14 +1283,14 @@ local function update_raw()
                     Public.set('darkness', false)
                     Server.output_script_data('Darkness is now disabled')
                     surface.brightness_visual_weights = { a = 1, b = 0, g = 0, r = 0 }
-                    local message = '[color=yellow]Darkness:[/color] The nights seem to be lighter!'
+                    local message = { 'mtn_v3_round.darkness_the_nights_seem_to_be_lighter' }
                     Alert.alert_all_players(100, message, nil, nil, nil, 'global')
                 else
                     Server.output_script_data('Darkness is now enabled')
                     surface.brightness_visual_weights = { a = 1, b = 0.7, g = 0.7, r = 0.7 }
                     Public.set_stateful_settings('darkness', true)
                     Public.set('darkness', true)
-                    local message = '[color=yellow]Darkness:[/color] The nights seem to be darker!'
+                    local message = { 'mtn_v3_round.darkness_the_nights_seem_to_be_darker' }
                     Alert.alert_all_players(100, message, nil, nil, nil, 'global')
                 end
 
@@ -1354,9 +1354,9 @@ local function update_raw()
             if completed and completed == true and not stateful.objectives_completed[objective_name] then
                 stateful.objectives_completed[objective_name] = true
                 stateful.objectives_time_spent[objective_name] = tick
-                local reward = Public.reward_goal_completion()
-                Alert.alert_all_players(100, 'Objective: [color=blue]' .. objective.discord .. '[/color] has been completed! ' .. reward .. '!', nil, nil, nil, 'global')
-                Server.to_discord_embed('Objective: **' .. objective.discord .. '** has been completed! ' .. reward .. '!')
+                local reward, discord_reward = Public.reward_goal_completion()
+                Alert.alert_all_players(100, { 'mtn_v3_round.objective_has_been_completed', { '?', { 'mtn_v3_round.objective_' .. objective_name }, objective.discord }, reward or '' }, nil, nil, nil, 'global')
+                Server.to_discord_embed('Objective: **' .. objective.discord .. '** has been completed! ' .. (discord_reward or '') .. '!')
                 play_achievement_unlocked()
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
             end
@@ -1367,8 +1367,8 @@ local function update_raw()
         stateful.objectives_completed.boss_time = true
 
         Server.to_discord_embed('All objectives has been completed! Take your time to prepare for the final push!')
-        Alert.alert_all_players(300, 'All objectives has been completed!', nil, nil, nil, 'global')
-        Alert.alert_all_players(300, 'Take your time to prepare for the final push!', nil, nil, nil, 'global')
+        Alert.alert_all_players(300, { 'mtn_v3_round.all_objectives_has_been_completed' }, nil, nil, nil, 'global')
+        Alert.alert_all_players(300, { 'mtn_v3_round.take_your_time_to_prepare_for_the_final' }, nil, nil, nil, 'global')
 
         stateful.collection.gather_time = tick + (10 * 3600)
         stateful.collection.gather_time_timer = tick + (10 * 3600)
@@ -1385,7 +1385,7 @@ local function update_raw()
         Collapse.set_reverse_position(Orient.world(0, reverse_prog))
         Collapse.set_reverse_direction()
         Collapse.reverse_start_now(true)
-        Alert.alert_all_players(200, 'Reverse collapse has been initiated!', nil, nil, nil, 'global')
+        Alert.alert_all_players(200, { 'mtn_v3_round.reverse_collapse_has_been_initiated' }, nil, nil, nil, 'global')
         Server.to_discord_embed('Reverse collapse has been initiated!')
         -- Public.stateful_blueprints.blueprint()
         WD.nuke_wave_gui()

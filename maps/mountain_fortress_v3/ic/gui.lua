@@ -743,10 +743,10 @@ Gui.on_click(
         if frame and frame.valid then
             if player_list.allow_anyone == 'right' then
                 player_list.allow_anyone = 'left'
-                player.print('[IC] Everyone is allowed to enter your car!', { color = Color.warning })
+                player.print({ 'mtn_v3_vehicle.everyone_is_allowed_to_enter_your_car' }, { color = Color.warning })
             else
                 player_list.allow_anyone = 'right'
-                player.print('[IC] Only trusted players are allowed to enter your car!', { color = Color.warning })
+                player.print({ 'mtn_v3_vehicle.only_trusted_players_are_allowed_to_enter_your' }, { color = Color.warning })
                 local car = Functions.get_owner_car_object(player)
                 if car then
                     Functions.kick_non_trusted_players_from_surface(car)
@@ -780,10 +780,10 @@ Gui.on_click(
         if frame and frame.valid then
             if player_list.auto_upgrade == 'right' then
                 player_list.auto_upgrade = 'left'
-                player.print('[IC] Auto upgrade is now enabled!', { color = Color.success })
+                player.print({ 'mtn_v3_vehicle.auto_upgrade_is_now_enabled' }, { color = Color.success })
             else
                 player_list.auto_upgrade = 'right'
-                player.print('[IC] Auto upgrade is now disabled!', { color = Color.warning })
+                player.print({ 'mtn_v3_vehicle.auto_upgrade_is_now_disabled' }, { color = Color.warning })
             end
 
             if player.gui.screen[main_frame_name] then
@@ -813,12 +813,12 @@ Gui.on_click(
         if frame and frame.valid then
             if player_list.notify_on_driver_change == 'right' then
                 player_list.notify_on_driver_change = 'left'
-                player.print('[IC] You will now be notified whenever someone not trusted tries to drive your car!',
+                player.print({ 'mtn_v3_vehicle.you_will_now_be_notified_whenever_someone_not' },
                     { color = Color.success })
             else
                 player_list.notify_on_driver_change = 'right'
                 player.print(
-                    '[IC] No notifications will be sent to you when someone not trusted tries to drive your car.',
+                    { 'mtn_v3_vehicle.no_notifications_will_be_sent_to_you_when' },
                     { color = Color.warning })
             end
 
@@ -857,17 +857,17 @@ Gui.on_click(
 
                 local player_to_add = game.get_player(fetched_name)
                 if not player_to_add or not player_to_add.valid then
-                    return player.print('[IC] Target player was not valid.', { color = Color.warning })
+                    return player.print({ 'mtn_v3_vehicle.target_player_was_not_valid' }, { color = Color.warning })
                 end
 
                 local name = player_to_add.name
 
                 if not player_list.players[name] then
-                    player.print('[IC] ' .. name .. ' was added to your vehicle.', { color = Color.info })
-                    player_to_add.print(player.name .. ' added you to their vehicle. You may now enter it.', { color = Color.info })
+                    player.print({ 'mtn_v3_vehicle.was_added_to_your_vehicle', name }, { color = Color.info })
+                    player_to_add.print({ 'mtn_v3_vehicle.added_you_to_their_vehicle_you_may_now', player.name }, { color = Color.info })
                     increment(player_list.players, name)
                 else
-                    return player.print('[IC] Target player is already trusted.', { color = Color.warning })
+                    return player.print({ 'mtn_v3_vehicle.target_player_is_already_trusted' }, { color = Color.warning })
                 end
 
                 remove_main_frame(event.element)
@@ -904,26 +904,26 @@ Gui.on_click(
                     return
                 end
                 if type(fetched_name) == 'table' and fetched_name[1] == 'ic.select_player' then
-                    return player.print('[IC] Target player was not valid.', { color = Color.warning })
+                    return player.print({ 'mtn_v3_vehicle.target_player_was_not_valid' }, { color = Color.warning })
                 end
 
                 local player_to_add = game.get_player(fetched_name)
                 if not player_to_add or not player_to_add.valid then
-                    return player.print('[IC] Target player was not valid.', { color = Color.warning })
+                    return player.print({ 'mtn_v3_vehicle.target_player_was_not_valid' }, { color = Color.warning })
                 end
                 local name = player_to_add.name
 
                 local does_player_have_a_car = Functions.does_player_table_exist(player_to_add)
                 if does_player_have_a_car then
-                    return player.print('[IC] ' .. name .. ' already has a vehicle.', { color = Color.warning })
+                    return player.print({ 'mtn_v3_vehicle.already_has_a_vehicle', name }, { color = Color.warning })
                 end
 
                 local success = transfer_player_table(player, player_to_add)
                 if not success then
-                    player.print('[IC] Please try again.', { color = Color.warning })
+                    player.print({ 'mtn_v3_vehicle.please_try_again' }, { color = Color.warning })
                 else
-                    player.print('[IC] You have successfully transferred your car to ' .. name, { color = Color.success })
-                    player_to_add.print('[IC] You have become the rightfully owner of ' .. player.name .. "'s car!",
+                    player.print({ 'mtn_v3_vehicle.you_have_successfully_transferred_your_car_to', name }, { color = Color.success })
+                    player_to_add.print({ 'mtn_v3_vehicle.you_have_become_the_rightfully_owner_of_s', player.name },
                         { color = Color.success })
                 end
 
@@ -977,7 +977,7 @@ Gui.on_click(
                 first_warning = true
             }
 
-            player.print('[IC] ARE YOU SURE? This action is irreversible!', { color = Color.warning })
+            player.print({ 'mtn_v3_vehicle.are_you_sure_this_action_is_irreversible' }, { color = Color.warning })
             Task.set_timeout_in_ticks(600, clear_misc_settings, { player_name = player.name })
             return
         end
@@ -985,7 +985,7 @@ Gui.on_click(
         if not misc_settings[player.name].final_warning then
             misc_settings[player.name].final_warning = true
             player.print(
-                '[IC] WARNING! WARNING! WARNING! Pressing the save button ONE MORE TIME will DELETE your surface. This action is irreversible!',
+                { 'mtn_v3_vehicle.warning_warning_warning_pressing_the_save_button_one' },
                 { color = Color.warning })
             Task.set_timeout_in_ticks(600, clear_misc_settings, { player_name = player.name })
             return
@@ -1002,7 +1002,7 @@ Gui.on_click(
                 local position = entity.position
                 local suc, count = Functions.kill_car_but_save_surface(entity)
                 if suc then
-                    game.print('[IC] ' .. player.name .. ' has destroyed their surface!', { color = Color.warning })
+                    game.print({ 'mtn_v3_vehicle.has_destroyed_their_surface', player.name }, { color = Color.warning })
                     Discord.send_notification(
                         {
                             title = "Surface destroyed",
@@ -1022,8 +1022,7 @@ Gui.on_click(
                     misc_settings[player.name] = nil
                 else
                     player.print(
-                        '[IC] Entities are still on the surface. Please remove any entities and retry this operation. Found ' ..
-                        count .. ' entities!', { color = Color.warning })
+                        { 'mtn_v3_vehicle.entities_are_still_on_the_surface_please_remove', count }, { color = Color.warning })
                 end
             end
 
@@ -1062,13 +1061,13 @@ Gui.on_click(
             if player_name ~= player.name then
                 local target = game.get_player(player_name)
                 if not target or not target.valid then
-                    player.print('[IC] Target player was not valid.', { color = Color.warning })
+                    player.print({ 'mtn_v3_vehicle.target_player_was_not_valid' }, { color = Color.warning })
                     return
                 end
                 local name = target.name
 
                 if player_list.players[name] and player_list.players[name].trusted then
-                    player.print('[IC] ' .. name .. ' was removed from your vehicle.', { color = Color.info })
+                    player.print({ 'mtn_v3_vehicle.was_removed_from_your_vehicle', name }, { color = Color.info })
                     player_list.players[name].trusted = false
                     player_list.players[name].drive = false
                     Event.raise(
@@ -1079,7 +1078,7 @@ Gui.on_click(
                         }
                     )
                 elseif player_list.players[name] and not player_list.players[name].trusted then
-                    player.print('[IC] ' .. name .. ' was added to your vehicle.', { color = Color.info })
+                    player.print({ 'mtn_v3_vehicle.was_added_to_your_vehicle', name }, { color = Color.info })
                     player_list.players[name].trusted = true
                 end
             end
@@ -1118,16 +1117,16 @@ Gui.on_click(
             if player_name ~= player.name then
                 local target = game.get_player(player_name)
                 if not target or not target.valid then
-                    player.print('[IC] Target player was not valid.', { color = Color.warning })
+                    player.print({ 'mtn_v3_vehicle.target_player_was_not_valid' }, { color = Color.warning })
                     return
                 end
                 local name = target.name
 
                 if player_list.players[name] and player_list.players[name].drive then
-                    player.print('[IC] ' .. name .. ' is forbidden to drive your vehicle.', { color = Color.warning })
+                    player.print({ 'mtn_v3_vehicle.is_forbidden_to_drive_your_vehicle', name }, { color = Color.warning })
                     player_list.players[name].drive = false
                 elseif player_list.players[name] and not player_list.players[name].drive then
-                    player.print('[IC] ' .. name .. ' can now drive your vehicle.', { color = Color.info })
+                    player.print({ 'mtn_v3_vehicle.can_now_drive_your_vehicle', name }, { color = Color.info })
                     player_list.players[name].drive = true
                 end
             end
@@ -1166,13 +1165,13 @@ Gui.on_click(
             if player_name ~= player.name then
                 local target = game.get_player(player_name)
                 if not target or not target.valid then
-                    player.print('[IC] Target player was not valid.', { color = Color.warning })
+                    player.print({ 'mtn_v3_vehicle.target_player_was_not_valid' }, { color = Color.warning })
                     return
                 end
                 local name = target.name
 
                 if player_list.players[name] then
-                    player.print('[IC] ' .. name .. ' was removed from your vehicle.', { color = Color.info })
+                    player.print({ 'mtn_v3_vehicle.was_removed_from_your_vehicle', name }, { color = Color.info })
                     decrement(player_list.players, name)
                     Event.raise(
                         ICT.events.on_player_kicked_from_surface,
@@ -1317,17 +1316,17 @@ Gui.on_selection_state_changed(
         end
 
         if type(fetched_name) == 'table' and fetched_name[1] == 'ic.select_player' then
-            return player.print('[IC] Target player was not valid.', { color = Color.warning })
+            return player.print({ 'mtn_v3_vehicle.target_player_was_not_valid' }, { color = Color.warning })
         end
 
         if fetched_name == 'Select Player' then
-            player.print('[IC] No target player selected.', { color = Color.warning })
+            player.print({ 'mtn_v3_vehicle.no_target_player_selected' }, { color = Color.warning })
             player_gui_data[player.name] = nil
             return
         end
 
         if fetched_name == player.name then
-            player.print('[IC] You can´t select yourself.', { color = Color.warning })
+            player.print({ 'mtn_v3_vehicle.you_can_t_select_yourself' }, { color = Color.warning })
             player_gui_data[player.name] = nil
             return
         end

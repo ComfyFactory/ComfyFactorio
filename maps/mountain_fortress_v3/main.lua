@@ -128,13 +128,11 @@ local has_the_game_ended = function ()
         this.game_reset_tick = this.game_reset_tick - 30
         if this.game_reset_tick % 600 == 0 then
             if this.game_reset_tick > 0 then
-                local cause_msg
+                local cause_msg = { 'mtn_v3_reset.soft-reset' }
                 if this.restart then
-                    cause_msg = 'restart'
+                    cause_msg = { 'mtn_v3_reset.restart' }
                 elseif this.shutdown then
-                    cause_msg = 'shutdown'
-                elseif this.soft_reset then
-                    cause_msg = 'soft-reset'
+                    cause_msg = { 'mtn_v3_reset.shutdown' }
                 end
 
                 game.print(({ 'main.reset_in', cause_msg, this.game_reset_tick / 60 }), { color = { r = 0.22, g = 0.88, b = 0.22 } })
@@ -511,21 +509,18 @@ Config.register_scenario_module(
                     switch_state = 'right'
                 end
                 Config.add_switch(frame, switch_state, 'alert_notify_xp_toggle', { 'alert.notify_xp_label' }, { 'alert.notify_xp_tooltip' })
-                frame.add({ type = 'line' })
 
                 switch_state = 'left'
                 if prefs.notify_coins == false then
                     switch_state = 'right'
                 end
                 Config.add_switch(frame, switch_state, 'alert_notify_coins_toggle', { 'alert.notify_coins_label' }, { 'alert.notify_coins_tooltip' })
-                frame.add({ type = 'line' })
 
                 switch_state = 'left'
                 if prefs.notify_vmg == false then
                     switch_state = 'right'
                 end
                 Config.add_switch(frame, switch_state, 'alert_notify_vmg_toggle', { 'alert.notify_vmg_label' }, { 'alert.notify_vmg_tooltip' })
-                frame.add({ type = 'line' })
             end),
         handlers =
         {
@@ -533,30 +528,30 @@ Config.register_scenario_module(
                 function (player, event)
                     if event.element.switch_state == 'left' then
                         Alert.set_notify_pref(player, 'notify_xp', true)
-                        player.print('XP notifications enabled.', { color = Color.green })
+                        player.print({ 'mtn_v3_map.xp_notifications_enabled' }, { color = Color.green })
                     else
                         Alert.set_notify_pref(player, 'notify_xp', false)
-                        player.print('XP notifications disabled.', { color = Color.red })
+                        player.print({ 'mtn_v3_map.xp_notifications_disabled' }, { color = Color.red })
                     end
                 end),
             ['alert_notify_coins_toggle'] = Config.register_token(
                 function (player, event)
                     if event.element.switch_state == 'left' then
                         Alert.set_notify_pref(player, 'notify_coins', true)
-                        player.print('Coin notifications enabled.', { color = Color.green })
+                        player.print({ 'mtn_v3_map.coin_notifications_enabled' }, { color = Color.green })
                     else
                         Alert.set_notify_pref(player, 'notify_coins', false)
-                        player.print('Coin notifications disabled.', { color = Color.red })
+                        player.print({ 'mtn_v3_map.coin_notifications_disabled' }, { color = Color.red })
                     end
                 end),
             ['alert_notify_vmg_toggle'] = Config.register_token(
                 function (player, event)
                     if event.element.switch_state == 'left' then
                         Alert.set_notify_pref(player, 'notify_vmg', true)
-                        player.print('VMG notifications enabled.', { color = Color.green })
+                        player.print({ 'mtn_v3_map.vmg_notifications_enabled' }, { color = Color.green })
                     else
                         Alert.set_notify_pref(player, 'notify_vmg', false)
-                        player.print('VMG notifications disabled.', { color = Color.red })
+                        player.print({ 'mtn_v3_map.vmg_notifications_disabled' }, { color = Color.red })
                     end
                 end)
         }

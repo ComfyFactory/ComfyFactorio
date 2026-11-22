@@ -1,4 +1,5 @@
 local Gui = require 'utils.gui'
+local Style = require 'utils.gui_style'
 local Event = require 'utils.event'
 local Token = require 'utils.token'
 
@@ -27,43 +28,37 @@ end
 local function score_list(data)
     local frame = data.frame
     frame.clear()
-    frame.style.padding = 4
-    frame.style.margin = 0
 
-    local line = frame.add { type = 'line' }
-    line.style.top_margin = 4
-    line.style.bottom_margin = 4
-
-    local scroll_pane = frame.add { type = 'scroll-pane', name = 'scroll_pane', direction = 'vertical', horizontal_scroll_policy = 'never', vertical_scroll_policy = 'auto' }
-    scroll_pane.style.minimal_width = 780
-    scroll_pane.style.maximal_height = 360
-    scroll_pane.style.minimal_height = 360
-
-    local t = scroll_pane.add { type = 'table', column_count = 3 }
+    local t = frame.add { type = 'table', column_count = 3 }
+    t.style.horizontal_spacing = Style.spacing.xs
+    local width = math.max(250, Style.content_width(data.player, frame))
+    local widths = Style.column_widths(width - 36 - Style.spacing.xs, { 1, 1 }, Style.spacing.xs)
 
     local label = t.add({ type = 'label', caption = '#' })
-    label.style.minimal_width = 30
-    label.style.font = 'heading-2'
+    label.style.width = 36
+    Style.table_heading(label)
     label.style.padding = 3
     local player_label = t.add({ type = 'label', caption = 'Player:' })
-    player_label.style.minimal_width = 160
-    player_label.style.font = 'heading-2'
+    player_label.style.width = widths[1]
+    Style.table_heading(player_label)
     player_label.style.padding = 3
     local desc_label = t.add({ type = 'label', caption = storage.custom_highscore.description })
-    desc_label.style.minimal_width = 160
-    desc_label.style.font = 'heading-2'
+    desc_label.style.width = widths[2]
+    Style.table_heading(desc_label)
     desc_label.style.padding = 3
 
-    for key, score in pairs(get_sorted_score()) do
+    for key, score in ipairs(get_sorted_score()) do
         local key_label = t.add({ type = 'label', caption = key })
-        key_label.style.font = 'heading-2'
+        key_label.style.font = 'default'
         key_label.style.padding = 1
-        local scoreName_label = t.add({ type = 'label', caption = score.name })
-        scoreName_label.style.font = 'heading-2'
+        local scoreName_label = t.add({ type = 'label', caption = score.name, tooltip = score.name })
+        scoreName_label.style.font = 'default'
         scoreName_label.style.padding = 1
+        scoreName_label.style.width = widths[1]
+        scoreName_label.style.single_line = true
         scoreName_label.style.font_color = game.players[score.name].chat_color
         local points_label = t.add({ type = 'label', caption = score.points })
-        points_label.style.font = 'heading-2'
+        points_label.style.font = 'default'
         points_label.style.padding = 1
     end
 end

@@ -41,8 +41,6 @@ Config.register_scenario_module(
                     switch_state = 'left'
                 end
                 Config.add_switch(frame, switch_state, 'vacant_toggle', 'Clear Vacant Players', 'Toggles offline players dropping their inventories on spawn.')
-
-                frame.add({ type = 'line' })
             end),
         handlers =
         {

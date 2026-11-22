@@ -38,7 +38,6 @@ Config.register_scenario_module(
                     switch_state = 'left'
                 end
                 Config.add_switch(frame, switch_state, 'ore_drop', 'Ore Drop', 'Toggle to select if you want the ore to drop to ground or inserted into your inventory.')
-                frame.add({ type = 'line' })
             end),
         handlers =
         {

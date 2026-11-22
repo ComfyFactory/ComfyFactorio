@@ -3,6 +3,7 @@ local Public = require 'maps.mountain_fortress_v3.table'
 local Global = require 'utils.global'
 local Server = require 'utils.server'
 local Gui = require 'utils.gui'
+local Style = require 'utils.gui_style'
 local Task = require 'utils.task_token'
 local SpamProtection = require 'utils.spam_protection'
 
@@ -29,18 +30,19 @@ Global.register(
 )
 
 local function sort_list(method, column_name, score_list)
-    local comparators =
-    {
-        ['ascending'] = function (a, b)
-            return a[column_name] < b[column_name]
-        end,
-        ['descending'] = function (a, b)
-            return a[column_name] > b[column_name]
+    table.sort(score_list, function (a, b)
+        local first, second = a[column_name], b[column_name]
+        if first == nil then
+            return false
         end
-    }
-
-    table.sort(score_list, comparators[method])
-    return score_list
+        if second == nil then
+            return true
+        end
+        if method == 'descending' then
+            return first > second
+        end
+        return first < second
+    end)
 end
 
 local function write_additional_stats(key)
@@ -141,32 +143,26 @@ end
 
 local sorting_symbol = { ascending = '▲', descending = '▼' }
 
-local function get_score_list()
-    local seasons = this.seasons
-    local score_list = {}
-    if not seasons then
-        score_list[#score_list + 1] =
-        {
-            season_index = 'N/A',
-            rounds_survived = 'N/A',
-            best_streak = 'N/A',
-            buffs_granted = 'N/A',
-            started = 'N/A',
-            ended = 'N/A'
-        }
-        return score_list
+local function season_date(value)
+    if type(value) == 'string' and value ~= '' and value ~= 'N/A' then
+        return value
     end
+end
+
+local function get_score_list()
+    local seasons = this.seasons or {}
+    local score_list = {}
 
     for _, data in pairs(seasons) do
         insert(
             score_list,
             {
-                season_index = data.season_index,
-                rounds_survived = data.rounds_survived,
-                best_streak = data.best_streak or 'N/A',
-                buffs_granted = data.buffs_granted,
-                started = data.started,
-                ended = data.ended
+                season_index = tonumber(data.season_index),
+                rounds_survived = tonumber(data.rounds_survived),
+                best_streak = tonumber(data.best_streak),
+                buffs_granted = tonumber(data.buffs_granted),
+                started = season_date(data.started),
+                ended = season_date(data.ended)
             }
         )
     end
@@ -178,34 +174,30 @@ local function show_score(data)
     local frame = data.frame
     frame.clear()
 
-    local flow = frame.add { type = 'flow' }
-    local sFlow = flow.style
-    sFlow.horizontally_stretchable = true
-    sFlow.horizontal_align = 'center'
-    sFlow.vertical_align = 'center'
-
-    -- Score per player
     local t = frame.add { type = 'table', column_count = 6 }
+    t.style.horizontal_spacing = Style.spacing.xs
 
     -- Score headers
     local headers =
     {
-        { column = 'season_index', name = 'season_index', caption = 'Season', tooltip = 'Season index.' },
-        { column = 'rounds_survived', name = 'rounds_survived', caption = 'Rounds survived', tooltip = 'Rounds survived in the season.' },
-        { column = 'best_streak', name = 'best_streak', caption = 'Best Streak', tooltip = 'Best streak of rounds survived.' },
-        { column = 'buffs_granted', name = 'buffs_granted', caption = 'Buffs granted', tooltip = 'Buffs granted to players which is gained each round won.' },
-        { column = 'started', name = 'started', caption = 'Start date', tooltip = 'Start date of the season.' },
-        { column = 'ended', name = 'ended', caption = 'Stop date', tooltip = 'Stop date of the season.' }
+        { column = 'season_index', name = 'season_index', caption = { 'mtn_v3_highscore.season' }, tooltip = { 'mtn_v3_highscore.season_index' } },
+        { column = 'rounds_survived', name = 'rounds_survived', caption = { 'mtn_v3_highscore.rounds_survived' }, tooltip = { 'mtn_v3_highscore.rounds_survived_in_the_season' } },
+        { column = 'best_streak', name = 'best_streak', caption = { 'mtn_v3_highscore.best_streak' }, tooltip = { 'mtn_v3_highscore.best_streak_of_rounds_survived' } },
+        { column = 'buffs_granted', name = 'buffs_granted', caption = { 'mtn_v3_highscore.buffs_granted' }, tooltip = { 'mtn_v3_highscore.buffs_granted_to_players_which_is_gained_each' } },
+        { column = 'started', name = 'started', caption = { 'mtn_v3_highscore.start_date' }, tooltip = { 'mtn_v3_highscore.start_date_of_the_season' } },
+        { column = 'ended', name = 'ended', caption = { 'mtn_v3_highscore.stop_date' }, tooltip = { 'mtn_v3_highscore.stop_date_of_the_season' } }
     }
 
+    local width = math.max(480, Style.content_width(player, frame))
+    local widths = Style.column_widths(width, { 70, 122, 94, 110, 110, 110 }, Style.spacing.xs)
     local sorting_pref = this.sort_by[player.index]
-    for _, header in ipairs(headers) do
+    for index, header in ipairs(headers) do
         local cap = header.caption
 
         -- Add sorting symbol if any
         if header.column and sorting_pref.column == header.column then
             local symbol = sorting_symbol[sorting_pref.method]
-            cap = symbol .. cap
+            cap = { '', symbol, ' ', cap }
         end
 
         -- Header
@@ -217,63 +209,33 @@ local function show_score(data)
                 tooltip = header.tooltip or '',
                 name = header.name
             }
-        label.style.font = 'default-listbox'
-        label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 } -- yellow
-        label.style.minimal_width = 125
+        Style.table_heading(label)
+        label.style.width = widths[index]
         label.style.horizontal_align = 'center'
     end
 
     -- Score list
     local score_list = get_score_list()
+    sort_list(sorting_pref.method, sorting_pref.column, score_list)
 
-    score_list = sort_list(sorting_pref.method, sorting_pref.column, score_list)
-
-    -- New pane for scores (while keeping headers at same position)
-    local scroll_pane =
-        frame.add(
-            {
-                type = 'scroll-pane',
-                name = 'score_scroll_pane',
-                direction = 'vertical',
-                horizontal_scroll_policy = 'never',
-                vertical_scroll_policy = 'auto'
-            }
-        )
-    scroll_pane.style.maximal_height = 400
-    scroll_pane.style.minimal_width = 700
-
-    t = scroll_pane.add { type = 'table', column_count = 6 }
-
-    -- Score entries
-    local i = 0
-    for _, score_data in pairs(score_list) do
-        i = i + 1
-
-        local lines =
-        {
-            { caption = score_data.season_index },
-            { caption = score_data.rounds_survived },
-            { caption = score_data.best_streak or 'N/A' },
-            { caption = score_data.buffs_granted },
-            { caption = score_data.started },
-            { caption = score_data.ended }
-        }
-        local default_color = { r = 0.9, g = 0.9, b = 0.9 }
-
-        for _, column in ipairs(lines) do
+    for _, score_data in ipairs(score_list) do
+        for index, header in ipairs(headers) do
+            local caption = score_data[header.column] or 'N/A'
             local label =
                 t.add
                 {
                     type = 'label',
-                    caption = column.caption,
-                    color = column.color or default_color
+                    caption = caption,
+                    tooltip = tostring(caption)
                 }
             label.style.font = 'default'
-            label.style.minimal_width = 125
-            label.style.maximal_width = 150
+            label.style.font_color = Style.colors.text
+            label.style.bottom_padding = Style.spacing.xs
+            label.style.width = widths[index]
+            label.style.single_line = true
             label.style.horizontal_align = 'center'
-        end -- foreach column
-    end -- foreach entry
+        end
+    end
 end
 
 local show_score_token = Task.register(show_score)
@@ -360,7 +322,7 @@ Server.on_data_set_changed(
     end
 )
 
-Gui.add_tab_to_gui({ name = module_name, caption = 'Seasons', id = show_score_token, admin = false, only_server_sided = true })
+Gui.add_tab_to_gui({ name = module_name, caption = 'Seasons', localised_caption = { 'mtn_v3_highscore.seasons' }, id = show_score_token, admin = false, only_server_sided = true })
 
 Gui.on_click(
     module_name,

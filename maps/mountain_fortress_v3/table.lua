@@ -144,7 +144,7 @@ Config.register_scenario_module(
         admin_only = true,
         gui_rows = Config.register_token(
             function (_, frame)
-                local label = frame.add({ type = 'label', caption = 'Mountain Fortress Settings' })
+                local label = frame.add({ type = 'label', caption = { 'mtn_v3_gui.mountain_fortress_settings' } })
                 label.style.font = 'default-bold'
                 label.style.padding = 0
                 label.style.left_padding = 10
@@ -157,88 +157,73 @@ Config.register_scenario_module(
                 if Fullness.is_enabled() then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'disable_fullness', 'Inventory Fullness', 'On = Enables inventory fullness.\nOff = Disables inventory fullness.')
-
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'disable_fullness', { 'mtn_v3_gui.disable_fullness' }, { 'mtn_v3_gui.disable_fullness_tooltip' })
 
                 switch_state = 'right'
                 if this.offline_players_enabled then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'offline_players', 'Offline Players', 'On = Enables offline player inventory drop.\nOff = Disables offline player inventory drop.')
-
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'offline_players', { 'mtn_v3_gui.offline_players' }, { 'mtn_v3_gui.offline_players_tooltip' })
 
                 switch_state = 'right'
                 if this.collapse_grace then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'collapse_grace', 'Collapse', 'On = Enables collapse after wave 200.\nOff = Disables collapse - you must breach the first zone for collapse to occur.')
-
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'collapse_grace', { 'mtn_v3_gui.collapse_grace' }, { 'mtn_v3_gui.collapse_grace_tooltip' })
 
                 switch_state = 'right'
                 if this.spill_items_to_surface then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'spill_items_to_surface', 'Spill Ores', 'On = Enables ore spillage to surface when mining.\nOff = Disables ore spillage to surface when mining.')
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'spill_items_to_surface', { 'mtn_v3_gui.spill_items_to_surface' }, { 'mtn_v3_gui.spill_items_to_surface_tooltip' })
 
                 switch_state = 'right'
                 if this.void_or_tile then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'void_or_tile', 'Void Tiles', 'On = Changes the tiles to out-of-map.\nOff = Changes the tiles to lab-dark-2')
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'void_or_tile', { 'mtn_v3_gui.void_or_tile' }, { 'mtn_v3_gui.void_or_tile_tooltip' })
 
                 switch_state = 'right'
                 if this.trusted_only_car_tanks then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'trusted_only_car_tanks', 'Market Purchase', 'On = Allows only trusted people to buy car/tanks.\nOff = Allows everyone to buy car/tanks.')
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'trusted_only_car_tanks', { 'mtn_v3_gui.trusted_only_car_tanks' }, { 'mtn_v3_gui.trusted_only_car_tanks_tooltip' })
 
                 switch_state = 'right'
                 if this.allow_decon then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'allow_decon', 'Deconstruct IC', 'On = Allows decon on car/tanks/trains.\nOff = Disables decon on car/tanks/trains.')
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'allow_decon', { 'mtn_v3_gui.allow_decon' }, { 'mtn_v3_gui.allow_decon_tooltip' })
 
                 switch_state = 'right'
                 if this.allow_decon_main_surface then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'allow_decon_main_surface', 'Deconstruct Surface', 'On = Allows decon on main surface.\nOff = Disables decon on main surface.')
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'allow_decon_main_surface', { 'mtn_v3_gui.allow_decon_main_surface' }, { 'mtn_v3_gui.allow_decon_main_surface_tooltip' })
 
                 switch_state = 'right'
                 if this.christmas_mode then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'christmas_mode', 'Wintery Mode', 'On = Enables wintery mode.\nOff = Disables wintery mode.')
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'christmas_mode', { 'mtn_v3_gui.christmas_mode' }, { 'mtn_v3_gui.christmas_mode_tooltip' })
 
                 switch_state = 'right'
                 if not this.adjusted_zones.disable_terrain then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'disable_terrain', 'Disable Terrain', 'On = Enable terrain gen.\nOff = Disables terrain gen.')
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'disable_terrain', { 'mtn_v3_gui.disable_terrain' }, { 'mtn_v3_gui.disable_terrain_tooltip' })
 
                 switch_state = 'right'
                 if this.block_non_trusted_trigger_collapse then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'toggle_trusted_collapse', 'Non-trusted Collapse', 'On = Allow non-trusted to trigger collapse.\nOff = Disallow non-trusted to trigger collapse.')
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'toggle_trusted_collapse', { 'mtn_v3_gui.toggle_trusted_collapse' }, { 'mtn_v3_gui.toggle_trusted_collapse_tooltip' })
 
                 switch_state = 'right'
                 if this.clear_train_area_biters ~= false then
                     switch_state = 'left'
                 end
-                Config.add_switch(frame, switch_state, 'clear_train_area_biters', 'Train Area Biters', 'On = Removes biters in the train/wagon interior area.\nOff = Allows biters inside the train area.')
-                frame.add({ type = 'line' })
+                Config.add_switch(frame, switch_state, 'clear_train_area_biters', { 'mtn_v3_gui.clear_train_area_biters' }, { 'mtn_v3_gui.clear_train_area_biters_tooltip' })
             end),
         handlers =
         {
@@ -246,60 +231,60 @@ Config.register_scenario_module(
                 function (_, event)
                     if event.element.switch_state == 'left' then
                         Fullness.enable_fullness(true)
-                        Config.get_actor(event, '[Fullness]', 'has enabled the inventory fullness function.')
+                        Config.get_actor(event, '[Fullness]', 'has enabled the inventory fullness function.', false, 'mtn_v3_gui.disable_fullness_enabled')
                     else
                         Fullness.enable_fullness(false)
-                        Config.get_actor(event, '[Fullness]', 'has disabled the inventory fullness function.')
+                        Config.get_actor(event, '[Fullness]', 'has disabled the inventory fullness function.', false, 'mtn_v3_gui.disable_fullness_disabled')
                     end
                 end),
             ['offline_players'] = Config.register_token(
                 function (_, event)
                     if event.element.switch_state == 'left' then
                         this.offline_players_enabled = true
-                        Config.get_actor(event, '[Offline Players]', 'has enabled the offline player function.')
+                        Config.get_actor(event, '[Offline Players]', 'has enabled the offline player function.', false, 'mtn_v3_gui.offline_players_enabled')
                     else
                         this.offline_players_enabled = false
-                        Config.get_actor(event, '[Offline Players]', 'has disabled the offline player function.')
+                        Config.get_actor(event, '[Offline Players]', 'has disabled the offline player function.', false, 'mtn_v3_gui.offline_players_disabled')
                     end
                 end),
             ['collapse_grace'] = Config.register_token(
                 function (_, event)
                     if event.element.switch_state == 'left' then
                         this.collapse_grace = true
-                        Config.get_actor(event, '[Collapse]', 'has enabled the collapse function. Collapse will occur after wave 100!')
+                        Config.get_actor(event, '[Collapse]', 'has enabled the collapse function. Collapse will occur after wave 100!', false, 'mtn_v3_gui.collapse_grace_enabled')
                     else
                         this.collapse_grace = false
-                        Config.get_actor(event, '[Collapse]', 'has disabled the collapse function. You must breach the first zone for collapse to occur!')
+                        Config.get_actor(event, '[Collapse]', 'has disabled the collapse function. You must breach the first zone for collapse to occur!', false, 'mtn_v3_gui.collapse_grace_disabled')
                     end
                 end),
             ['spill_items_to_surface'] = Config.register_token(
                 function (_, event)
                     if event.element.switch_state == 'left' then
                         this.spill_items_to_surface = true
-                        Config.get_actor(event, '[Item Spill]', 'has enabled the ore spillage function. Ores now drop to surface when mining.')
+                        Config.get_actor(event, '[Item Spill]', 'has enabled the ore spillage function. Ores now drop to surface when mining.', false, 'mtn_v3_gui.spill_items_to_surface_enabled')
                     else
                         this.spill_items_to_surface = false
-                        Config.get_actor(event, '[Item Spill]', 'has disabled the item spillage function. Ores no longer drop to surface when mining.')
+                        Config.get_actor(event, '[Item Spill]', 'has disabled the item spillage function. Ores no longer drop to surface when mining.', false, 'mtn_v3_gui.spill_items_to_surface_disabled')
                     end
                 end),
             ['void_or_tile'] = Config.register_token(
                 function (_, event)
                     if event.element.switch_state == 'left' then
                         this.void_or_tile = 'out-of-map'
-                        Config.get_actor(event, '[Void]', 'has changes the tiles of the zones to: out-of-map (void)')
+                        Config.get_actor(event, '[Void]', 'has changes the tiles of the zones to: out-of-map (void)', false, 'mtn_v3_gui.void_or_tile_enabled')
                     else
                         this.void_or_tile = 'lab-dark-2'
-                        Config.get_actor(event, '[Void]', 'has changes the tiles of the zones to: dark-tiles (flammable tiles)')
+                        Config.get_actor(event, '[Void]', 'has changes the tiles of the zones to: dark-tiles (flammable tiles)', false, 'mtn_v3_gui.void_or_tile_disabled')
                     end
                 end),
             ['trusted_only_car_tanks'] = Config.register_token(
                 function (_, event)
                     if event.element.switch_state == 'left' then
                         this.trusted_only_car_tanks = true
-                        Config.get_actor(event, '[Market]', 'has changed so only trusted people can buy car/tanks.', true)
+                        Config.get_actor(event, '[Market]', 'has changed so only trusted people can buy car/tanks.', true, 'mtn_v3_gui.trusted_only_car_tanks_enabled')
                     else
                         this.trusted_only_car_tanks = false
-                        Config.get_actor(event, '[Market]', 'has changed so everybody can buy car/tanks.', true)
+                        Config.get_actor(event, '[Market]', 'has changed so everybody can buy car/tanks.', true, 'mtn_v3_gui.trusted_only_car_tanks_disabled')
                     end
                 end),
             ['allow_decon'] = Config.register_token(
@@ -310,14 +295,14 @@ Config.register_scenario_module(
                             limited_group.set_allows_action(defines.input_action.deconstruct, true)
                         end
                         this.allow_decon = true
-                        Config.get_actor(event, '[Decon]', 'has allowed decon on car/tanks/trains.', true)
+                        Config.get_actor(event, '[Decon]', 'has allowed decon on car/tanks/trains.', true, 'mtn_v3_gui.allow_decon_enabled')
                     else
                         local limited_group = game.permissions.get_group('limited')
                         if limited_group then
                             limited_group.set_allows_action(defines.input_action.deconstruct, false)
                         end
                         this.allow_decon = false
-                        Config.get_actor(event, '[Decon]', 'has disabled decon on car/tanks/trains.', true)
+                        Config.get_actor(event, '[Decon]', 'has disabled decon on car/tanks/trains.', true, 'mtn_v3_gui.allow_decon_disabled')
                     end
                 end),
             ['allow_decon_main_surface'] = Config.register_token(
@@ -336,7 +321,7 @@ Config.register_scenario_module(
                             main_surface_group.set_allows_action(defines.input_action.deconstruct, true)
                         end
                         this.allow_decon_main_surface = true
-                        Config.get_actor(event, '[Decon]', 'has allowed decon on main surface.', true)
+                        Config.get_actor(event, '[Decon]', 'has allowed decon on main surface.', true, 'mtn_v3_gui.allow_decon_main_surface_enabled')
                     else
                         local near_locomotive_group = game.permissions.get_group('near_locomotive')
                         if near_locomotive_group then
@@ -351,47 +336,47 @@ Config.register_scenario_module(
                             main_surface_group.set_allows_action(defines.input_action.deconstruct, false)
                         end
                         this.allow_decon_main_surface = false
-                        Config.get_actor(event, '[Decon]', 'has disabled decon on main surface.', true)
+                        Config.get_actor(event, '[Decon]', 'has disabled decon on main surface.', true, 'mtn_v3_gui.allow_decon_main_surface_disabled')
                     end
                 end),
             ['christmas_mode'] = Config.register_token(
                 function (_, event)
                     if event.element.switch_state == 'left' then
                         this.winter_mode = true
-                        Config.get_actor(event, '[WinteryMode]', 'has enabled wintery mode.', true)
+                        Config.get_actor(event, '[WinteryMode]', 'has enabled wintery mode.', true, 'mtn_v3_gui.christmas_mode_enabled')
                     else
                         this.winter_mode = false
-                        Config.get_actor(event, '[WinteryMode]', 'has disabled wintery mode.', true)
+                        Config.get_actor(event, '[WinteryMode]', 'has disabled wintery mode.', true, 'mtn_v3_gui.christmas_mode_disabled')
                     end
                 end),
             ['disable_terrain'] = Config.register_token(
                 function (_, event)
                     if event.element.switch_state == 'left' then
                         this.adjusted_zones.disable_terrain = false
-                        Config.get_actor(event, '[TerrainGen]', 'has enabled terrain gen.', true)
+                        Config.get_actor(event, '[TerrainGen]', 'has enabled terrain gen.', true, 'mtn_v3_gui.disable_terrain_enabled')
                     else
                         this.adjusted_zones.disable_terrain = true
-                        Config.get_actor(event, '[TerrainGen]', 'has disabled terrain gen.', true)
+                        Config.get_actor(event, '[TerrainGen]', 'has disabled terrain gen.', true, 'mtn_v3_gui.disable_terrain_disabled')
                     end
                 end),
             ['toggle_trusted_collapse'] = Config.register_token(
                 function (_, event)
                     if event.element.switch_state == 'left' then
                         this.block_non_trusted_trigger_collapse = true
-                        Config.get_actor(event, '[Collapse]', 'has enabled that non-trusted players can trigger collapse.', true)
+                        Config.get_actor(event, '[Collapse]', 'has enabled that non-trusted players can trigger collapse.', true, 'mtn_v3_gui.toggle_trusted_collapse_enabled')
                     else
                         this.block_non_trusted_trigger_collapse = false
-                        Config.get_actor(event, '[Collapse]', 'has disabled that non-trusted players can trigger collapse.', true)
+                        Config.get_actor(event, '[Collapse]', 'has disabled that non-trusted players can trigger collapse.', true, 'mtn_v3_gui.toggle_trusted_collapse_disabled')
                     end
                 end),
             ['clear_train_area_biters'] = Config.register_token(
                 function (_, event)
                     if event.element.switch_state == 'left' then
                         this.clear_train_area_biters = true
-                        Config.get_actor(event, '[Train Area]', 'has enabled train area biter clearing.', true)
+                        Config.get_actor(event, '[Train Area]', 'has enabled train area biter clearing.', true, 'mtn_v3_gui.clear_train_area_biters_enabled')
                     else
                         this.clear_train_area_biters = false
-                        Config.get_actor(event, '[Train Area]', 'has disabled train area biter clearing.', true)
+                        Config.get_actor(event, '[Train Area]', 'has disabled train area biter clearing.', true, 'mtn_v3_gui.clear_train_area_biters_disabled')
                     end
                 end)
         }
@@ -472,6 +457,10 @@ Public.pickaxe_upgrades =
     'Densinium',
     'Luminite'
 }
+
+function Public.localised_pickaxe_name(name)
+    return { 'mtn_v3_pickaxe.' .. name:lower() }
+end
 
 Public.locomotive_warning_blueprint = [[
 0eNqNU1tu2zAQvMt+U4GfSa2rBAFBSWt5Eb5AUk5VQwfoQXqxnqRLOqFbxGirL2ofM7PD5QU6PaEPZBO0F6De2Qjt8wUijVbpHLPKILSAGvsUqG/QYhjnhjswHFWPsAggO+BXaNfLiwC0iRLhFab8zNJOpsPABeIDLhMlZVPTO9ORVckFEOBd5F5nMy/jNbvVw17A/H5iIm5LwWnZ4UmdiXu4MLIwKrp/PzP5TdWyLOKTmE0V44MbgzJGdRqb6FG94j0128N/qOkp9BMlybmhdh8pxCRvnqbZF0+LIKg6EjH/eHIxwRW9WATtKv8Yr0KxqYWf33+UgneqnDDI13G1oLDIs+KLlRSlp9SfoD0qHVFATM5Lr9VMdpTRTXaINUfMFybDqiQNhdW6hOX8yAbCnzwZpFP9qzw7PWX5fLk1ZtyQBxq163hiAUpr9ya907M/OTtXymuvfDdS4yC7ufpUapbcjOHTlCfGK4nbaDnkrDTK19i11WCMasyC4N4ibOsFRMNCm7rqrBf/vgdr3oM7iDvx72dzB/fLByoP3U3HIwb24lu2dlW//MTeKJT39bwWa7ER6xeOUULDfLfnzOayVwV+/7g57A6H/dN2v909bZblF9amX4U=]]
@@ -613,6 +602,7 @@ function Public.reset_main_table()
     {
         enabled = true
     }
+    this.breach_position_checks = {}
     this.pickaxe_speed_per_purchase = 0.09
     this.breached_wall = 1
     this.pre_final_battle = false
@@ -785,6 +775,7 @@ function Public.reset_main_table()
     }
 
     this.cleared_biters = nil
+    this.final_battle_cleanup = nil
 
     this.buff_selection =
     {

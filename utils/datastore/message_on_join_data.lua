@@ -4,12 +4,32 @@ local Server = require 'utils.server'
 local Event = require 'utils.event'
 local Commands = require 'utils.commands'
 local Supporters = require 'utils.datastore.supporters'
+local PlayerSettings = require 'utils.gui.player_settings'
 
 local message_dataset = 'regulars'
 local set_data = Server.set_data
 local try_get_data = Server.try_get_data
 
 local Public = {}
+
+local function can_edit(player)
+    return player.admin or Supporters.is_supporter(player.name)
+end
+
+local function save_message(player, message)
+    if message == '' or message == 'Name' or #message > 64 then
+        return nil, { 'gui.player_settings_invalid_message' }
+    end
+    local value = { msg = message, color = player.color }
+    set_data(message_dataset, player.name, value)
+    return value
+end
+
+PlayerSettings.register('join_message', message_dataset, {
+    can_edit = can_edit,
+    input = function (value) return value and value.msg or '' end,
+    save = save_message
+})
 
 local fetch =
     Token.register(
@@ -46,22 +66,18 @@ Commands.new('set-join-message', 'Sets your custom join message. "{name}" will b
     :add_parameter('message', false, 'string')
     :callback(
         function (player, message)
-            if not Supporters.is_supporter(player.name) and not player.admin then
+            if not can_edit(player) then
                 player.print('To get access to this command, please become a supporter.')
                 player.print('You can become a supporter by donating either via ko-fi or patreon.')
                 return false
             end
 
-            if message == '' or message == 'Name' then
-                player.print('You did not specify a message.')
+            local value, err = save_message(player, message)
+            if not value then
+                player.print(err)
                 return false
             end
-            if string.len(message) > 64 then
-                player.print('Message is too long. 64 characters maximum.')
-                return false
-            end
-            set_data(message_dataset, player.name, { msg = message, color = player.color })
-            player.print('You message has been saved.')
+            player.print('Your message has been saved.')
         end
     )
 
@@ -69,7 +85,7 @@ Commands.new('remove-join-message', 'Removes your custom join message.')
     :require_backend()
     :callback(
         function (player)
-            if not Supporters.is_supporter(player.name) and not player.admin then
+            if not can_edit(player) then
                 player.print('To get access to this command, please become a supporter.')
                 player.print('You can become a supporter by donating either via ko-fi or patreon.')
                 return false

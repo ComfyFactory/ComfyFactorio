@@ -4,6 +4,7 @@
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Gui = require 'utils.gui'
+local Style = require 'utils.gui_style'
 local SpamProtection = require 'utils.spam_protection'
 local Token = require 'utils.token'
 local format_number = require 'util'.format_number
@@ -158,34 +159,15 @@ local function get_total_biter_killcount(force)
 end
 
 local function add_global_stats(frame, player)
-    local flow = frame.add { type = 'flow', direction = 'horizontal' }
-    flow.style.vertical_align = 'center'
-    flow.style.horizontal_spacing = 8
-
-    local l = flow.add { type = 'label', caption = 'Rockets launched:' }
-    l.style.font = 'heading-2'
-    l.style.font_color = { r = 175, g = 75, b = 255 }
-
-    local rockets_label = flow.add { type = 'label', caption = format_number(player.force.rockets_launched, true) }
-    rockets_label.style.font = 'default-semibold'
-    rockets_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
-    rockets_label.style.minimal_width = 48
-    rockets_label.style.right_margin = 24
-
-    local bugs_dead_label = flow.add { type = 'label', caption = 'Dead bugs:' }
-    bugs_dead_label.style.font = 'heading-2'
-    bugs_dead_label.style.font_color = { r = 0.90, g = 0.3, b = 0.3 }
-
-    local killcount_label = flow.add { type = 'label', caption = format_number(tonumber(get_total_biter_killcount(player.force)), true) }
-    killcount_label.style.font = 'default-semibold'
-    killcount_label.style.font_color = { r = 0.9, g = 0.9, b = 0.9 }
+    local flow = Style.toolbar(frame)
+    Style.metric(flow, 'Rockets launched', format_number(player.force.rockets_launched, true))
+    Style.metric(flow, 'Enemies killed', format_number(get_total_biter_killcount(player.force), true))
 end
 
 local function show_score(data)
     local player = data.player
     local frame = data.frame
     frame.clear()
-    frame.style.padding = 8
 
     Public.init_player_table(player)
 
@@ -198,19 +180,25 @@ local function show_score(data)
     line.style.bottom_margin = 2
 
     -- Score headers
+    local content_width = math.max(480, Style.content_width(player, frame))
+    local player_width = content_width >= 730 and 214 or 128
     local headers =
     {
-        { name = 'score_player', caption = 'Player', width = 140, align = 'left' },
-        { column = 'killscore', name = 'score_killscore', caption = 'Killscore', width = 96, align = 'center' },
-        { column = 'deaths', name = 'score_deaths', caption = 'Deaths', width = 68, align = 'center' },
-        { column = 'built_entities', name = 'score_built_entities', caption = 'Built structures', width = 136, align = 'center' },
-        { column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities', width = 124, align = 'center' },
-        { column = 'crafted_items', name = 'score_crafted_items', caption = 'Crafted items', width = 116, align = 'center' }
+        { name = 'score_player', caption = 'Player', width = player_width, align = 'left' },
+        { column = 'killscore', name = 'score_killscore', caption = 'Killscore', width = 84, align = 'center' },
+        { column = 'deaths', name = 'score_deaths', caption = 'Deaths', width = 56, align = 'center' },
+        { column = 'built_entities', name = 'score_built_entities', caption = 'Built structures', width = 118, align = 'center' },
+        { column = 'mined_entities', name = 'score_mined_entities', caption = 'Mined entities', width = 108, align = 'center' },
+        { column = 'crafted_items', name = 'score_crafted_items', caption = 'Crafted items', width = 104, align = 'center' }
     }
 
-    local content_width = 0
-    for i = 1, #headers do
-        content_width = content_width + headers[i].width
+    local preferred_widths = {}
+    for i, header in ipairs(headers) do
+        preferred_widths[i] = header.width
+    end
+    local widths = Style.column_widths(content_width, preferred_widths)
+    for i, header in ipairs(headers) do
+        header.width = widths[i]
     end
 
     local sorting_pref = this.sort_by[player.name]
@@ -240,12 +228,12 @@ local function show_score(data)
             {
                 type = 'label',
                 caption = cap,
+                tooltip = header.caption,
                 name = header.name
             }
-        label.style.font = 'heading-2'
-        label.style.font_color = { r = 0.98, g = 0.66, b = 0.22 } -- yellow
-        label.style.minimal_width = header.width
-        label.style.maximal_width = header.width
+        Style.table_heading(label)
+        label.style.width = header.width
+        label.style.single_line = true
         label.style.horizontal_align = header.align
         label.style.top_padding = 0
         label.style.bottom_padding = 0
@@ -264,26 +252,9 @@ local function show_score(data)
         score_list = get_sorted_list(sorting_pref.method, sorting_pref.column, score_list)
     end
 
-    -- New pane for scores (while keeping headers at same position)
-    local scroll_pane =
-        frame.add(
-            {
-                type = 'scroll-pane',
-                name = 'score_scroll_pane',
-                direction = 'vertical',
-                horizontal_scroll_policy = 'never',
-                vertical_scroll_policy = 'auto'
-            }
-        )
-    scroll_pane.style.maximal_height = 280
-    scroll_pane.style.minimal_width = content_width
-    scroll_pane.style.padding = 0
-
-    local score_flow = scroll_pane.add { type = 'flow', direction = 'vertical' }
+    local score_flow = frame.add { type = 'flow', direction = 'vertical' }
     score_flow.style.minimal_width = content_width
     score_flow.style.vertical_spacing = 0
-
-    local default_color = { r = 0.9, g = 0.9, b = 0.9 }
 
     -- Score entries
     for i = 1, #score_list do
@@ -318,14 +289,14 @@ local function show_score(data)
                 {
                     type = 'label',
                     caption = column.caption,
-                    color = column.color or default_color
+                    tooltip = column.caption
                 }
-            label.style.font = 'default-semibold'
-            label.style.minimal_width = header.width
-            label.style.maximal_width = header.width
+            label.style.font_color = column.color or Style.colors.text
+            label.style.width = header.width
+            label.style.single_line = true
             label.style.horizontal_align = header.align
-            label.style.top_padding = 0
-            label.style.bottom_padding = 0
+            label.style.top_padding = 3
+            label.style.bottom_padding = 3
         end
     end
 end

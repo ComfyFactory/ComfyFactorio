@@ -5796,6 +5796,18 @@ local function process_bits(p, data, adjusted_zones)
     end
 end
 
+local function collect_border_chart_area(data, position)
+    local area = data.border_chart_area
+    if area then
+        area[1][1] = Math.min(area[1][1], position.x - 32)
+        area[1][2] = Math.min(area[1][2], position.y - 32)
+        area[2][1] = Math.max(area[2][1], position.x + 32)
+        area[2][2] = Math.max(area[2][2], position.y + 32)
+    else
+        data.border_chart_area = { { position.x - 32, position.y - 32 }, { position.x + 32, position.y + 32 } }
+    end
+end
+
 local function border_chunk(p, data)
     local entities = data.entities
     local decoratives = data.decoratives
@@ -5831,7 +5843,7 @@ local function border_chunk(p, data)
         entities[#entities + 1] = { name = trees[Math.random(1, #trees)], position = pos }
     end
 
-    game.forces.player.chart(surface, { { world_pos.x - 32, world_pos.y - 32 }, { world_pos.x + 32, world_pos.y + 32 } })
+    collect_border_chart_area(data, world_pos)
 
     -- local noise = seasonal_noise('cave_rivers_2', pos, data.seed, 0)
     -- local index = Math.floor(noise * 32) % 10 + 1
@@ -5926,7 +5938,7 @@ local function biter_chunk(p, data)
         callback = Public.active_not_destructible_callback
     }
 
-    game.forces.player.chart(surface, { { world_pos.x - 32, world_pos.y - 32 }, { world_pos.x + 32, world_pos.y + 32 } })
+    collect_border_chart_area(data, world_pos)
 
     if Math.random(1, 128) == 1 then
         local position = surface.find_non_colliding_position('biter-spawner', tile_positions[Math.random(1, #tile_positions)], 16, 2)
@@ -6147,16 +6159,22 @@ Event.add(
             return
         end
 
-        local tiles = {}
-        for x = 0, 31, 1 do
-            for y = 0, 31, 1 do
-                local position = { x = left_top.x + x, y = left_top.y + y }
-                if is_out_of_map(position) then
-                    tiles[#tiles + 1] = { name = 'out-of-map', position = position }
+        local horizontal = Orient.is_horizontal()
+        local half_width = Orient.zone_width() / 2
+        local first_lateral_tile = horizontal and left_top.y or left_top.x
+        if first_lateral_tile < -half_width or first_lateral_tile + 31 >= half_width then
+            local tiles = {}
+            for x = left_top.x, left_top.x + 31 do
+                if horizontal or x < -half_width or x >= half_width then
+                    for y = left_top.y, left_top.y + 31 do
+                        if not horizontal or y < -half_width or y >= half_width then
+                            tiles[#tiles + 1] = { name = 'out-of-map', position = { x = x, y = y } }
+                        end
+                    end
                 end
             end
+            surface.set_tiles(tiles, true)
         end
-        surface.set_tiles(tiles, true)
 
         local winter_mode = Public.get('winter_mode')
         if winter_mode then

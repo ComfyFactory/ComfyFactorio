@@ -8,7 +8,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'character_running_speed_modifier',
             discord = 'Running speed modifier - run faster!',
-            tooltip = 'Selecting this buff will grant the team 5% increased running speed!',
+            tooltip = { 'mtn_v3_buffs.character_running_speed_modifier_tooltip' },
             poll_name = 'Running speed',
             modifier = 'force',
             per_force = true,
@@ -18,7 +18,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'manual_mining_speed_modifier',
             discord = 'Mining speed modifier - mine faster!',
-            tooltip = 'Selecting this buff will grant the team 15% increased mining speed!',
+            tooltip = { 'mtn_v3_buffs.manual_mining_speed_modifier_tooltip' },
             poll_name = 'Mining speed',
             modifier = 'force',
             per_force = true,
@@ -28,7 +28,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'laboratory_speed_modifier',
             discord = 'Laboratory speed modifier - labs work faster!',
-            tooltip = 'Selecting this buff will grant the team 15% increased laboratory speed!',
+            tooltip = { 'mtn_v3_buffs.laboratory_speed_modifier_tooltip' },
             poll_name = 'Laboratory speed',
             modifier = 'force',
             per_force = true,
@@ -38,7 +38,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'laboratory_productivity_bonus',
             discord = 'Laboratory productivity bonus - labs dupe things!',
-            tooltip = 'Selecting this buff will grant the team 15% increased laboratory productivity!',
+            tooltip = { 'mtn_v3_buffs.laboratory_productivity_bonus_tooltip' },
             poll_name = 'Laboratory productivity',
             modifier = 'force',
             per_force = true,
@@ -48,7 +48,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'worker_robots_storage_bonus',
             discord = 'Robot storage bonus - robots carry more!',
-            tooltip = 'Selecting this buff will grant the team +1 increased robot storage!',
+            tooltip = { 'mtn_v3_buffs.worker_robots_storage_bonus_tooltip' },
             poll_name = 'Robot storage',
             modifier = 'force',
             per_force = true,
@@ -58,7 +58,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'worker_robots_battery_modifier',
             discord = 'Robot battery bonus - robots work longer!',
-            tooltip = 'Selecting this buff will grant the team 100% increased robot battery!',
+            tooltip = { 'mtn_v3_buffs.worker_robots_battery_modifier_tooltip' },
             poll_name = 'Robot battery',
             modifier = 'force',
             per_force = true,
@@ -68,7 +68,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'worker_robots_speed_modifier',
             discord = 'Robot speed modifier - robots move faster!',
-            tooltip = 'Selecting this buff will grant the team 50% increased robot speed!',
+            tooltip = { 'mtn_v3_buffs.worker_robots_speed_modifier_tooltip' },
             poll_name = 'Robot speed',
             modifier = 'force',
             per_force = true,
@@ -78,7 +78,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'mining_drill_productivity_bonus',
             discord = 'Drill productivity bonus - drills work faster!',
-            tooltip = 'Selecting this buff will grant the team 50% increased drill productivity!',
+            tooltip = { 'mtn_v3_buffs.mining_drill_productivity_bonus_tooltip' },
             poll_name = 'Drill productivity',
             modifier = 'force',
             per_force = true,
@@ -88,7 +88,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'character_health_bonus',
             discord = 'Character health bonus - more health!',
-            tooltip = 'Selecting this buff will grant the team 250 flat increased character health!',
+            tooltip = { 'mtn_v3_buffs.character_health_bonus_tooltip' },
             poll_name = 'Character health',
             modifier = 'force',
             per_force = true,
@@ -98,7 +98,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'distance',
             discord = 'RPG reach distance bonus - reach further!',
-            tooltip = 'Selecting this buff will grant the team 5% increased reach distance!',
+            tooltip = { 'mtn_v3_buffs.distance_tooltip' },
             poll_name = 'RPG reach distance',
             modifier = 'rpg_distance',
             per_force = true,
@@ -109,7 +109,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'manual_crafting_speed_modifier',
             discord = 'Crafting speed modifier - craft faster!',
-            tooltip = 'Selecting this buff will grant the team 12% increased crafting speed!',
+            tooltip = { 'mtn_v3_buffs.manual_crafting_speed_modifier_tooltip' },
             poll_name = 'Crafting speed',
             modifier = 'force',
             per_force = true,
@@ -119,7 +119,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'xp_bonus',
             discord = 'RPG XP point bonus - more XP points from kills etc.',
-            tooltip = 'Selecting this buff will grant the team 12% increased XP points from kills etc.',
+            tooltip = { 'mtn_v3_buffs.xp_bonus_tooltip' },
             poll_name = 'RPG XP point',
             modifier = 'rpg',
             per_force = true,
@@ -129,7 +129,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'xp_level',
             discord = 'RPG XP level bonus - start with more XP levels',
-            tooltip = 'Selecting this buff will grant the team 20 more XP levels!',
+            tooltip = { 'mtn_v3_buffs.xp_level_tooltip' },
             poll_name = 'RPG XP level',
             modifier = 'rpg',
             per_force = true,
@@ -139,7 +139,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'chemicals_s',
             discord = 'Starting items supplies - start with some sulfur',
-            tooltip = 'Selecting this buff will grant the team 50 sulfur at start!',
+            tooltip = { 'mtn_v3_buffs.chemicals_s_tooltip' },
             poll_name = 'Starting items (sulfur)',
             modifier = 'starting_items',
             limit = 200,
@@ -152,7 +152,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'chemicals_p',
             discord = 'Starting items supplies - start with some plastic bar',
-            tooltip = 'Selecting this buff will grant the team 100 plastic bar at start!',
+            tooltip = { 'mtn_v3_buffs.chemicals_p_tooltip' },
             poll_name = 'Starting items (plastic bar)',
             modifier = 'starting_items',
             limit = 200,
@@ -165,7 +165,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'supplies',
             discord = 'Starting items supplies - start with some copper and iron plates',
-            tooltip = 'Selecting this buff will grant the team 100 copper and iron plates at start!',
+            tooltip = { 'mtn_v3_buffs.supplies_tooltip' },
             poll_name = 'Starting items (copper and iron plates)',
             modifier = 'starting_items',
             limit = 1000,
@@ -179,7 +179,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'supplies_1',
             discord = 'Starting items supplies - start with more copper and iron plates',
-            tooltip = 'Selecting this buff will grant the team 200 copper and iron plates at start!',
+            tooltip = { 'mtn_v3_buffs.supplies_1_tooltip' },
             poll_name = 'Starting items (more copper and iron plates)',
             modifier = 'starting_items',
             limit = 1000,
@@ -193,7 +193,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'supplies_2',
             discord = 'Starting items supplies - start with even more copper and iron plates',
-            tooltip = 'Selecting this buff will grant the team 400 copper and iron plates at start!',
+            tooltip = { 'mtn_v3_buffs.supplies_2_tooltip' },
             poll_name = 'Starting items (even more copper and iron plates)',
             modifier = 'starting_items',
             limit = 1000,
@@ -207,7 +207,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'defense_3',
             discord = 'Defense starting supplies - start with rocket launcher and ammo',
-            tooltip = 'Selecting this buff will grant the team 1 rocket launcher and 100 rockets at start! Repeat picks upgrade launcher quality.',
+            tooltip = { 'mtn_v3_buffs.defense_3_tooltip' },
             poll_name = 'Starting items (rocket launcher and ammo)',
             modifier = 'starting_items',
             quality_item = 'rocket-launcher',
@@ -222,7 +222,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'armor',
             discord = 'Armor starting supplies - start with some armor and solar panels',
-            tooltip = 'Selecting this buff will grant the team 1 modular armor and 2 solar panel equipment at start! Repeat picks upgrade armor quality.',
+            tooltip = { 'mtn_v3_buffs.armor_tooltip' },
             poll_name = 'Starting items (armor and solar panels)',
             modifier = 'starting_items',
             quality_item = 'modular-armor',
@@ -237,7 +237,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'production_1',
             discord = 'Production starting supplies - start with some steel furnaces and solid fuel',
-            tooltip = 'Selecting this buff will grant the team 4 steel furnaces and 100 solid fuel at start!',
+            tooltip = { 'mtn_v3_buffs.production_1_tooltip' },
             poll_name = 'Starting items (steel furnaces and solid fuel)',
             modifier = 'starting_items',
             limit = 2,
@@ -251,7 +251,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'fast_startup_1',
             discord = 'Assembling starting supplies - start with some assembling machines T2',
-            tooltip = 'Selecting this buff will grant the team 2 assembling machines T2 at start!',
+            tooltip = { 'mtn_v3_buffs.fast_startup_1_tooltip' },
             poll_name = 'Starting items (assembling machines T2)',
             modifier = 'starting_items',
             limit = 25,
@@ -264,7 +264,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'fast_startup_2',
             discord = 'Assembling starting supplies - start with some assembling machines T3',
-            tooltip = 'Selecting this buff will grant the team 2 assembling machines T3 at start!',
+            tooltip = { 'mtn_v3_buffs.fast_startup_2_tooltip' },
             poll_name = 'Starting items (assembling machines T3)',
             modifier = 'starting_items',
             limit = 25,
@@ -277,7 +277,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'logistics_startup',
             discord = 'Logistics starting supplies - start with belts, inserters and small electric poles',
-            tooltip = 'Selecting this buff grants each player 50 transport belts, 10 inserters and 10 small electric poles at start! Can be selected twice.',
+            tooltip = { 'mtn_v3_buffs.logistics_startup_tooltip' },
             poll_name = 'Starting items (logistics)',
             modifier = 'starting_items',
             limit = 2,
@@ -292,7 +292,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'character_inventory_slots_bonus',
             discord = 'Inventory bonus - carry more building supplies!',
-            tooltip = 'Selecting this buff grants each player 5 additional inventory slots! Can be selected three times, for a total of 15 slots.',
+            tooltip = { 'mtn_v3_buffs.character_inventory_slots_bonus_tooltip' },
             poll_name = 'Inventory slots',
             modifier = 'force',
             per_force = true,
@@ -302,7 +302,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'character_build_distance_bonus',
             discord = 'Build distance bonus - place buildings further away!',
-            tooltip = 'Selecting this buff grants each player +1 build distance without increasing mining or interaction reach! Can be selected three times, for a total of +3.',
+            tooltip = { 'mtn_v3_buffs.character_build_distance_bonus_tooltip' },
             poll_name = 'Build distance',
             modifier = 'force',
             per_force = true,
@@ -312,7 +312,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'heal-thy-buildings',
             discord = 'Repair starting supplies - start with some repair packs',
-            tooltip = 'Selecting this buff will grant the team 5 repair packs at start!',
+            tooltip = { 'mtn_v3_buffs.heal-thy-buildings_tooltip' },
             poll_name = 'Starting items (repair packs)',
             modifier = 'starting_items',
             limit = 20,
@@ -325,7 +325,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'extra_wagons',
             discord = 'Extra wagon at start',
-            tooltip = 'Selecting this buff will grant the team 1 extra wagon at start!',
+            tooltip = { 'mtn_v3_buffs.extra_wagons_tooltip' },
             poll_name = 'Starting items (extra wagon)',
             modifier = 'locomotive',
             limit = 3,
@@ -334,7 +334,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'american_oil',
             discord = 'Oil tech - start with some crude oil barrels',
-            tooltip = 'Selecting this buff will grant the team 20 crude oil barrels at start!',
+            tooltip = { 'mtn_v3_buffs.american_oil_tooltip' },
             poll_name = 'Starting items (crude oil barrels)',
             modifier = 'starting_items',
             limit = 40,
@@ -347,7 +347,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'steel_plates',
             discord = 'Steel tech - start with some steel plates',
-            tooltip = 'Selecting this buff will grant the team 100 steel plates at start!',
+            tooltip = { 'mtn_v3_buffs.steel_plates_tooltip' },
             poll_name = 'Starting items (steel plates)',
             modifier = 'starting_items',
             limit = 200,
@@ -360,7 +360,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'gun_turrets',
             discord = 'Gun turrets - start with some gun turrets',
-            tooltip = 'Selecting this buff will grant the team 2 gun turrets at start!',
+            tooltip = { 'mtn_v3_buffs.gun_turrets_tooltip' },
             poll_name = 'Starting items (gun turrets)',
             modifier = 'starting_items',
             limit = 4,
@@ -374,7 +374,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'red_science',
             discord = 'Science tech - start with some red science packs',
-            tooltip = 'Selecting this buff will grant the team 10 red science packs at start!',
+            tooltip = { 'mtn_v3_buffs.red_science_tooltip' },
             poll_name = 'Starting items (red science packs)',
             modifier = 'starting_items',
             limit = 200,
@@ -387,7 +387,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'roboport_equipement',
             discord = 'Equipement tech - start with a personal roboport',
-            tooltip = 'Selecting this buff will grant the team 1 personal roboport equipment at start! Repeat picks upgrade roboport quality.',
+            tooltip = { 'mtn_v3_buffs.roboport_equipement_tooltip' },
             poll_name = 'Starting items (personal roboport)',
             modifier = 'starting_items',
             quality_item = 'personal-roboport-equipment',
@@ -401,7 +401,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'mk1_tech_unlocked',
             discord = 'Equipement tech - start with power armor tech unlocked.',
-            tooltip = 'Selecting this buff will grant the team power armor tech unlocked at start!',
+            tooltip = { 'mtn_v3_buffs.mk1_tech_unlocked_tooltip' },
             poll_name = 'Tech unlock (power armor)',
             modifier = 'tech',
             limit = 1,
@@ -414,7 +414,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'steel_axe_unlocked',
             discord = 'Equipement tech - start with steel axe tech unlocked.',
-            tooltip = 'Selecting this buff will grant the team steel axe tech unlocked at start!',
+            tooltip = { 'mtn_v3_buffs.steel_axe_unlocked_tooltip' },
             poll_name = 'Tech unlock (steel axe)',
             modifier = 'tech',
             limit = 1,
@@ -427,7 +427,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'military_2_unlocked',
             discord = 'Equipement tech - start with military 2 tech unlocked.',
-            tooltip = 'Selecting this buff will grant the team military 2 tech unlocked at start!',
+            tooltip = { 'mtn_v3_buffs.military_2_unlocked_tooltip' },
             poll_name = 'Tech unlock (military 2)',
             modifier = 'tech',
             limit = 1,
@@ -440,7 +440,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'starting_car',
             discord = 'Vehicle starting supplies - start with a car',
-            tooltip = 'Selecting this buff will grant the team 1 car at start! Repeat picks upgrade car quality. Requires military 2 tech unlocked.',
+            tooltip = { 'mtn_v3_buffs.starting_car_tooltip' },
             poll_name = 'Starting Car',
             modifier = 'starting_items',
             quality_item = 'car',
@@ -455,7 +455,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'starting_tank',
             discord = 'Vehicle starting supplies - start with a tank',
-            tooltip = 'Selecting this buff will grant the team 1 tank at start! Repeat picks upgrade tank quality. Requires legendary car.',
+            tooltip = { 'mtn_v3_buffs.starting_tank_tooltip' },
             poll_name = 'Starting Tank',
             modifier = 'starting_items',
             quality_item = 'tank',
@@ -470,7 +470,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'all_the_fish',
             discord = 'Wagon is full of fish!',
-            tooltip = 'Selecting this buff will grant the team 1 wagon full of fish at start!',
+            tooltip = { 'mtn_v3_buffs.all_the_fish_tooltip' },
             poll_name = 'Fishes',
             modifier = 'fish',
             limit = 1,
@@ -483,7 +483,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'quality_buildings_uncommon',
             discord = 'Grants uncommon quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 uncommon quality wild buildings that generate free loot!',
+            tooltip = { 'mtn_v3_buffs.quality_buildings_uncommon_tooltip' },
             poll_name = 'Wild buildings (uncommon)',
             limit = 1,
             quality = 'uncommon',
@@ -494,7 +494,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'quality_buildings_rare',
             discord = 'Grants rare quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 rare quality wild buildings that generate free loot!',
+            tooltip = { 'mtn_v3_buffs.quality_buildings_rare_tooltip' },
             poll_name = 'Wild buildings (rare)',
             limit = 1,
             quality = 'rare',
@@ -505,7 +505,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'quality_buildings_epic',
             discord = 'Grants epic quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team 1 epic quality wild buildings that generate free loot!',
+            tooltip = { 'mtn_v3_buffs.quality_buildings_epic_tooltip' },
             poll_name = 'Wild buildings (epic)',
             limit = 1,
             quality = 'epic',
@@ -516,7 +516,7 @@ function Public.get_random_buff(fetch_all, only_force)
         {
             name = 'quality_buildings_legendary',
             discord = 'Grants legendary quality of buildings generating free loot!',
-            tooltip = 'Selecting this buff will grant the team legendary quality wild buildings that generate free loot!',
+            tooltip = { 'mtn_v3_buffs.quality_buildings_legendary_tooltip' },
             poll_name = 'Wild buildings (legendary)',
             limit = 1,
             quality = 'legendary',

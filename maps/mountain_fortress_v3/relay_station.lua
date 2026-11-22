@@ -244,7 +244,7 @@ local function place(site, loco, debug)
                     site.registration = script.register_on_object_destroyed(entity)
                     this.registrations[site.registration] = site.id
                     if _DEBUG then
-                        loco.force.print('[Relay] Abandoned ' .. site.tier .. ' relay station (' .. site.power .. ' MW) discovered at [gps=' .. pos.x .. ',' .. pos.y .. ',' .. surface.name .. ']. Protect it: destruction is permanent.')
+                        loco.force.print({ 'mtn_v3_relay.station_discovered', site.tier, site.power, pos.x, pos.y, surface.name })
                     end
                     return
                 end

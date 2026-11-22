@@ -92,7 +92,6 @@ Config.register_scenario_module(
                     switch_state = 'right'
                 end
                 Config.add_switch(frame, switch_state, 'poll_no_notify_toggle', { 'gui.notify_on_polls' }, { 'gui-description.notify_on_polls' })
-                frame.add({ type = 'line' })
             end),
         handlers =
         {
@@ -121,13 +120,11 @@ Config.register_scenario_module(
                     switch_state = 'left'
                 end
                 Config.add_switch(frame, switch_state, 'poll_trusted_create_toggle', 'Poll create', 'Disables non-trusted plebs to create polls.')
-                frame.add({ type = 'line' })
                 switch_state = 'right'
                 if settings.allow_non_trusted_to_vote then
                     switch_state = 'left'
                 end
                 Config.add_switch(frame, switch_state, 'poll_trusted_vote_toggle', 'Poll vote', 'Disables non-trusted plebs to vote on polls.')
-                frame.add({ type = 'line' })
             end),
         handlers =
         {

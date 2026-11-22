@@ -4,6 +4,8 @@ local Global = require 'utils.global'
 local Server = require 'utils.server'
 local SpamProtection = require 'utils.spam_protection'
 local Color = require 'utils.color_presets'
+local Style = require 'utils.gui_style'
+local format_number = require('util').format_number
 
 local insert = table.insert
 local tostring = tostring
@@ -34,14 +36,13 @@ local Public =
     }
 }
 
-local ordered_tab_names =
+local view_modes = { 'minimal', 'compact', 'full' }
+
+local sections =
 {
-    'Players',
-    'Admin',
-    'Groups',
-    'Scoreboard',
-    'Statistics',
-    'Config'
+    { name = 'stats', tabs = { 'Players', 'Groups', 'Scoreboard', 'Statistics', 'Seasons', 'Highscore', 'Map Scores', 'MutagenLog' } },
+    { name = 'server', tabs = { 'Map Info', 'Mods', 'Changelog' } },
+    { name = 'controls', tabs = { 'Config', 'Admin', 'Spawn Controls', 'ChronoTrain' } }
 }
 
 -- local to this file
@@ -50,6 +51,7 @@ local local_settings =
     toggle_button = true
 }
 local main_gui_tabs = {}
+local tab_captions = {}
 local screen_elements = {}
 local remove_data_recursively
 local concat = table.concat
@@ -61,7 +63,8 @@ local settings =
 {
     mod_gui_top_frame = true,
     disabled_tabs = {},
-    disable_clear_invalid_data = true
+    disable_clear_invalid_data = true,
+    menu_state = {}
 }
 
 Public.token =
@@ -75,6 +78,16 @@ Public.token =
     )
 
 Public.names = names
+
+local function menu_state(player)
+    settings.menu_state = settings.menu_state or {}
+    local state = settings.menu_state[player.index]
+    if not state then
+        state = { view = 'full' }
+        settings.menu_state[player.index] = state
+    end
+    return state
+end
 
 Public.beam = 'file/utils/files/beam.png'
 Public.beam_1 = 'file/utils/files/beam_1.png'
@@ -142,6 +155,13 @@ local main_frame_name = Public.uid_name()
 local main_toggle_button_name = Public.uid_name()
 local main_button_name = Public.uid_name()
 local close_button_name = Public.uid_name()
+local dock_button_name = Public.uid_name()
+local view_selector_name = Public.uid_name()
+local section_selector_name = Public.uid_name()
+local status_frame_name = 'comfy_fish_status'
+local status_expand_button_name = Public.uid_name()
+local status_fold_button_name = Public.uid_name()
+local status_map_info_button_name = Public.uid_name()
 
 if not Public.mod_gui_button_enabled then
     Public.button_style = nil
@@ -231,17 +251,6 @@ function Public.new_frame(object)
     return element
 end
 
-local fix_frame_style_token =
-    Task.register(
-        function (event)
-            local frame = event.frame
-            if not frame or not frame.valid then
-                return
-            end
-            frame.style.padding = 10
-        end
-    )
-
 --- Verifies if a frame is valid and destroys it.
 ---@param align userdata
 ---@param frame userdata
@@ -280,6 +289,35 @@ local function show_button_flow(player)
         return
     end
     button_flow.visible = true
+end
+
+-- Returns the sections and tabs for the GUI.
+function Public.sections(visible_tabs)
+    local groups, known = {}, {}
+    for _, section in ipairs(sections) do
+        local tabs = {}
+        for _, caption in ipairs(section.tabs) do
+            known[caption] = true
+            if visible_tabs[caption] then
+                tabs[#tabs + 1] = caption
+            end
+        end
+        if #tabs > 0 then
+            groups[#groups + 1] = { name = section.name, tabs = tabs }
+        end
+    end
+
+    local extra = {}
+    for caption in pairs(visible_tabs) do
+        if not known[caption] then
+            extra[#extra + 1] = caption
+        end
+    end
+    if #extra > 0 then
+        table.sort(extra)
+        groups[#groups + 1] = { name = 'scenario', tabs = extra }
+    end
+    return groups
 end
 
 -- Associates data with the LuaGuiElement. If data is nil then removes the data
@@ -358,11 +396,8 @@ function Public.get_data(element)
     local player_index = element.player_index
 
     local values = data[player_index]
-    if not values then
-        return nil
-    end
-
-    return values[element.index].value
+    local entry = values and values[element.index]
+    return entry and entry.value
 end
 
 -- Gets the Associated data with this LuaGuiElement if any.
@@ -406,9 +441,9 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
         main_frame = player.gui.screen.add { type = 'frame', name = set_frame_name, direction = 'vertical' }
     end
 
-    local titlebar = main_frame.add { type = 'flow', name = 'titlebar', direction = 'horizontal' } --[[@as LuaGuiElement]]
-    titlebar.style.horizontal_spacing = 8
-    titlebar.style = 'horizontal_flow'
+    local titlebar = main_frame.add { type = 'flow', name = 'titlebar', direction = 'horizontal', style = 'horizontal_flow' }
+    titlebar.style.horizontal_spacing = Style.spacing.sm
+    titlebar.style.vertical_align = 'center'
 
     if align == 'screen' then
         titlebar.drag_target = main_frame
@@ -425,64 +460,31 @@ function Public.add_main_frame_with_toolbar(player, align, set_frame_name, set_s
     local widget = titlebar.add { type = 'empty-widget', style = 'draggable_space', ignored_by_interaction = true }
     widget.style.left_margin = 4
     widget.style.right_margin = 4
-    widget.style.height = 24
+    widget.style.height = 20
     widget.style.horizontally_stretchable = true
 
     if set_settings_button_name then
-        if not info then
-            titlebar.add
-            {
-                type = 'sprite-button',
-                name = set_settings_button_name,
-                style = 'frame_action_button',
-                sprite = Public.settings_white_icon,
-                mouse_button_filter = { 'left' },
-                hovered_sprite = Public.settings_black_icon,
-                clicked_sprite = Public.settings_black_icon,
-                tooltip = 'Settings',
-                tags =
-                {
-                    action = 'open_settings_gui'
-                }
-            }
-        else
-            titlebar.add
-            {
-                type = 'sprite-button',
-                name = set_settings_button_name,
-                style = 'frame_action_button',
-                sprite = Public.info_icon,
-                mouse_button_filter = { 'left' },
-                hovered_sprite = Public.info_icon,
-                clicked_sprite = Public.info_icon,
-                tooltip = 'Info',
-                tags =
-                {
-                    action = 'open_settings_gui'
-                }
-            }
-        end
+        local alternate = info and Public.info_icon or Public.settings_black_icon
+        Style.action_button(titlebar, {
+            name = set_settings_button_name,
+            sprite = info and Public.info_icon or Public.settings_white_icon,
+            hovered_sprite = alternate,
+            clicked_sprite = alternate,
+            tooltip = info and 'Info' or 'Settings',
+            tags = { action = 'open_settings_gui' }
+        })
     end
 
     local close_button
-
     if close_main_frame_name then
-        close_button =
-            titlebar.add
-            {
-                type = 'sprite-button',
-                name = close_main_frame_name,
-                style = 'frame_action_button',
-                mouse_button_filter = { 'left' },
-                sprite = 'utility/close',
-                hovered_sprite = 'utility/close_fat',
-                clicked_sprite = 'utility/close_fat',
-                tooltip = 'Close',
-                tags =
-                {
-                    action = 'close_main_frame_gui'
-                }
-            }
+        close_button = Style.action_button(titlebar, {
+            name = close_main_frame_name,
+            sprite = 'utility/close',
+            hovered_sprite = 'utility/close_fat',
+            clicked_sprite = 'utility/close_fat',
+            tooltip = 'Close',
+            tags = { action = 'close_main_frame_gui' }
+        })
     end
 
     local inside_frame =
@@ -693,7 +695,7 @@ function Public.set_disabled_tab(frame_name, state)
         return
     end
 
-    settings.disabled_tabs[frame_name] = state or false
+    settings.disabled_tabs[tab_captions[frame_name] or frame_name] = state or false
 end
 
 -- Fetches if a gui is disabled.
@@ -703,35 +705,22 @@ function Public.get_disabled_tab(frame_name)
         return
     end
 
-    return settings.disabled_tabs[frame_name]
+    return settings.disabled_tabs[tab_captions[frame_name] or frame_name]
 end
 
--- Fetches the main frame name
+-- Returns the menu's content container.
 function Public.get_main_frame(player)
-    if not player then
-        return false
-    end
-
-    local left = player.gui.left
-    local frame = left[main_frame_name]
-    if frame and frame.valid then
-        local inside_frame = frame.children[2]
-        if inside_frame and inside_frame.valid then
-            return inside_frame
-        end
-        return false
-    end
-    return false
+    local frame = Public.get_parent_frame(player)
+    return frame and frame.inside_frame or false
 end
 
--- Fetches the parent frame name
+-- Returns the floating or docked menu, including an older docked instance.
 function Public.get_parent_frame(player)
     if not player then
         return false
     end
 
-    local left = player.gui.left
-    local frame = left[main_frame_name]
+    local frame = player.gui.screen[main_frame_name] or player.gui.left[main_frame_name]
 
     if frame and frame.valid then
         return frame
@@ -804,7 +793,8 @@ function Public.add_tab_to_gui(tbl)
     local only_server_sided = tbl.only_server_sided or false
 
     if not main_gui_tabs[tbl.caption] then
-        main_gui_tabs[tbl.caption] = { id = tbl.id, name = tbl.name, admin = admin, only_server_sided = only_server_sided }
+        main_gui_tabs[tbl.caption] = { id = tbl.id, name = tbl.name, admin = admin, only_server_sided = only_server_sided, localised_caption = tbl.localised_caption }
+        tab_captions[tbl.name] = tbl.caption
     else
         error('Given name: ' .. tbl.caption .. ' already exists in table.')
     end
@@ -825,15 +815,27 @@ function Public.get(key)
     end
 end
 
+local function get_status_frame(player)
+    return player.gui.left[status_frame_name]
+end
+
+local function hide_status(player)
+    local frame = get_status_frame(player)
+    if frame then
+        frame.destroy()
+    end
+end
+
 function Public.clear_main_frame(player)
     if not player then
         return
     end
-    local frame = Public.get_main_frame(player)
+    local frame = Public.get_parent_frame(player)
     if frame then
         remove_data_recursively(frame)
         frame.destroy()
     end
+    hide_status(player)
 end
 
 function Public.clear_all_center_frames(player)
@@ -856,7 +858,7 @@ end
 
 function Public.clear_all_left_frames(player)
     for _, child in pairs(player.gui.left.children) do
-        if child.name:find(gui_prefix) then
+        if child.name ~= status_frame_name and child.name:find(gui_prefix) then
             remove_data_recursively(child)
             child.destroy()
         end
@@ -866,7 +868,7 @@ end
 function Public.clear_all_active_frames(player)
     Event.raise(ServerCommands.events.on_gui_closed_main_frame, { player_index = player.index })
     for _, child in pairs(player.gui.left.children) do
-        if child.name:find(gui_prefix) then
+        if child.name ~= status_frame_name and child.name:find(gui_prefix) then
             remove_data_recursively(child)
             child.destroy()
         end
@@ -885,40 +887,37 @@ function Public.clear_all_active_frames(player)
     end
 end
 
+local function get_tab_body(content)
+    if content.type == 'frame' then
+        local body = content.children[1]
+        if body and body.type == 'scroll-pane' and body.name == content.name then
+            return body
+        end
+    end
+    return content
+end
+
 function Public.get_player_active_frame(player)
-    local main_frame = Public.get_main_frame(player)
-    if not main_frame then
-        return false
-    end
-
-    local panel = main_frame.tabbed_pane
-    if not panel then
-        return
-    end
-    local index = panel.selected_tab_index
-    if not index then
-        return panel.tabs[1].content
-    end
-
-    return panel.tabs[index].content
+    local panel = Public.get_content(player)
+    local active = panel and panel.tabs[panel.selected_tab_index or 1]
+    return active and get_tab_body(active.content) or false
 end
 
 local function get_player_active_tab(player)
-    local main_frame = Public.get_main_frame(player)
-    if not main_frame then
-        return false
+    local panel = Public.get_content(player)
+    local active = panel and panel.tabs[panel.selected_tab_index or 1]
+    if active then
+        return active.tab, get_tab_body(active.content)
     end
+end
 
-    local panel = main_frame.tabbed_pane
-    if not panel then
-        return
+local function tab_is_available(player, state, caption, tab, server_data)
+    local disabled = state.disabled_tabs and state.disabled_tabs[caption]
+    if disabled == nil then
+        disabled = Public.get_disabled_tab(caption)
     end
-    local index = panel.selected_tab_index
-    if not index then
-        return panel.tabs[1].tab, panel.tabs[1].content
-    end
-
-    return panel.tabs[index].tab, panel.tabs[index].content
+    return tab and not disabled and (not tab.only_server_sided or server_data)
+        and (not tab.admin or (player.admin and (not server_data or Server.get_admins_data()[player.name])))
 end
 
 function Public.reload_active_tab(player, forced, tab_name)
@@ -927,12 +926,13 @@ function Public.reload_active_tab(player, forced, tab_name)
         return
     end
 
-    local frame, main_tab = get_player_active_tab(player)
-    if not frame then
+    local body = Public.get_player_active_frame(player)
+    if not body or (tab_name and body.name ~= tab_name) then
         return
     end
-    local tab = main_gui_tabs[frame.caption] or tab_name
-    if not tab then
+    local caption = body.name
+    local tab = main_gui_tabs[caption]
+    if not tab_is_available(player, menu_state(player), caption, tab, Server.get_current_time()) then
         return
     end
     local id = tab.id
@@ -944,7 +944,7 @@ function Public.reload_active_tab(player, forced, tab_name)
     local d =
     {
         player = player,
-        frame = main_tab
+        frame = body
     }
 
     return callback(d)
@@ -961,10 +961,75 @@ local function resize_top_buttons(player)
     end
 end
 
+local function get_main_button(player)
+    local top = player.gui.top
+    local flow = top.mod_gui_button_flow or (top.mod_gui_top_frame and top.mod_gui_top_frame.mod_gui_inner_frame)
+    return (flow and flow[main_button_name]) or top[main_button_name]
+end
+
+local function main_button_tooltip(player)
+    local state = settings.menu_state and settings.menu_state[player.index]
+    return { state and state.map_info and 'gui.comfy_menu_map_info' or 'gui.comfy_menu' }
+end
+
+local function add_status_frame(player, collapsed)
+    local frame = player.gui.left.add({
+        type = 'frame', name = status_frame_name, direction = 'vertical', style = 'non_draggable_frame'
+    })
+    frame.style.padding = Style.spacing.xs
+
+    local toolbar = Style.toolbar(frame)
+    toolbar.name = 'toolbar'
+    local online = toolbar.add({ type = 'label', name = 'online', tooltip = { 'gui.comfy_online_tooltip' } })
+    Style.table_heading(online)
+    Style.button(toolbar.add({ type = 'button', name = status_expand_button_name, caption = { 'gui.comfy_view_compact' },
+        tooltip = { 'gui.comfy_open_compact' } }))
+    Style.button(toolbar.add({ type = 'button', name = status_fold_button_name, caption = collapsed and '+' or '−',
+        tooltip = { collapsed and 'gui.comfy_show_status' or 'gui.comfy_hide_status' } }))
+
+    local details = Style.toolbar(frame)
+    details.name = 'details'
+    details.style.left_padding = Style.spacing.xs
+    details.visible = not collapsed
+    details.add({ type = 'label', name = 'service', tooltip = { 'gui.comfy_server_tooltip' } })
+    local rockets = details.add({ type = 'label', name = 'rockets', tooltip = { 'gui.comfy_rockets_tooltip' } })
+    rockets.style.font_color = Style.colors.muted
+    Style.button(frame.add({ type = 'button', name = status_map_info_button_name, caption = { 'gui.comfy_map_info' } }))
+    return frame
+end
+
+local function update_status(player, online, server_data)
+    local frame = get_status_frame(player)
+    if not frame then
+        return
+    end
+    if not frame[status_map_info_button_name] then
+        local collapsed = not frame.details.visible
+        frame.destroy()
+        frame = add_status_frame(player, collapsed)
+    end
+
+    frame.toolbar.online.caption = { 'gui.comfy_online', online }
+    frame.details.service.caption = { server_data and 'gui.comfy_server_hosted' or 'gui.comfy_server_local' }
+    frame.details.service.style.font_color = server_data and Style.colors.heading or Style.colors.muted
+    frame.details.rockets.caption = { 'gui.comfy_rockets', format_number(player.force.rockets_launched, true) }
+    frame[status_map_info_button_name].visible = menu_state(player).map_info == true and frame.details.visible
+end
+
+function Public.note_map_info(player)
+    menu_state(player).map_info = true
+    local button = get_main_button(player)
+    if button then
+        button.tooltip = main_button_tooltip(player)
+    end
+    update_status(player, #game.connected_players, Server.get_current_time())
+end
+
 local function top_button(player)
     if settings.mod_gui_top_frame then
         local button = Public.add_mod_button(player, { type = 'sprite-button', name = main_button_name, sprite = 'item/raw-fish', style = Public.button_style })
         if button then
+            button.tooltip = main_button_tooltip(player)
             button.style.minimal_height = 36
             button.style.maximal_height = 36
             button.style.minimal_width = 40
@@ -972,6 +1037,7 @@ local function top_button(player)
         end
     else
         if player.gui.top[main_button_name] then
+            player.gui.top[main_button_name].tooltip = main_button_tooltip(player)
             return
         end
         local button =
@@ -980,6 +1046,7 @@ local function top_button(player)
                     type = 'sprite-button',
                     name = main_button_name,
                     sprite = 'item/raw-fish',
+                    tooltip = main_button_tooltip(player),
                     style = Public.button_style
                 }
             )
@@ -1033,106 +1100,197 @@ local function top_toggle_button(player)
     end
 end
 
-local function draw_main_frame(player)
-    local tabs = main_gui_tabs
-
-    Public.clear_all_active_frames(player)
-
-    local existing_frame = Public.get_main_frame(player)
-    if existing_frame then
-        remove_data_recursively(existing_frame)
-        existing_frame.destroy()
+local function place_main_frame(player, frame, limits)
+    if player.gui.screen[main_frame_name] == frame then
+        local positions = settings.main_frame_positions
+        local saved = positions and positions[player.index]
+        local resolution, scale = player.display_resolution, player.display_scale
+        local max_x = math.max(0, resolution.width - math.ceil(limits.width * scale))
+        local max_y = math.max(0, resolution.height - math.ceil(limits.height * scale))
+        frame.location =
+        {
+            x = saved and math.max(0, math.min(saved.x, max_x)) or math.floor(max_x / 2),
+            y = saved and math.max(0, math.min(saved.y, max_y)) or math.floor(max_y / 2)
+        }
     end
+end
 
-    local title = 'Comfy Factorio'
-    if ServerCommands.is_dev_server() then
-        title = 'Comfy Factorio (Development Server)'
+local function layout_main_frame(player, frame)
+    local inside = frame.inside_frame
+    local limits = Style.window(frame, inside, player)
+    local compact = frame.tags.comfy_view == 'compact'
+    local titlebar = frame.titlebar
+    titlebar.main_label.visible = limits.width >= (compact and 360 or 250)
+    titlebar.main_label.style.maximal_width = math.max(50, limits.width - (compact and 325 or 220))
+    local narrow = limits.width < 430
+    titlebar.style.horizontal_spacing = narrow and 2 or Style.spacing.sm
+    titlebar.children[2].visible = not narrow
+    local section_selector = titlebar[section_selector_name]
+    if section_selector then
+        section_selector.style.width = math.min(124, math.max(64, limits.width - 190))
     end
+    for _, entry in ipairs(inside.tabbed_pane.tabs) do
+        Style.apply_tab(get_tab_body(entry.content), limits)
+    end
+    place_main_frame(player, frame, limits)
+end
 
-    local admins = Server.get_admins_data()
-    local frame, inside_frame = Public.add_main_frame_with_toolbar(player, 'left', main_frame_name, nil, close_button_name, title)
-
-    local tabbed_pane = inside_frame.add({ type = 'tabbed-pane', name = 'tabbed_pane' })
-
-    local ordered_tabs = {}
-
-    for _, name in ipairs(ordered_tab_names) do
-        if tabs[name] then
-            table.insert(ordered_tabs, { name = name, data = tabs[name] })
+local function remember_tab(player)
+    local selected = get_player_active_tab(player)
+    if not selected then
+        return
+    end
+    local state = menu_state(player)
+    state.tab = tab_captions[selected.name] or selected.caption
+    if state.tab == 'Map Info' and state.map_info then
+        state.map_info = nil
+        local button = get_main_button(player)
+        if button then
+            button.tooltip = main_button_tooltip(player)
         end
     end
+end
 
-    for name, tab_data in pairs(tabs) do
-        local found = false
-        for _, ordered_name in ipairs(ordered_tab_names) do
-            if name == ordered_name then
-                found = true
-                break
-            end
-        end
-        if not found then
-            table.insert(ordered_tabs, { name = name, data = tab_data })
+local function close_main_frame(player)
+    if Public.get_parent_frame(player) then
+        local active = Public.get_player_active_frame(player)
+        Event.raise(ServerCommands.events.on_gui_closed_main_frame, { player_index = player.index, element = active or nil })
+    end
+    Public.clear_main_frame(player)
+end
+
+local function available_tabs(player, state)
+    local visible = {}
+    local server_data = Server.get_current_time()
+    for caption, tab in pairs(main_gui_tabs) do
+        if tab_is_available(player, state, caption, tab, server_data) then
+            visible[caption] = tab
         end
     end
+    return visible
+end
 
-    for _, entry in ipairs(ordered_tabs) do
-        local name = entry.name
-        local callback = entry.data
+local function add_selector(titlebar, close_button, name, width, items, selected, tooltip, tags)
+    local selector = titlebar.add({
+        type = 'drop-down', name = name, items = items, selected_index = selected,
+        index = close_button.get_index_in_parent(), tooltip = tooltip, tags = tags
+    })
+    selector.style.width = width
+    selector.style.height = Style.dimensions.button_height
+end
 
-        if not settings.disabled_tabs[name] then
-            local show = false
-            local secs = Server.get_current_time()
+local function build_titlebar(frame, close_button, view, groups, section_index, docked)
+    local titlebar = frame.titlebar
+    titlebar.style.vertical_align = 'center'
+    local titlebar_filler = titlebar.children[2]
+    if docked then
+        titlebar_filler.style = 'empty_widget'
+        titlebar_filler.style.horizontally_stretchable = true
+    else
+        titlebar.tooltip = { 'gui.comfy_menu_drag' }
+        titlebar_filler.style.height = 16
+    end
 
-            if callback.only_server_sided then
-                if secs then
-                    show = true
+    if view == 'compact' and #groups > 1 then
+        local labels, targets = {}, {}
+        for i, group in ipairs(groups) do
+            labels[i] = { 'gui.comfy_section_' .. group.name }
+            targets[i] = group.tabs[1]
+        end
+        add_selector(titlebar, close_button, section_selector_name, 124, labels, section_index,
+            { 'gui.comfy_choose_section' }, { tabs = targets })
+    end
+
+    local mode_labels = {}
+    for i, name in ipairs(view_modes) do
+        mode_labels[i] = { 'gui.comfy_view_' .. name }
+    end
+    add_selector(titlebar, close_button, view_selector_name, 110, mode_labels, view == 'compact' and 2 or 3,
+        { 'gui.comfy_choose_view' })
+
+    Style.action_button(titlebar, {
+        name = dock_button_name, index = close_button.get_index_in_parent(),
+        sprite = Public.pin_white_icon, hovered_sprite = Public.pin_black_icon, clicked_sprite = Public.pin_black_icon,
+        tooltip = { docked and 'gui.comfy_menu_undock' or 'gui.comfy_menu_dock' }
+    })
+end
+
+local function add_menu_tabs(pane, groups, view, section_index, selected_caption)
+    local index = 0
+    for i, group in ipairs(groups) do
+        if view == 'full' or i == section_index then
+            for _, caption in ipairs(group.tabs) do
+                local tab = pane.add({
+                    type = 'tab', caption = main_gui_tabs[caption].localised_caption or caption, name = main_gui_tabs[caption].name, style = 'slightly_smaller_tab'
+                })
+                local content = pane.add({
+                    type = 'frame', name = caption, direction = 'vertical', style = 'deep_frame_in_tabbed_pane'
+                })
+                content.style.horizontally_stretchable = true
+                content.add({
+                    type = 'scroll-pane', name = caption, style = 'naked_scroll_pane', tags = { comfy_view = view },
+                    horizontal_scroll_policy = 'auto', vertical_scroll_policy = 'auto-and-reserve-space'
+                })
+                pane.add_tab(tab, content)
+                index = index + 1
+                if caption == selected_caption then
+                    pane.selected_tab_index = index
                 end
-            elseif callback.admin == true then
-                if player.admin and (not secs or (secs and admins[player.name])) then
-                    show = true
-                end
-            else
-                show = true
             end
+        end
+    end
+end
 
-            if show then
-                local tab =
-                    tabbed_pane.add(
-                        {
-                            type = 'tab',
-                            caption = name,
-                            name = callback.name,
-                            style = 'slightly_smaller_tab'
-                        }
-                    )
-                local name_frame =
-                    tabbed_pane.add(
-                        {
-                            type = 'frame',
-                            name = name,
-                            direction = 'vertical',
-                            style = 'deep_frame_in_shallow_frame'
-                        }
-                    )
-                tab.style.padding = 10
-
-                Task.set_timeout_in_ticks(10, fix_frame_style_token, { frame = name_frame })
-
-                tabbed_pane.add_tab(tab, name_frame)
+local function draw_main_frame(player, selected_caption, view)
+    local state = menu_state(player)
+    view = view or (state.view == 'compact' and 'compact' or 'full')
+    local visible = available_tabs(player, state)
+    local groups = Public.sections(visible)
+    selected_caption = selected_caption or state.tab
+    local section_index = 1
+    for i, group in ipairs(groups) do
+        for _, caption in ipairs(group.tabs) do
+            if caption == selected_caption then
+                section_index = i
             end
         end
     end
 
-    for _, child in pairs(tabbed_pane.children) do
-        child.style.padding = 8
-        child.style.left_padding = 2
-        child.style.right_padding = 2
-    end
+    close_main_frame(player)
+    state.view = view
 
+    local title = ServerCommands.is_dev_server() and 'Comfy Panel (Dev)' or 'Comfy Panel'
+    local docked = settings.main_frame_docked and settings.main_frame_docked[player.index]
+    local align = docked and 'left' or 'screen'
+    local frame, default_inside, close_button = Public.add_main_frame_with_toolbar(player, align, main_frame_name, nil, close_button_name, title)
+    default_inside.destroy()
+    frame.tags = { comfy_view = view }
+    build_titlebar(frame, close_button, view, groups, section_index, docked)
+
+    local inside = frame.add({
+        type = 'scroll-pane', name = 'inside_frame', style = 'naked_scroll_pane',
+        horizontal_scroll_policy = 'auto', vertical_scroll_policy = 'never'
+    })
+    local pane = inside.add({ type = 'tabbed-pane', name = 'tabbed_pane' })
+    pane.style.top_margin = 0
+    if #groups == 0 then
+        inside.add({ type = 'label', caption = { 'gui.comfy_no_tabs' } })
+    else
+        add_menu_tabs(pane, groups, view, section_index, selected_caption)
+    end
+    layout_main_frame(player, frame)
     player.opened = frame
     Public.reload_active_tab(player, true)
+    remember_tab(player)
+    return frame, inside
+end
 
-    return frame, inside_frame
+local function show_status(player)
+    close_main_frame(player)
+    local state = menu_state(player)
+    state.view = 'minimal'
+    add_status_frame(player, state.collapsed)
+    update_status(player, #game.connected_players, Server.get_current_time())
 end
 
 local function on_object_destroyed(event)
@@ -1151,11 +1309,8 @@ local function on_object_destroyed(event)
 end
 
 function Public.get_content(player)
-    local left_frame = Public.get_main_frame(player)
-    if not left_frame then
-        return false
-    end
-    return left_frame.tabbed_pane
+    local inside = Public.get_main_frame(player)
+    return inside and inside.tabbed_pane or false
 end
 
 function Public.refresh(player)
@@ -1167,8 +1322,10 @@ function Public.refresh(player)
     local tabbed_pane = Public.get_content(player)
 
     for _, tab in pairs(tabbed_pane.tabs) do
-        if tab.content.name ~= frame.name then
-            tab.content.clear()
+        local body = get_tab_body(tab.content)
+        if tab.tab ~= frame and #body.children > 0 then
+            remove_data_recursively(body)
+            body.clear()
             Event.raise(ServerCommands.events.on_gui_removal, { player_index = player.index })
         end
     end
@@ -1198,15 +1355,12 @@ function Public.toggle_top_buttons(player, state)
 end
 
 function Public.set_tab(player, tab_name, status)
-    settings.disabled_tabs[tab_name] = status
-    local left_frame = Public.get_main_frame(player)
-    if left_frame then
-        left_frame.destroy()
+    local state = menu_state(player)
+    state.disabled_tabs = state.disabled_tabs or {}
+    state.disabled_tabs[tab_captions[tab_name] or tab_name] = status == true
+    if Public.get_parent_frame(player) then
         draw_main_frame(player)
-        return
     end
-
-    Public.reload_active_tab(player)
 end
 
 function Public.bar(frame, width)
@@ -1228,21 +1382,7 @@ function Public.bar(frame, width)
 end
 
 function Public.call_existing_tab(player, name)
-    local frame, inside_frame = draw_main_frame(player)
-    if not frame then
-        return
-    end
-    if not inside_frame then
-        return
-    end
-
-    local tabbed_pane = inside_frame.tabbed_pane
-    for key, v in pairs(tabbed_pane.tabs) do
-        if v.tab.caption == name then
-            tabbed_pane.selected_tab_index = key
-            Public.reload_active_tab(player, true)
-        end
-    end
+    draw_main_frame(player, name)
 end
 
 function Public.get_player_from_element(element)
@@ -1563,6 +1703,75 @@ GuiMetaMethods.on_text_changed = event_handler_factory(defines.events.on_gui_tex
 --end)
 GuiMetaMethods.on_value_changed = event_handler_factory(defines.events.on_gui_value_changed)
 
+Public.on_click(dock_button_name, function (event)
+    local player = event.player
+    local frame = Public.get_parent_frame(player)
+    if frame and event.element.parent == frame.titlebar then
+        settings.main_frame_docked = settings.main_frame_docked or {}
+        settings.main_frame_docked[player.index] = player.gui.screen[main_frame_name] == frame or nil
+        draw_main_frame(player)
+    end
+end)
+
+Public.on_selection_state_changed(view_selector_name, function (event)
+    local player = event.player
+    local frame = Public.get_parent_frame(player)
+    local view = view_modes[event.element.selected_index]
+    if frame and event.element.parent == frame.titlebar and view then
+        if view == 'minimal' then
+            show_status(player)
+        elseif frame.tags.comfy_view ~= view then
+            draw_main_frame(player, nil, view)
+        end
+    end
+end)
+
+Public.on_selection_state_changed(section_selector_name, function (event)
+    local player = event.player
+    local frame = Public.get_parent_frame(player)
+    if frame and event.element.parent == frame.titlebar then
+        local caption = event.element.tags.tabs[event.element.selected_index]
+        if caption then
+            draw_main_frame(player, caption, 'compact')
+        end
+    end
+end)
+
+Public.on_click(status_expand_button_name, function (event)
+    local player = event.player
+    local frame = get_status_frame(player)
+    if frame and event.element.parent == frame.toolbar then
+        draw_main_frame(player, nil, 'compact')
+    end
+end)
+
+Public.on_click(status_fold_button_name, function (event)
+    local player = event.player
+    local frame = get_status_frame(player)
+    if frame and event.element.parent == frame.toolbar then
+        local state = menu_state(player)
+        state.collapsed = not state.collapsed
+        frame.details.visible = not state.collapsed
+        event.element.caption = state.collapsed and '+' or '−'
+        event.element.tooltip = { state.collapsed and 'gui.comfy_show_status' or 'gui.comfy_hide_status' }
+        update_status(player, #game.connected_players, Server.get_current_time())
+    end
+end)
+
+Public.on_click(status_map_info_button_name, function (event)
+    if event.element.parent == get_status_frame(event.player) then
+        draw_main_frame(event.player, 'Map Info', 'compact')
+    end
+end)
+
+Event.add(defines.events.on_gui_location_changed, function (event)
+    local frame = event.element
+    if frame and frame.valid and frame.name == main_frame_name and frame.location then
+        settings.main_frame_positions = settings.main_frame_positions or {}
+        settings.main_frame_positions[event.player_index] = frame.location
+    end
+end)
+
 Public.on_click(
     main_button_name,
     function (event)
@@ -1571,14 +1780,11 @@ Public.on_click(
             return
         end
         local player = event.player
-        local frame = Public.get_parent_frame(player)
-
-        if frame then
-            remove_data_recursively(frame)
-            frame.destroy()
+        if Public.get_parent_frame(player) or get_status_frame(player) then
+            close_main_frame(player)
             Event.raise(ServerCommands.events.on_gui_removal, { player_index = player.index })
-            local active_frame = Public.get_player_active_frame(player)
-            Event.raise(ServerCommands.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
+        elseif menu_state(player).view == 'minimal' then
+            show_status(player)
         else
             draw_main_frame(player)
         end
@@ -1588,28 +1794,14 @@ Public.on_click(
 Public.on_click(
     close_button_name,
     function (event)
-        local player = event.player
-        local frame = Public.get_parent_frame(player)
-        local active_frame = Public.get_player_active_frame(player)
-        Event.raise(ServerCommands.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
-        if frame then
-            remove_data_recursively(frame)
-            frame.destroy()
-        end
+        close_main_frame(event.player)
     end
 )
 
 Public.on_custom_close(
     main_frame_name,
     function (event)
-        local player = event.player
-        local active_frame = Public.get_player_active_frame(player)
-        Event.raise(ServerCommands.events.on_gui_closed_main_frame, { player_index = player.index, element = active_frame or nil })
-        local frame = Public.get_parent_frame(player)
-        if frame then
-            remove_data_recursively(frame)
-            frame.destroy()
-        end
+        close_main_frame(event.player)
     end
 )
 
@@ -1636,11 +1828,7 @@ Public.on_click(
             end
 
             Public.clear_all_active_frames(player)
-
-            local main_frame = Public.get_main_frame(player)
-            if main_frame then
-                main_frame.destroy()
-            end
+            hide_status(player)
 
             button.sprite = 'utility/expand_dots'
             button.tooltip = 'Click to show top buttons!'
@@ -1665,39 +1853,67 @@ Public.on_click(
     end
 )
 
-Event.add(
-    defines.events.on_gui_click,
-    function (event)
-        local element = event.element
-        if not element or not element.valid then
-            return
-        end
-
-        local player = game.get_player(event.player_index)
-
-        local name = element.name
-
-        if name == main_button_name then
-            local is_spamming = SpamProtection.is_spamming(player, nil, 'Main GUI Click')
-            if is_spamming then
-                return
-            end
-            Public.refresh(player)
-        end
-
-        if not event.element.caption then
-            return
-        end
-        if event.element.type ~= 'tab' then
-            return
-        end
-
-        local success = Public.refresh(player)
-        if not success then
-            Public.reload_active_tab(player)
+Event.add(defines.events.on_gui_selected_tab_changed, function (event)
+    local player = game.get_player(event.player_index)
+    local pane = Public.get_content(player)
+    if pane and event.element == pane then
+        Public.refresh(player)
+        remember_tab(player)
+        local frame = Public.get_parent_frame(player)
+        if frame then
+            place_main_frame(player, frame, Style.limits(player, frame.tags.comfy_view))
         end
     end
-)
+end)
+
+local function resize_main_frame(event)
+    local player = game.get_player(event.player_index)
+    local frame = Public.get_parent_frame(player)
+    if frame and frame.inside_frame and frame.inside_frame.type == 'scroll-pane' then
+        local width = frame.style.minimal_width
+        layout_main_frame(player, frame)
+        if width ~= frame.style.minimal_width then
+            Public.reload_active_tab(player, true)
+        end
+    end
+end
+
+Event.add(defines.events.on_player_display_resolution_changed, resize_main_frame)
+Event.add(defines.events.on_player_display_scale_changed, resize_main_frame)
+
+local function refresh_admin_tabs(event)
+    local player = game.get_player(event.player_index)
+    if Public.get_parent_frame(player) then
+        draw_main_frame(player)
+    end
+end
+
+Event.add(defines.events.on_player_promoted, refresh_admin_tabs)
+Event.add(defines.events.on_player_demoted, refresh_admin_tabs)
+
+Event.add(defines.events.on_player_removed, function (event)
+    if settings.main_frame_positions then
+        settings.main_frame_positions[event.player_index] = nil
+    end
+    if settings.main_frame_docked then
+        settings.main_frame_docked[event.player_index] = nil
+    end
+    if settings.menu_state then
+        settings.menu_state[event.player_index] = nil
+    end
+end)
+
+local function refresh_status_panels()
+    local players = game.connected_players
+    local server_data = Server.get_current_time()
+    for _, player in pairs(players) do
+        update_status(player, #players, server_data)
+    end
+end
+
+Event.add(defines.events.on_player_joined_game, refresh_status_panels)
+Event.add(defines.events.on_player_left_game, refresh_status_panels)
+Event.on_nth_tick(120, refresh_status_panels)
 
 Event.add(
     defines.events.on_player_created,
@@ -1714,6 +1930,12 @@ Event.add(
     defines.events.on_player_joined_game,
     function (event)
         local player = game.get_player(event.player_index)
+        Public.destroy(player.gui.screen.comfy_player_settings)
+        Public.destroy(player.gui.left.comfy_player_settings)
+        local menu = Public.get_parent_frame(player)
+        if menu then
+            Public.destroy(menu.titlebar.comfy_player_settings_button)
+        end
         resize_top_buttons(player)
         top_button(player)
     end
