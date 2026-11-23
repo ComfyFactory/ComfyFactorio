@@ -295,6 +295,8 @@ local function mark_mine(entity, player)
         -- Put furnace back into inventory if and only if there is space,
         -- If there isn't space put on floor like before.
         if player.insert(stack) == 1 then
+            -- Select it back to the cursor
+            player.pipette(prototypes.item["stone-furnace"])
             return score_change
         end
 
