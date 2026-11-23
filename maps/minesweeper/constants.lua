@@ -7,8 +7,11 @@ Cell Values:
 	-- 10 = mine
 	-- 11 = marked mine
 
-]] --
 
+Different planets could use / add different minesweeper rules, however the current code does not allow this.
+Normal minesweeper ruloes are used for now.
+
+]] --
 
 
 

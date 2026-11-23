@@ -203,7 +203,7 @@ local function visit_cell(position)
     end
 
     if cell_value_before_visit and cell_value_before_visit ~= cell[1] then
-        for _, vector in pairs(cell_adjacent_vectors) do
+        for _, vector in pairs(Constants.cell_adjacent_vectors) do
             local adjacent_position = { x = position.x + vector[1], y = position.y + vector[2] }
             local adjacent_key = Functions.position_to_string(adjacent_position)
             local adjacent_cell = minesweeper.cells[adjacent_key]
