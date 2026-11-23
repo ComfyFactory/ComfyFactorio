@@ -31,7 +31,7 @@ local function unstuck_players_around_position(surface, position)
 end
 
 function Public.kaboom(position, surface_index)
-    local surface_index = surface_index or 1
+    surface_index = surface_index or 1
     local surface = game.surfaces[surface_index]
     local count = surface.count_entities_filtered({ name = { "atomic-bomb-ground-zero-projectile", "atomic-bomb-wave", "atomic-bomb-wave-spawns-cluster-nuke-explosion", "atomic-bomb-wave-spawns-fire-smoke-explosion", "atomic-bomb-wave-spawns-nuclear-smoke", "atomic-bomb-wave-spawns-nuke-shockwave-explosion", "atomic-rocket" }, area = { { position.x - 4, position.y - 4 }, { position.x + 4, position.y + 4 } }, limit = 1 })
     if count > 0 then return end
@@ -51,7 +51,7 @@ function Public.kaboom(position, surface_index)
 end
 
 function Public.restore_blast_terrain(terrain, surface_index)
-    local surface_index = surface_index or 1
+    surface_index = surface_index or 1
     local surface = game.surfaces[surface_index]
     local tiles = {}
     for _, tile in ipairs(terrain) do
@@ -69,7 +69,7 @@ function Public.restore_blast_terrain(terrain, surface_index)
 end
 
 local function has_minefield_tile(position, extent, paved_only, surface_index)
-    local surface_index = surface_index or 1
+    surface_index = surface_index or 1
     local surface = game.surfaces[surface_index]
     for x = 0, extent do
         for y = 0, extent do
@@ -103,7 +103,7 @@ function Public.is_spawn(position)
 end
 
 function Public.position_to_string(p, surface_index)
-    local surface_index = surface_index or 1
+    surface_index = surface_index or 1
     return p.x .. "_" .. p.y .. "_" .. surface_index
 end
 
@@ -135,7 +135,7 @@ function Public.get_terrain_tile(surface, position)
 end
 
 function Public.disarm_reward(position, surface_index)
-    local surface_index = surface_index or 1
+    surface_index = surface_index or 1
     local surface = game.surfaces[surface_index]
     local distance_to_center = math.sqrt(position.x ^ 2 + position.y ^ 2)
 
@@ -185,7 +185,7 @@ function Public.disarm_reward(position, surface_index)
 end
 
 function Public.uncover_terrain(position, surface_index)
-    local surface_index = surface_index or 1
+    surface_index = surface_index or 1
     local surface = game.surfaces[surface_index]
     local uncovered_water = false
     for x = 0, 1, 1 do
