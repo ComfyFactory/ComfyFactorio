@@ -74,7 +74,7 @@ end
 --require 'maps.choppy_dx'
 
 --![[Minesweeper?]]--
-require 'maps.minesweeper.main'
+--require 'maps.minesweeper.main'
 
 --![[A map where you build towns and fight against other towns and the biters.]]--
 --require 'maps.scrap_towny_ffa.main'
