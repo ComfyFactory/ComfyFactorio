@@ -30,8 +30,9 @@ local function unstuck_players_around_position(surface, position)
     end
 end
 
-function Public.kaboom(position)
-    local surface = game.surfaces[1]
+function Public.kaboom(position, surface_index)
+    local surface_index = surface_index or 1
+    local surface = game.surfaces[surface_index]
     local count = surface.count_entities_filtered({ name = { "atomic-bomb-ground-zero-projectile", "atomic-bomb-wave", "atomic-bomb-wave-spawns-cluster-nuke-explosion", "atomic-bomb-wave-spawns-fire-smoke-explosion", "atomic-bomb-wave-spawns-nuclear-smoke", "atomic-bomb-wave-spawns-nuke-shockwave-explosion", "atomic-rocket" }, area = { { position.x - 4, position.y - 4 }, { position.x + 4, position.y + 4 } }, limit = 1 })
     if count > 0 then return end
 
@@ -49,8 +50,9 @@ function Public.kaboom(position)
     end
 end
 
-function Public.restore_blast_terrain(terrain)
-    local surface = game.surfaces[1]
+function Public.restore_blast_terrain(terrain, surface_index)
+    local surface_index = surface_index or 1
+    local surface = game.surfaces[surface_index]
     local tiles = {}
     for _, tile in ipairs(terrain) do
         if surface.get_tile(tile.position).name == 'nuclear-ground' then
@@ -66,8 +68,9 @@ function Public.restore_blast_terrain(terrain)
     end
 end
 
-local function has_minefield_tile(position, extent, paved_only)
-    local surface = game.surfaces[1]
+local function has_minefield_tile(position, extent, paved_only, surface_index)
+    local surface_index = surface_index or 1
+    local surface = game.surfaces[surface_index]
     for x = 0, extent do
         for y = 0, extent do
             local tile = surface.get_tile(position.x + x, position.y + y)
@@ -79,12 +82,12 @@ local function has_minefield_tile(position, extent, paved_only)
     return false
 end
 
-function Public.is_minefield_tile(position, search_cell)
-    return has_minefield_tile(position, search_cell and 1 or 0, false)
+function Public.is_minefield_tile(position, search_cell, surface_index)
+    return has_minefield_tile(position, search_cell and 1 or 0, false, surface_index)
 end
 
-function Public.has_paved_minefield_tile(position)
-    return has_minefield_tile(position, 1, true)
+function Public.has_paved_minefield_tile(position, surface_index)
+    return has_minefield_tile(position, 1, true, surface_index)
 end
 
 function Public.is_spawn(position)
@@ -99,14 +102,16 @@ function Public.is_spawn(position)
     end
 end
 
-function Public.position_to_string(p)
-    return p.x .. "_" .. p.y
+function Public.position_to_string(p, surface_index)
+    local surface_index = surface_index or 1
+    return p.x .. "_" .. p.y .. "_" .. surface_index
 end
 
-function Public.position_to_cell_position(p)
+function Public.position_to_cell_position(p, surface_index)
     local cell_position = {}
     cell_position.x = math.floor(p.x * 0.5) * 2
     cell_position.y = math.floor(p.y * 0.5) * 2
+    cell_position.surface_index = surface_index or 1
     return cell_position
 end
 
@@ -129,8 +134,9 @@ function Public.get_terrain_tile(surface, position)
     return "grass-" .. math.floor((noise_2 * 10) % 3 + 1)
 end
 
-function Public.disarm_reward(position)
-    local surface = game.surfaces[1]
+function Public.disarm_reward(position, surface_index)
+    local surface_index = surface_index or 1
+    local surface = game.surfaces[surface_index]
     local distance_to_center = math.sqrt(position.x ^ 2 + position.y ^ 2)
 
     FlyingText.flying_text(nil, surface, { x = position.x + 1, y = position.y + 1 }, 'Mine disarmed!', { r = 0.98, g = 0.66, b = 0.22 })
@@ -178,8 +184,9 @@ function Public.disarm_reward(position)
     end
 end
 
-function Public.uncover_terrain(position)
-    local surface = game.surfaces[1]
+function Public.uncover_terrain(position, surface_index)
+    local surface_index = surface_index or 1
+    local surface = game.surfaces[surface_index]
     local uncovered_water = false
     for x = 0, 1, 1 do
         for y = 0, 1, 1 do
