@@ -9,9 +9,6 @@ Cell Values:
 
 ]] --
 
-if script.active_mods['space-age'] then
-    error('This map is incompatible with the Space Age mod. Disable Space Age to run this map.', 2)
-end
 
 local FlyingText = require 'utils.functions.flying_texts'
 
