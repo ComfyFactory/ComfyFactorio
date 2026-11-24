@@ -448,13 +448,13 @@ local function render_buff_collection(parent_pane, buffs_source, buffs_collected
     local function format_force_buff_text(name, count)
         local display_name = { '?', { 'mtn_v3_buffs.' .. name .. '_stat' }, Stateful.buff_to_string[name] or name }
         local flat_value_buffs =
-                {
-                    xp_level = true,
-                    xp_bonus = true,
-                    character_health_bonus = true,
-                    character_inventory_slots_bonus = true,
-                    character_build_distance_bonus = true
-                }
+        {
+            xp_level = true,
+            xp_bonus = true,
+            character_health_bonus = true,
+            character_inventory_slots_bonus = true,
+            character_build_distance_bonus = true
+        }
 
         if flat_value_buffs[name] then
             return { 'mtn_v3_buffs.stat_value', display_name, count }
@@ -1145,9 +1145,9 @@ local function update_raw()
                 stateful.objectives_completed.randomized_zone = true
                 stateful.objectives_time_spent.randomized_zone = tick
                 play_achievement_unlocked()
-                local reward = Public.reward_goal_completion()
-                Alert.alert_all_players(100, { 'mtn_v3_round.objective_breach_zone_has_been_completed', reward }, nil, nil, nil, 'global')
-                Server.to_discord_embed('Objective: **Breach zone** has been completed! ' .. reward .. '!')
+                local reward, discord_reward = Public.reward_goal_completion()
+                Alert.alert_all_players(100, { 'mtn_v3_round.objective_breach_zone_has_been_completed', reward or '' }, nil, nil, nil, 'global')
+                Server.to_discord_embed('Objective: **Breach zone** has been completed! ' .. (discord_reward or '') .. '!')
                 stateful.objectives_completed_count = stateful.objectives_completed_count + 1
             end
         end
@@ -1171,9 +1171,9 @@ local function update_raw()
                     if not stateful.objectives_completed.supplies then
                         stateful.objectives_completed.supplies = true
                         stateful.objectives_time_spent.supplies = tick
-                        local reward = Public.reward_goal_completion()
-                        Alert.alert_all_players(100, { 'mtn_v3_round.objective_produce_items_has_been_completed', reward }, nil, nil, nil, 'global')
-                        Server.to_discord_embed('Objective: **Produce items** has been completed! ' .. reward .. '!')
+                        local reward, discord_reward = Public.reward_goal_completion()
+                        Alert.alert_all_players(100, { 'mtn_v3_round.objective_produce_items_has_been_completed', reward or '' }, nil, nil, nil, 'global')
+                        Server.to_discord_embed('Objective: **Produce items** has been completed! ' .. (discord_reward or '') .. '!')
                         play_achievement_unlocked()
                         stateful.objectives_completed_count = stateful.objectives_completed_count + 1
                     end
@@ -1200,9 +1200,9 @@ local function update_raw()
                     stateful.objectives_completed.single_item = true
                     stateful.objectives_time_spent.single_item = tick
                     play_achievement_unlocked()
-                    local reward = Public.reward_goal_completion()
-                    Alert.alert_all_players(100, { 'mtn_v3_round.objective_produce_item_has_been_completed', reward }, nil, nil, nil, 'global')
-                    Server.to_discord_embed('Objective: **Produce item** has been completed! ' .. reward .. '!')
+                    local reward, discord_reward = Public.reward_goal_completion()
+                    Alert.alert_all_players(100, { 'mtn_v3_round.objective_produce_item_has_been_completed', reward or '' }, nil, nil, nil, 'global')
+                    Server.to_discord_embed('Objective: **Produce item** has been completed! ' .. (discord_reward or '') .. '!')
                     stateful.objectives_completed_count = stateful.objectives_completed_count + 1
                 end
             end

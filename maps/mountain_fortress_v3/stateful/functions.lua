@@ -420,7 +420,7 @@ Event.on_nth_tick(60, function ()
 
         local str = { 'mtn_v3_round.buff_voting_closed', Stateful.localised_buff_name(buff.raw, buff.name) }
         game.print(str)
-        Server.to_discord_embed(str)
+        Server.to_discord_embed(str, true)
         Public.set('game_reset_tick', 5400)
         Public.notify_won_to_discord(buff.raw)
         local locomotive = Public.get('locomotive')

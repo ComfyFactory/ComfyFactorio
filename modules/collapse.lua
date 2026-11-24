@@ -396,7 +396,7 @@ local function progress_reverse()
             for _, e in pairs(surface.find_entities_filtered({ area = { { position[1] - 4, position[2] - 2 }, { position[1] + 4, position[2] + 2 } } })) do
                 custom_callback(e)
                 local removed = observe_removal(e)
-                if entities[e.name] and e.valid and e.health then
+                if e.valid and entities[e.name] and e.health then
                     e.die()
                 elseif e.valid then
                     e.destroy()
